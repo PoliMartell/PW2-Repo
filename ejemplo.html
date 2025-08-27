@@ -7,247 +7,247 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styleGeneral.css">
 </head>
-<body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="search-container">
-                <input type="text" placeholder="Buscar jugadores, equipos, ligas...">
-                <button><i class="fas fa-search"></i></button>
-            </div>
-            <div class="user-menu">
-                <div class="notification">
-                    <i class="far fa-bell"></i>
-                    <span class="notification-badge">3</span>
+    <body>
+        <div class="container">
+            <!-- Header -->
+            <header class="header">
+                <div class="search-container">
+                    <input type="text" placeholder="Buscar jugadores, equipos, ligas...">
+                    <button><i class="fas fa-search"></i></button>
                 </div>
-                <div class="user-avatar">
-                    <img src="https://via.placeholder.com/40" alt="Usuario">
+                <div class="user-menu">
+                    <div class="notification">
+                        <i class="far fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </div>
+                    <div class="user-avatar">
+                        <img src="https://via.placeholder.com/40" alt="Usuario">
+                    </div>
                 </div>
-            </div>
-        </header>
-        
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <i class="fas fa-futbol"></i>
-                <h1>FanScore</h1>
-            </div>
-            <nav class="main-nav">
-                <a href="#" class="menu-item active">
-                    <i class="fas fa-home"></i>
-                    <span>Inicio</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-book"></i>
-                    <span>Enciclopedia</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-stamp"></i>
-                    <span>Álbum</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-user"></i>
-                    <span>Perfil</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Cerrar Sesión</span>
-                </a>
-            </nav>
-        </aside>
-        
-        <!-- Main Content -->
-        <main class="main">
-            <div class="page-header">
-                <h2>Dashboard Principal</h2>
-                <div class="date-selector">
-                    <span>Hoy: 20 Mayo 2023</span>
-                </div>
-            </div>
+            </header>
             
-            <!-- Estadísticas -->
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-icon">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="logo">
+                    <i class="fas fa-futbol"></i>
+                    <h1>FanScore</h1>
+                </div>
+                <nav class="main-nav">
+                    <a href="#" class="menu-item active">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-book"></i>
+                        <span>Enciclopedia</span>
+                    </a>
+                    <a href="#" class="menu-item">
                         <i class="fas fa-stamp"></i>
-                    </div>
-                    <div class="stat-value">142</div>
-                    <div class="stat-label">Estampas coleccionadas</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-percentage"></i>
-                    </div>
-                    <div class="stat-value">78%</div>
-                    <div class="stat-label">Álbum completado</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-value">24</div>
-                    <div class="stat-label">Jugadores calificados</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-gift"></i>
-                    </div>
-                    <div class="stat-value">3</div>
-                    <div class="stat-label">Sobres disponibles</div>
-                </div>
-            </div>
+                        <span>Álbum</span>
+                    </a>
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-user"></i>
+                        <span>Perfil</span>
+                    </a>
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </a>
+                </nav>
+            </aside>
             
-            <!-- Jugadores recientemente agregados -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h3>Jugadores Recientes</h3>
-                    <a href="#" class="view-all">Ver todos</a>
-                </div>
-                <div class="players-grid">
-                    <!-- Jugador 1 -->
-                    <div class="player-card">
-                        <div class="player-header">
-                            <img src="https://via.placeholder.com/80" alt="Jugador" class="player-image">
-                            <div class="player-info">
-                                <div class="player-name">Lionel Messi</div>
-                                <div class="player-team">Paris Saint-Germain</div>
-                                <div class="player-stats">
-                                    <div class="stat">Delantero</div>
-                                    <div class="player-rating">
-                                        <i class="fas fa-star"></i>
-                                        <span>4.9</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="player-content">
-                            <div class="player-details">
-                                <div class="detail-item">
-                                    <div class="detail-label">Nacionalidad</div>
-                                    <div>Argentina</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Edad</div>
-                                    <div>35 años</div>
-                                </div>
-                            </div>
-                            <button class="add-comment-btn">Agregar comentario</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Jugador 2 -->
-                    <div class="player-card">
-                        <div class="player-header">
-                            <img src="https://via.placeholder.com/80" alt="Jugador" class="player-image">
-                            <div class="player-info">
-                                <div class="player-name">Erling Haaland</div>
-                                <div class="player-team">Manchester City</div>
-                                <div class="player-stats">
-                                    <div class="stat">Delantero</div>
-                                    <div class="player-rating">
-                                        <i class="fas fa-star"></i>
-                                        <span>4.7</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="player-content">
-                            <div class="player-details">
-                                <div class="detail-item">
-                                    <div class="detail-label">Nacionalidad</div>
-                                    <div>Noruega</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Edad</div>
-                                    <div>22 años</div>
-                                </div>
-                            </div>
-                            <button class="add-comment-btn">Agregar comentario</button>
-                        </div>
+            <!-- Main Content -->
+            <main class="main">
+                <div class="page-header">
+                    <h2>Dashboard Principal</h2>
+                    <div class="date-selector">
+                        <span>Hoy: 20 Mayo 2023</span>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Estampas recientes -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h3>Estampas Recientes</h3>
-                    <a href="#" class="view-all">Ver álbum completo</a>
-                </div>
-                <div class="album-grid">
-                    <!-- Estampa 1 -->
-                    <div class="sticker-card">
-                        <img src="https://via.placeholder.com/180x180/3B82F6/FFFFFF?text=Messi" class="sticker-image" alt="Lionel Messi">
-                        <div class="sticker-rarity">⭐</div>
-                        <div class="sticker-info">
-                            <div class="sticker-name">Lionel Messi</div>
-                            <div class="sticker-team">PSG</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Estampa 2 -->
-                    <div class="sticker-card">
-                        <img src="https://via.placeholder.com/180x180/EF4444/FFFFFF?text=Ronaldo" class="sticker-image" alt="Cristiano Ronaldo">
-                        <div class="sticker-rarity">⭐⭐</div>
-                        <div class="sticker-info">
-                            <div class="sticker-name">Cristiano Ronaldo</div>
-                            <div class="sticker-team">Al Nassr</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Estampa 3 -->
-                    <div class="sticker-card">
-                        <div class="missing-sticker">
-                            <i class="fas fa-question"></i>
-                        </div>
-                        <div class="sticker-info">
-                            <div class="sticker-name">Por descubrir</div>
-                            <div class="sticker-team">???</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Estampa 4 -->
-                    <div class="sticker-card">
-                        <img src="https://via.placeholder.com/180x180/10B981/FFFFFF?text=Neymar" class="sticker-image" alt="Neymar Jr">
-                        <div class="sticker-rarity">⭐</div>
-                        <div class="sticker-info">
-                            <div class="sticker-name">Neymar Jr</div>
-                            <div class="sticker-team">PSG</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        // Funcionalidad de estrellas de calificación
-        document.querySelectorAll('.star').forEach(star => {
-            star.addEventListener('click', function() {
-                const value = this.getAttribute('data-value');
-                const starsContainer = this.parentElement;
                 
-                // Actualizar estrellas
-                starsContainer.querySelectorAll('.star').forEach(s => {
-                    const starValue = s.getAttribute('data-value');
-                    if (starValue <= value) {
-                        s.classList.remove('far');
-                        s.classList.add('fas', 'active');
-                    } else {
-                        s.classList.remove('fas', 'active');
-                        s.classList.add('far');
-                    }
+                <!-- Estadísticas -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-stamp"></i>
+                        </div>
+                        <div class="stat-value">142</div>
+                        <div class="stat-label">Estampas coleccionadas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-value">78%</div>
+                        <div class="stat-label">Álbum completado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">Jugadores calificados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Sobres disponibles</div>
+                    </div>
+                </div>
+                
+                <!-- Jugadores recientemente agregados -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>Jugadores Recientes</h3>
+                        <a href="#" class="view-all">Ver todos</a>
+                    </div>
+                    <div class="players-grid">
+                        <!-- Jugador 1 -->
+                        <div class="player-card">
+                            <div class="player-header">
+                                <img src="https://via.placeholder.com/80" alt="Jugador" class="player-image">
+                                <div class="player-info">
+                                    <div class="player-name">Lionel Messi</div>
+                                    <div class="player-team">Paris Saint-Germain</div>
+                                    <div class="player-stats">
+                                        <div class="stat">Delantero</div>
+                                        <div class="player-rating">
+                                            <i class="fas fa-star"></i>
+                                            <span>4.9</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="player-content">
+                                <div class="player-details">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Nacionalidad</div>
+                                        <div>Argentina</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Edad</div>
+                                        <div>35 años</div>
+                                    </div>
+                                </div>
+                                <button class="add-comment-btn">Agregar comentario</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Jugador 2 -->
+                        <div class="player-card">
+                            <div class="player-header">
+                                <img src="https://via.placeholder.com/80" alt="Jugador" class="player-image">
+                                <div class="player-info">
+                                    <div class="player-name">Erling Haaland</div>
+                                    <div class="player-team">Manchester City</div>
+                                    <div class="player-stats">
+                                        <div class="stat">Delantero</div>
+                                        <div class="player-rating">
+                                            <i class="fas fa-star"></i>
+                                            <span>4.7</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="player-content">
+                                <div class="player-details">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Nacionalidad</div>
+                                        <div>Noruega</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Edad</div>
+                                        <div>22 años</div>
+                                    </div>
+                                </div>
+                                <button class="add-comment-btn">Agregar comentario</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estampas recientes -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3>Estampas Recientes</h3>
+                        <a href="#" class="view-all">Ver álbum completo</a>
+                    </div>
+                    <div class="album-grid">
+                        <!-- Estampa 1 -->
+                        <div class="sticker-card">
+                            <img src="https://via.placeholder.com/180x180/3B82F6/FFFFFF?text=Messi" class="sticker-image" alt="Lionel Messi">
+                            <div class="sticker-rarity">⭐</div>
+                            <div class="sticker-info">
+                                <div class="sticker-name">Lionel Messi</div>
+                                <div class="sticker-team">PSG</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Estampa 2 -->
+                        <div class="sticker-card">
+                            <img src="https://via.placeholder.com/180x180/EF4444/FFFFFF?text=Ronaldo" class="sticker-image" alt="Cristiano Ronaldo">
+                            <div class="sticker-rarity">⭐⭐</div>
+                            <div class="sticker-info">
+                                <div class="sticker-name">Cristiano Ronaldo</div>
+                                <div class="sticker-team">Al Nassr</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Estampa 3 -->
+                        <div class="sticker-card">
+                            <div class="missing-sticker">
+                                <i class="fas fa-question"></i>
+                            </div>
+                            <div class="sticker-info">
+                                <div class="sticker-name">Por descubrir</div>
+                                <div class="sticker-team">???</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Estampa 4 -->
+                        <div class="sticker-card">
+                            <img src="https://via.placeholder.com/180x180/10B981/FFFFFF?text=Neymar" class="sticker-image" alt="Neymar Jr">
+                            <div class="sticker-rarity">⭐</div>
+                            <div class="sticker-info">
+                                <div class="sticker-name">Neymar Jr</div>
+                                <div class="sticker-team">PSG</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <script>
+            // Funcionalidad de estrellas de calificación
+            document.querySelectorAll('.star').forEach(star => {
+                star.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    const starsContainer = this.parentElement;
+                    
+                    // Actualizar estrellas
+                    starsContainer.querySelectorAll('.star').forEach(s => {
+                        const starValue = s.getAttribute('data-value');
+                        if (starValue <= value) {
+                            s.classList.remove('far');
+                            s.classList.add('fas', 'active');
+                        } else {
+                            s.classList.remove('fas', 'active');
+                            s.classList.add('far');
+                        }
+                    });
                 });
             });
-        });
-        
-        // Funcionalidad para botones de comentarios
-        document.querySelectorAll('.add-comment-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                alert('Redirigiendo a página de detalles del jugador para agregar comentario...');
-                // Aquí iría la lógica para redirigir a la página de detalles del jugador
+            
+            // Funcionalidad para botones de comentarios
+            document.querySelectorAll('.add-comment-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    alert('Redirigiendo a página de detalles del jugador para agregar comentario...');
+                    // Aquí iría la lógica para redirigir a la página de detalles del jugador
+                });
             });
-        });
-    </script>
-</body>
+        </script>
+    </body>
 </html>
