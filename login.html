@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - FanScore</title>
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+        <!-- Efecto de partículas en el fondo -->
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <!-- Lado izquierdo mejorado -->
+        <div class="left">
+            <div class="left-content">
+                <div class="logo">
+                    <div class="logo-icon"><i class="fas fa-futbol"></i></div>
+                    <div class="logo-text">FanScore</div>
+                </div>
+                <h2>Vive la pasión del fútbol</h2>
+                <p>Únete a millones de aficionados en todo el mundo siguiendo partidos, estadísticas y más con FanScore.</p>
+            </div>
+            <div class="author">
+                <img src="https://i.pravatar.cc/40" alt="user">
+                <span>Andrew.ui – UI & Illustration</span>
+            </div>
+        </div>
+
+        <!-- Lado derecho mejorado con mejor espaciado -->
+        <div class="right">
+            <div class="right-content">
+                <div>
+                    <h1>¡Hola Fan!</h1>
+                    <p>Bienvenido a la Experiencia FIFA 2026</p>
+                </div>
+                
+                <div class="input-box">
+                    <input type="email" placeholder="Correo electrónico">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                
+                <div class="input-box">
+                    <input type="password" placeholder="Contraseña">
+                    <i class="fas fa-lock"></i>
+                </div>
+                
+                <div class="forgot">
+                    <a href="#">¿Olvidaste tu contraseña?</a>
+                </div>
+                
+                <button class="btn">Iniciar sesión en tu cuenta</button>
+                
+                <div class="divider"><span>O continúa con</span></div>
+                
+                <button class="btn google-btn">
+                    <i class="fab fa-google google-icon"></i>
+                    Iniciar con Google
+                </button>
+                
+                <div class="signup">
+                    ¿No tienes una cuenta? <a href="#">Regístrate ahora</a>
+                </div>
+                
+                <div class="socials">
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Crear efecto de partículas en el fondo
+        document.addEventListener('DOMContentLoaded', function() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Tamaño y posición aleatorios
+                const size = Math.random() * 10 + 2;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}vw`;
+                particle.style.top = `${posY}vh`;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                
+                // Animación
+                particle.style.animation = `float ${Math.random() * 10 + 10}s infinite ease-in-out`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+            
+            // Añadir keyframes para la animación de flotación
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0%, 100% { transform: translate(0, 0); }
+                    25% { transform: translate(${Math.random() * 30 - 15}px, ${Math.random() * 30 - 15}px); }
+                    50% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px); }
+                    75% { transform: translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Interacciones del formulario
+            const inputs = document.querySelectorAll('input');
+            
+            inputs.forEach(input => {
+                // Efecto de enfoque mejorado
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    if (this.value === '') {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+                
+                // Validación básica en tiempo real
+                input.addEventListener('input', function() {
+                    if (this.type === 'email' && this.value !== '') {
+                        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailPattern.test(this.value)) {
+                            this.style.borderColor = 'var(--rojo)';
+                        } else {
+                            this.style.borderColor = 'var(--verde)';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

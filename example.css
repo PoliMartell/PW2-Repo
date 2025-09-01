@@ -1,14 +1,20 @@
-/* 🎨 Paleta Mundial 2026 */
+/* 🎨 Paleta Mundial 2026 organizada */
 :root {
-  --fondo: #000000;
-  --rojo: #E5253B;
-  --verde: #009739;
-  --azul: #002F6C;
-  --turquesa: #00B6A5;
-  --morado: #231F5B;
-  --blanco: #FFFFFF;
-  --dorado: #D4AF37;
+  /* 🎯 Base */
+  --fondo:   #000000; /* Negro */
+  --blanco:  #FFFFFF; /* Blanco */
+  --dorado:  #D4AF37; /* Dorado */
+
+  /* 🌈 Colores primarios */
+  --rojo:    #E5253B; /* Rojo vibrante */
+  --verde:   #009739; /* Verde bandera */
+  --azul:    #002F6C; /* Azul profundo */
+
+  /* ✨ Colores secundarios / acentos */
+  --turquesa:#00B6A5; /* Aqua fresco */
+  --morado:  #231F5B; /* Morado oscuro */
 }
+
 
 body {
   background-color: var(--fondo);
