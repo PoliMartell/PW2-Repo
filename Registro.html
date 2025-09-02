@@ -51,6 +51,15 @@
             color: var(--blanco);
             border-radius: 8px;
         }
+        .flip-out {
+            animation: flipOut 0.7s forwards;
+        }
+        @keyframes flipOut {
+            to {
+                opacity: 0;
+                transform: perspective(600px) rotateY(60deg) scale(0.98);
+            }
+        }
     </style>
 </head>
 <body>
