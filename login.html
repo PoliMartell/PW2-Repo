@@ -6,6 +6,17 @@
     <title>Login - FanScore</title>
     <link rel="stylesheet" href="login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-out {
+            animation: fadeOut 0.7s forwards;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+        }
+    </style>
 </head>
 <body>
 <!-- Efecto de partículas en el fondo -->
@@ -59,7 +70,7 @@
                 </button>
                 
                 <div class="signup">
-                    ¿No tienes una cuenta? <a href="#">Regístrate ahora</a>
+                    ¿No tienes una cuenta? <a href="#" id="goToRegister">Regístrate ahora</a>
                 </div>
                 
                 <!--
@@ -155,6 +166,15 @@
                         validateForm();
                     }
                 });
+            });
+            
+            // Transición fade-out al navegar a registro
+            document.getElementById('goToRegister').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.body.classList.add('fade-out');
+                setTimeout(function() {
+                    window.location.href = 'Registro.html';
+                }, 650);
             });
         });
     </script>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - FanScore</title>
+    <link rel="stylesheet" href="registro.css">
+    <!-- <link rel="stylesheet" href="login.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-out {
+            animation: fadeOut 0.7s forwards;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+        }
+        /* Estilo visual para input file */
+        .input-box input[type="file"] {
+            background: #181818;
+            color: var(--blanco);
+            border: 2px solid var(--gris-claro);
+            border-radius: 14px;
+            padding: 10px 16px;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .input-box input[type="file"]:focus {
+            border-color: var(--turquesa);
+            background: #222;
+        }
+        .input-box input[type="file"]::-webkit-file-upload-button {
+            background: var(--rojo);
+            color: var(--blanco);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 18px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .input-box input[type="file"]:hover::-webkit-file-upload-button {
+            background: #c41a2d;
+        }
+        .input-box input[type="file"]::-ms-browse {
+            background: var(--rojo);
+            color: var(--blanco);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="container">
+        <!-- Panel izquierdo -->
+        <div class="left">
+            <div class="left-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="Images/fanscore.png" alt="FanScore Logo" style="height: 65px;">
+                    </div>
+                    <div class="logo-text">FanScore</div>
+                </div>
+                <h2>¡Únete a la comunidad FanScore!</h2>
+                <p>Regístrate y vive la pasión del fútbol con millones de aficionados en todo el mundo.</p>
+            </div>
+        </div>
+        <!-- Panel derecho -->
+        <div class="right">
+            <div class="right-content">
+                <div>
+                    <h1>Registro</h1>
+                    <p>Crea tu cuenta para acceder a recursos exclusivos.</p>
+                </div>
+                <div class="input-box">
+                    <input type="text" placeholder="Nombre completo" id="fullname">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="input-box">
+                    <input type="email" placeholder="Email" id="email">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="input-box">
+                    <input type="text" placeholder="Usuario" id="username">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="input-box">
+                    <input type="password" placeholder="Contraseña" id="password">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="input-box">
+                    <input type="password" placeholder="Confirmar contraseña" id="confirmPassword">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="input-box">
+                    <input type="file" id="profilePic" accept="image/*" style="padding: 8px 0; background: none; color: var(--blanco);">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div id="preview" style="text-align:center; margin-bottom:10px;"></div>
+                <button class="btn" id="registerBtn">Registrarse</button>
+                <div class="divider">
+                    <span>o continuar con</span>
+                </div>
+                <button class="btn google-btn">
+                    <i class="fab fa-google google-icon"></i> Google
+                </button>
+                <div class="signup">
+                    ¿Ya tienes una cuenta? <a href="#" id="goToLogin">Inicia sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="notification" id="notification"></div>
+    <script>
+        // Crear partículas para el fondo
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 30;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                const size = Math.random() * 15 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                const opacity = Math.random() * 0.3 + 0.1;
+                particle.style.background = `rgba(255, 255, 255, ${opacity})`;
+                const delay = Math.random() * 5;
+                particle.style.animationDelay = `${delay}s`;
+                container.appendChild(particle);
+            }
+        }
+        // Mostrar notificación
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = isError ? 'var(--rojo)' : 'var(--verde)';
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        // Validar formulario de registro
+        function validateRegister() {
+            const fullname = document.getElementById('fullname').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            if (!fullname) {
+                showNotification('Por favor ingresa tu nombre completo', true);
+                return false;
+            }
+            if (!email) {
+                showNotification('Por favor ingresa tu email', true);
+                return false;
+            }
+            if (!username) {
+                showNotification('Por favor ingresa un usuario', true);
+                return false;
+            }
+            if (!password) {
+                showNotification('Por favor ingresa una contraseña', true);
+                return false;
+            }
+            if (password !== confirmPassword) {
+                showNotification('Las contraseñas no coinciden', true);
+                return false;
+            }
+            showNotification('¡Registro exitoso!');
+            return true;
+        }
+        // Vista previa de imagen
+        document.getElementById('profilePic').addEventListener('change', function(e) {
+            const preview = document.getElementById('preview');
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    preview.innerHTML = `<img src='${ev.target.result}' alt='Foto de perfil' style='max-width:100px; max-height:100px; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,0.15);'>`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = '';
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            document.getElementById('registerBtn').addEventListener('click', validateRegister);
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        validateRegister();
+                    }
+                });
+            });
+            // Transición fade-out al navegar a login
+            document.getElementById('goToLogin').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.body.classList.add('fade-out');
+                setTimeout(function() {
+                    window.location.href = 'Login.html';
+                }, 650);
+            });
+        });
+    </script>
+</body>
+</html>
