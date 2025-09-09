@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanscore</title>
+   
+</head>
+<body>
+    <!-- 📌 Sidebar -->
+        <aside class="sidebar" aria-label="Navegación principal">
+        <h2 class="logo">Fanscore</h2>
+        <nav aria-label="Navegación principal">
+            <a href="#" class="active" aria-current="page"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="#"><i class="fas fa-book"></i> Álbum</a>
+            <a href="#"><i class="fas fa-globe"></i> Enciclopedia</a>
+            <a href="#"><i class="fas fa-gift"></i> Sobres</a>
+            <a href="#"><i class="fas fa-cog"></i> Configuración</a>
+        </nav>
+        <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+        </aside>
+        <!-- 📖 Contenido principal -->
+    <main class="main-content">
+        <header class="header">
+            <h1>Enciclopedia Mundial 2026</h1>
+            <p>Descubre a las estrellas del torneo</p>
+            <div class="particles" id="particles"></div>
+        </header>
+        <!-- 📦 Cards -->
+        <section class="players-section" aria-labelledby="players-heading">
+            <h2 id="players-heading">Jugadores Destacados</h2>
+            <div class="cards">
+            <!-- Imagen de Messi corregida (usando placeholder) -->
+            <div class="card" tabindex="0" onclick="openModal('Lionel Messi','https://i.pinimg.com/736x/a1/64/66/a1646641c0dd7b422448e1932d4dfee9.jpg','🇦🇷 Argentina','Delantero','36 años','Inter Miami', 93)">
+                <img src="https://i.pinimg.com/736x/a1/64/66/a1646641c0dd7b422448e1932d4dfee9.jpg" alt="Lionel Messi">
+                <h3>Lionel Messi</h3>
+            </div>
+            <div class="card" tabindex="0" onclick="openModal('Kylian Mbappé','https://i.pinimg.com/736x/a1/10/d9/a110d992ff21fc4512e45508ec1a1be3.jpg','🇫🇷 Francia','Delantero','25 años','Real Madrid', 91)">
+                <img src="https://i.pinimg.com/736x/a1/10/d9/a110d992ff21fc4512e45508ec1a1be3.jpg" alt="Kylian Mbappé">
+                <h3>Kylian Mbappé</h3>
+            </div>
+            <div class="card" tabindex="0" onclick="openModal('Cristiano Ronaldo','https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Cristiano+Ronaldo','🇵🇹 Portugal','Delantero','39 años','Al Nassr', 88)">
+                <img src="https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Cristiano+Ronaldo" alt="Cristiano Ronaldo">
+                <h3>Cristiano Ronaldo</h3>
+            </div>
+            <div class="card" tabindex="0" onclick="openModal('Erling Haaland','https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Erling+Haaland','🇳🇴 Noruega','Delantero','23 años','Manchester City', 90)">
+                <img src="https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Erling+Haaland" alt="Erling Haaland">
+                <h3>Erling Haaland</h3>
+            </div>
+            <div class="card" tabindex="0" onclick="openModal('Kevin De Bruyne','https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Kevin+De+Bruyne','🇧🇪 Bélgica','Centrocampista','32 años','Manchester City', 89)">
+                <img src="https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Kevin+De+Bruyne" alt="Kevin De Bruyne">
+                <h3>Kevin De Bruyne</h3>
+            </div>
+            <div class="card" tabindex="0" onclick="openModal('Vinicius Jr','https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Vinicius+Jr','🇧🇷 Brasil','Delantero','23 años','Real Madrid', 87)">
+                <img src="https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Vinicius+Jr" alt="Vinicius Jr">
+                <h3>Vinicius Jr</h3>
+            </div>
+            </div>
+        </section>
+    </main>
+
+
+</body>
