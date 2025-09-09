@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="album.css">
 </head>
 <body>
-    <div class="dashboard">
+<div class="dashboard">
         <!-- 📌 Sidebar -->
         <aside class="sidebar" aria-label="Navegación principal">
             <h2 class="logo">Fanscore</h2>
@@ -38,87 +38,75 @@
             
             <!-- 🎉 Banner -->
             <section class="banner" aria-labelledby="banner-heading">
-                <div class="banner-text">
-                    <h2 id="banner-heading"><i class="fas fa-book"></i> Mi Álbum de Estampitas</h2>
-                    <p>Completa tu colección de estampitas del Mundial 2026. ¡Consigue todas!</p>
+                <div class="banner-content">
+                    <div class="banner-text">
+                        <h2 id="banner-heading"><i class="fas fa-book"></i> Mi Álbum de Estampitas</h2>
+                        <p>Completa tu colección de estampitas del Mundial 2026</p>
+                    </div>
                     <button id="openPack" aria-label="Abrir sobres del álbum"><i class="fas fa-gift"></i> Abrir Sobres (3)</button>
                 </div>
             </section>
             
-            <!-- 📊 Controles del álbum -->
-            <div class="album-controls">
-                <!-- Filtros -->
-                <div class="filters">
-                    <h3><i class="fas fa-filter"></i> Filtros</h3>
-                    
-                    <div class="filter-group">
-                        <h4>Equipos</h4>
-                        <div class="filter-options">
-                            <label>
-                                <input type="checkbox" name="team" checked> Todos
-                            </label>
-                            <label>
-                                <input type="checkbox" name="team"> Argentina
-                            </label>
-                            <label>
-                                <input type="checkbox" name="team"> Brasil
-                            </label>
-                            <label>
-                                <input type="checkbox" name="team"> Francia
-                            </label>
-                            <label>
-                                <input type="checkbox" name="team"> España
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <h4>Posiciones</h4>
-                        <div class="filter-options">
-                            <label>
-                                <input type="checkbox" name="position" checked> Todas
-                            </label>
-                            <label>
-                                <input type="checkbox" name="position"> Portero
-                            </label>
-                            <label>
-                                <input type="checkbox" name="position"> Defensa
-                            </label>
-                            <label>
-                                <input type="checkbox" name="position"> Mediocampo
-                            </label>
-                            <label>
-                                <input type="checkbox" name="position"> Delantero
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <h4>Estado</h4>
-                        <div class="filter-options">
-                            <label>
-                                <input type="checkbox" name="status" checked> Todas
-                            </label>
-                            <label>
-                                <input type="checkbox" name="status"> Obtenidas
-                            </label>
-                            <label>
-                                <input type="checkbox" name="status"> Faltantes
-                            </label>
-                        </div>
+            <!-- 📊 Filtros horizontales -->
+            <div class="horizontal-filters">
+                <div class="filter-group">
+                    <h4><i class="fas fa-users"></i> Equipos</h4>
+                    <div class="filter-options">
+                        <label><input type="checkbox" name="team" checked> Todos</label>
+                        <label><input type="checkbox" name="team"> Argentina</label>
+                        <label><input type="checkbox" name="team"> Brasil</label>
+                        <label><input type="checkbox" name="team"> Francia</label>
                     </div>
                 </div>
                 
-                <!-- Estadísticas -->
-                <div class="stats">
-                    <h3>Progreso del Álbum</h3>
-                    <p>Estampitas: <span>65/100</span></p>
-                    <div class="progress-bar">
-                        <div class="progress"></div>
+                <div class="filter-group">
+                    <h4><i class="fas fa-crosshairs"></i> Posiciones</h4>
+                    <div class="filter-options">
+                        <label><input type="checkbox" name="position" checked> Todas</label>
+                        <label><input type="checkbox" name="position"> Portero</label>
+                        <label><input type="checkbox" name="position"> Defensa</label>
+                        <label><input type="checkbox" name="position"> Delantero</label>
                     </div>
-                    <p>Por equipos: <span>8/10</span></p>
-                    <p>Repetidas: <span>24</span></p>
-                    <p>Sobres: <span>3</span></p>
+                </div>
+                
+                <div class="filter-group">
+                    <h4><i class="fas fa-filter"></i> Estado</h4>
+                    <div class="filter-options">
+                        <label><input type="checkbox" name="status" checked> Todas</label>
+                        <label><input type="checkbox" name="status"> Obtenidas</label>
+                        <label><input type="checkbox" name="status"> Faltantes</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 📈 Estadísticas compactas -->
+            <div class="compact-stats">
+                <div class="stat-item">
+                    <h4>Estampitas</h4>
+                    <p>65/100</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Por equipos</h4>
+                    <p>8/10</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Repetidas</h4>
+                    <p>24</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Sobres</h4>
+                    <p>3</p>
+                </div>
+            </div>
+            
+            <!-- 📊 Barra de progreso -->
+            <div class="progress-container">
+                <div class="progress-header">
+                    <h3><i class="fas fa-tasks"></i> Progreso del Álbum</h3>
+                    <span>65% completado</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress"></div>
                 </div>
             </div>
             
