@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanscore - Perfil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --fondo: #000000;
+            --blanco: #FFFFFF;
+            --dorado: #D4AF37;
+            --rojo: #E5253B;
+            --verde: #009739;
+            --azul: #002F6C;
+            --turquesa: #00B6A5;
+            --morado: #231F5B;
+            --gris-oscuro: #2c2c2c;
+            --gris-claro: #f5f5f5;
+            --gradiente: linear-gradient(135deg, #6c0000, #231F5B, #000000);
+            --gradiente-dorado: linear-gradient(135deg, #D4AF37, #AA8A2D);
+            --sombra: 0 15px 35px rgba(0, 0, 0, 0.5);
+            --sombra-suave: 0 5px 15px rgba(0, 0, 0, 0.08);
+            --transicion: all 0.3s ease;
+            --card-bg: #252a3f;
+            --text-color: #ffffff;
+            --text-light: #a0a0b0;
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            background-color: var(--fondo);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ==================== */
+        /* SIDEBAR */
+        /* ==================== */
+        .sidebar {
+            background: linear-gradient(135deg, var(--gris-oscuro), #000000);
+            color: var(--blanco);
+            padding: 1.5rem 1rem;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 240px;
+            position: sticky;
+            top: 0;
+            transition: var(--transicion);
+            box-shadow: var(--sombra);
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: var(--dorado);
+        }
+
+        .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .sidebar nav a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.8rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transicion);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .sidebar nav a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--blanco);
+        }
+
+        .sidebar nav a.active {
+            background: var(--gradiente);
+            color: var(--blanco);
+            box-shadow: 0 0 12px rgba(229, 37, 59, 0.5);
+            border-color: var(--rojo);
+        }
+
+        .logout {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.8rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transicion);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-top: auto;
+        }
+
+        .logout:hover {
+            background-color: rgba(229, 37, 59, 0.2);
+            color: var(--rojo);
+        }
+
+        /* ==================== */
+        /* CONTENEDOR PRINCIPAL */
+        /* ==================== */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* ==================== */
+        /* PERFIL DE USUARIO */
+        /* ==================== */
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Encabezado perfil */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            background: var(--gradiente);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="80" cy="20" r="15" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="50" r="20" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="80" r="10" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center right;
+        }
+
+        .avatar {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            flex-shrink: 0;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--dorado);
+            box-shadow: var(--sombra);
+        }
+
+        .edit-avatar {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--gradiente-dorado);
+            color: var(--blanco);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transicion);
+            box-shadow: var(--sombra-suave);
+        }
+
+        .edit-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-info h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--dorado);
+        }
+
+        .user-info p {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .badges-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .badge {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--dorado);
+            color: var(--dorado);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .edit-btn {
+            background: transparent;
+            color: var(--blanco);
+            border: 2px solid var(--dorado);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transicion);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .edit-btn:hover {
+            background: var(--gradiente-dorado);
+            transform: translateY(-2px);
+        }
+
+        /* Grid de información */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Tarjetas */
+        .card {
+            background-color: var(--gris-oscuro);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transicion);
+            height: fit-content;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--sombra);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradiente-dorado);
+        }
+
+        .card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 1.2rem;
+            color: var(--dorado);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .card h2 i {
+            background: var(--gradiente-dorado);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Info personal */
+        .profile-details ul {
+            list-style: none;
+        }
+
+        .profile-details li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .profile-details li:last-child {
+            border-bottom: none;
+        }
+
+        .profile-details li i {
+            color: var(--dorado);
+            width: 20px;
+        }
+
+        /* Estadísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            transition: var(--transicion);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: var(--gradiente-dorado);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Barra de progreso */
+        .progress-container {
+            margin-top: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradiente-dorado);
+            border-radius: 4px;
+            width: 87%;
+        }
+
+        /* ==================== */
+        /* RESPONSIVIDAD */
+        /* ==================== */
+        @media (max-width: 968px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-radius: 0;
+                position: relative;
+                padding: 1rem;
+            }
+            
+            .sidebar nav {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+            
+            .sidebar nav a {
+                white-space: nowrap;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .profile-header {
+                padding: 1.5rem;
+            }
+            
+            .avatar {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .user-info h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar nav {
+                flex-direction: column;
+            }
+            
+            .profile-header {
+                text-align: center;
+                padding: 1rem;
+            }
+            
+            .badges-container {
+                justify-content: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+        }
+
+        /* ==================== */
+        /* ANIMACIONES */
+        /* ==================== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* ==================== */
+        /* ACCESIBILIDAD */
+        /* ==================== */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus visible para navegación con teclado */
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid var(--dorado);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Navegación principal">
+        <h2 class="logo">Fanscore</h2>
+        <nav aria-label="Navegación principal">
+            <a href="#"><i class="fas fa-home"></i> <span>Dashboard</span></a>
+            <a href="#"><i class="fas fa-book"></i> <span>Álbum</span></a>
+            <a href="#"><i class="fas fa-globe"></i> <span>Enciclopedia</span></a>
+            <a href="#"><i class="fas fa-gift"></i> <span>Sobres</span></a>
+            <a href="#" class="active"><i class="fas fa-user"></i> <span>Perfil</span></a>
+        </nav>
+        <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> <span>Cerrar sesión</span></a>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Main Perfil -->
+        <main class="profile-container">
+            <!-- Encabezado Perfil -->
+            <section class="profile-header">
+                <div class="avatar">
+                    <img src="https://i.pinimg.com/736x/d7/b9/f8/d7b9f8cf530d179d952e890140fa60a1.jpg" alt="Foto de perfil de Juan Pérez">
+                    <button class="edit-avatar" aria-label="Editar avatar"><i class="fas fa-camera"></i></button>
+                </div>
+                <div class="user-info">
+                    <h1>Arile Martell</h1>
+                    <p>@Arileraptor</p>
+                    <p>Ubers besto equipo</p>
+                    <button class="edit-btn"><i class="fas fa-edit"></i> Editar perfil</button>
+                </div>
+            </section>
+
+            <!-- Grid de información -->
+            <div class="profile-grid">
+                <!-- Información personal -->
+                <section class="profile-details card">
+                    <h2><i class="fas fa-user"></i> Información personal</h2>
+                    <ul>
+                        <li><i class="fas fa-user"></i> <strong>Nombre completo:</strong> Arile Martell</li>
+                        <li><i class="fas fa-envelope"></i> <strong>Email:</strong> arileraptor@gmail.com</li>
+                        <li><i class="fas fa-calendar"></i> <strong>Fecha de nacimiento:</strong> 06/04/2004</li>
+                        <li><i class="fas fa-futbol"></i> <strong>Equipo favorito:</strong> Club de Fútbol Monterrey</li>
+                    </ul>
+                </section>
+
+                <!-- Estadísticas -->
+                <section class="card">
+                    <h2><i class="fas fa-chart-line"></i> Estadísticas</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">87%</div>
+                            <div class="stat-label">Álbum completado</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">142</div>
+                            <div class="stat-label">Cromos obtenidos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">28</div>
+                            <div class="stat-label">Cromos repetidos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">15</div>
+                            <div class="stat-label">Intercambios</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Barra de progreso añadida -->
+                    <div class="progress-container">
+                        <div class="progress-info">
+                            <span>Progreso del álbum</span>
+                            <span>87%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Pequeña interacción para mejorar la experiencia
+        document.addEventListener('DOMContentLoaded', function() {
+            // Efecto de conteo para las estadísticas
+            const statItems = document.querySelectorAll('.stat-item');
+            
+            statItems.forEach(item => {
+                item.addEventListener('mouseover', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.2)';
+                });
+                
+                item.addEventListener('mouseout', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+            
+            // Efecto para las tarjetas
+            const cards = document.querySelectorAll('.card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseover', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                
+                card.addEventListener('mouseout', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
