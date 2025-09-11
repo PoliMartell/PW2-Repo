@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="album.css">
 </head>
 <body>
-<div class="dashboard">
+    <div class="dashboard">
         <!-- 📌 Sidebar -->
         <aside class="sidebar" aria-label="Navegación principal">
             <h2 class="logo">Fanscore</h2>
@@ -43,7 +43,7 @@
                         <h2 id="banner-heading"><i class="fas fa-book"></i> Mi Álbum de Estampitas</h2>
                         <p>Completa tu colección de estampitas del Mundial 2026</p>
                     </div>
-                    <button id="openPack" aria-label="Abrir sobres del álbum"><i class="fas fa-gift"></i> Abrir Sobres (3)</button>
+                    <button type="button" id="openPack" aria-label="Abrir sobres del álbum"><i class="fas fa-gift"></i> Abrir Sobres (3)</button>
                 </div>
             </section>
             
@@ -247,22 +247,29 @@
     </aside>
     </div>
 
-    <!-- Modal para abrir sobres -->
+    <!-- Modal para abrir sobres - VERSIÓN CORREGIDA -->
     <div class="pack-modal" id="packModal">
         <div class="pack-content">
             <button class="close-modal" id="closeModal">
                 <i class="fas fa-times"></i>
             </button>
             
+            <div class="pack-count">
+                <i class="fas fa-gift"></i> 3 disponibles
+            </div>
+            
             <h2 class="pack-title">¡Sobre de Estampitas!</h2>
+            <p class="pack-subtitle">Has obtenido estas estampitas</p>
             
             <div class="pack-stickers">
                 <div class="pack-sticker" style="--delay: 1">
                     <div class="pack-sticker-top">
                         <i class="fas fa-user"></i>
+                        <span class="player-rarity">★</span>
                     </div>
                     <div class="pack-sticker-bottom">
-                        Messi
+                        <div class="player-name">Lionel Messi</div>
+                        <div class="player-team">Argentina</div>
                     </div>
                 </div>
                 
@@ -271,16 +278,19 @@
                         <i class="fas fa-user"></i>
                     </div>
                     <div class="pack-sticker-bottom">
-                        Neymar
+                        <div class="player-name">Neymar Jr</div>
+                        <div class="player-team">Brasil</div>
                     </div>
                 </div>
                 
                 <div class="pack-sticker" style="--delay: 3">
                     <div class="pack-sticker-top">
                         <i class="fas fa-user"></i>
+                        <span class="player-rarity">★★</span>
                     </div>
                     <div class="pack-sticker-bottom">
-                        Mbappé
+                        <div class="player-name">Kylian Mbappé</div>
+                        <div class="player-team">Francia</div>
                     </div>
                 </div>
                 
@@ -289,53 +299,110 @@
                         <i class="fas fa-user"></i>
                     </div>
                     <div class="pack-sticker-bottom">
-                        Ronaldo
+                        <div class="player-name">Cristiano Ronaldo</div>
+                        <div class="player-team">Portugal</div>
                     </div>
                 </div>
                 
                 <div class="pack-sticker" style="--delay: 5">
                     <div class="pack-sticker-top">
                         <i class="fas fa-user"></i>
+                        <span class="player-rarity">★★★</span>
                     </div>
                     <div class="pack-sticker-bottom">
-                        Modric
+                        <div class="player-name">Luka Modric</div>
+                        <div class="player-team">Croacia</div>
                     </div>
                 </div>
             </div>
             
             <div class="pack-actions">
-                <button class="pack-button primary">Añadir al álbum</button>
-                <button class="pack-button secondary">Cerrar</button>
+                <button class="pack-button primary" id="addToAlbum">
+                    <i class="fas fa-book"></i> Añadir al álbum
+                </button>
+                <button class="pack-button secondary" id="closeModalBtn">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
             </div>
         </div>
     </div>
 
+    
     <script>
-        // Funcionalidad para abrir el modal de sobres
-        document.getElementById('openPack').addEventListener('click', function() {
-            document.getElementById('packModal').classList.add('active');
-        });
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const openPackBtn = document.getElementById('openPack');
+            const packModal = document.getElementById('packModal');
 
-        // Funcionalidad para cerrar el modal
-        document.getElementById('closeModal').addEventListener('click', function() {
-            document.getElementById('packModal').classList.remove('active');
-        });
+            if (openPackBtn && packModal) {
+                openPackBtn.addEventListener('click', function() {
+                    console.log('¡Botón de Abrir Sobres ha sido clickeado!');
+                    packModal.classList.add('active');
 
-        // Cerrar modal al hacer clic fuera del contenido
-        document.getElementById('packModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('active');
+                    // Llamar a las funciones de animación y confeti
+                    createConfetti();
+                    resetStickerAnimations();
+                });
+            } else {
+                console.error("No se encontró el botón 'openPack' o el modal 'packModal' en el documento.");
             }
+
+            // Funcionalidad para cerrar el modal
+            document.getElementById('closeModal').addEventListener('click', function() {
+                document.getElementById('packModal').classList.remove('active');
+            });
+
+            // Cerrar modal al hacer clic en el botón secundario
+            document.getElementById('closeModalBtn').addEventListener('click', function() {
+                document.getElementById('packModal').classList.remove('active');
+            });
+
+            // Cerrar modal al hacer clic fuera del contenido
+            document.getElementById('packModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+
+            // Cerrar modal con la tecla Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    document.getElementById('packModal').classList.remove('active');
+                }
+            });
         });
 
-        // Simular la animación de apertura de estampitas
-        document.querySelectorAll('.pack-sticker').forEach(sticker => {
-            // Simular contenido aleatorio
-            const players = ['Messi', 'Neymar', 'Mbappé', 'Ronaldo', 'Modric', 'Lewandowski', 'De Bruyne', 'Kane'];
-            const randomPlayer = players[Math.floor(Math.random() * players.length)];
-            
-            sticker.querySelector('.pack-sticker-bottom').textContent = randomPlayer;
-        });
+        // Función para crear confeti
+        function createConfetti() {
+            const confettiCount = 100;
+            const confettiContainer = document.createElement('div');
+            confettiContainer.classList.add('confetti-container');
+            document.body.appendChild(confettiContainer);
+
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confettiContainer.appendChild(confetti);
+            }
+
+            // Eliminar el contenedor de confeti después de la animación
+            setTimeout(() => {
+                document.body.removeChild(confettiContainer);
+            }, 5000);
+        }
+
+        // Función para reiniciar las animaciones de las estampitas
+        function resetStickerAnimations() {
+            const stickers = document.querySelectorAll('.pack-sticker');
+            stickers.forEach(sticker => {
+                sticker.style.animation = 'none';
+                sticker.offsetHeight; // Reflow para reiniciar la animación
+                sticker.style.animation = '';
+            });
+        }
     </script>
+
 </body>
 </html>
