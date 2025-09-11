@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Prueba Modal - Estampitas</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  /* estilos mínimos para probar modal */
+  body { font-family: system-ui, Arial; margin:0; padding:20px; background:#111; color:#fff; }
+  button { cursor:pointer; padding:8px 12px; border-radius:8px; border:none; background:#D4AF37; color:#000; font-weight:600; }
+
+  /* Modal base */
+  .modal {
+    display: none; /* oculto por defecto */
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(3px);
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* cuando esté abierto */
+  .modal.open { display: flex; }
+
+  .modal-content {
+    width: min(480px, 92%);
+    background: #fff;
+    color:#111;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(0,0,0,.5);
+    animation: showModal 0.22s ease-out;
+  }
+
+  .close {
+    position: absolute;
+    top:10px;
+    right:12px;
+    font-size:20px;
+    background:none;
+    border:none;
+    cursor:pointer;
+  }
+
+  .stickers { display:flex; justify-content:center; gap:12px; margin-top:12px; }
+  .sticker { font-size:2rem; }
+
+  @keyframes showModal { from { opacity:0; transform: scale(.96); } to { opacity:1; transform: scale(1); } }
+
+  /* Bloqueo scroll cuando modal abierto */
+  body.modal-open { overflow: hidden; }
+</style>
+</head>
+<body>
+
+<h1>Prueba: Abrir sobres</h1>
+<button id="openPack"><i class="fas fa-gift"></i> Abrir Sobres</button>
+
+<!-- Modal -->
+<div id="packModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal-content" role="document">
+    <button class="close" aria-label="Cerrar modal">&times;</button>
+    <h3>🎁 ¡Abriste un sobre!</h3>
+    <p>Aquí aparecerán tus estampitas sorpresa ✨</p>
+    <div class="stickers">
+      <div class="sticker">⭐</div>
+      <div class="sticker">⚽</div>
+      <div class="sticker">🏆</div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const openPackBtn = document.getElementById('openPack');
+  const modal = document.getElementById('packModal');
+
+  if (!openPackBtn) { console.error('No se encontró #openPack'); return; }
+  if (!modal) { console.error('No se encontró #packModal'); return; }
+
+  const closeBtn = modal.querySelector('.close');
+
+  function openModal() {
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    // dar foco al primer elemento interactivo del modal
+    (closeBtn || modal.querySelector('button, a, [tabindex]'))?.focus();
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    openPackBtn.focus();
+  }
+
+  openPackBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+  // clic fuera del contenido
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Esc para cerrar
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+});
+</script>
+</body>
+</html>

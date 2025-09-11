@@ -1,408 +1,257 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Álbum - Fanscore</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="album.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Álbum - Fanscore</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="album.css"/>
 </head>
 <body>
-    <div class="dashboard">
-        <!-- 📌 Sidebar -->
-        <aside class="sidebar" aria-label="Navegación principal">
-            <h2 class="logo">Fanscore</h2>
-            <nav aria-label="Navegación principal">
-                <a href="#"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="#" class="active" aria-current="page"><i class="fas fa-book"></i> Álbum</a>
-                <a href="#"><i class="fas fa-globe"></i> Enciclopedia</a>
-                <a href="#"><i class="fas fa-gift"></i> Sobres</a>
-                <a href="#"><i class="fas fa-cog"></i> Configuración</a>
-            </nav>
-            <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
-        </aside>
+  <div class="dashboard">
+    <!-- 📌 Sidebar -->
+    <aside class="sidebar" aria-label="Navegación principal">
+      <h2 class="logo">Fanscore</h2>
+      <nav aria-label="Navegación principal">
+        <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="album.htm" class="active" aria-current="page"><i class="fas fa-book"></i> Álbum</a>
+        <a href="enciclopedia.html"><i class="fas fa-globe"></i> Enciclopedia</a>
+        <a href="#"><i class="fas fa-gift"></i> Sobres</a>
+        <a href="#"><i class="fas fa-cog"></i> Configuración</a>
+      </nav>
+      <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+    </aside>
+    
+    <!-- 📌 Contenido principal -->
+    <main class="main" id="main-content">
+      <!-- 🔍 Barra de búsqueda y acciones -->
+      <div class="topbar">
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar jugadores, equipos..." />
+        </div>
+        <div class="quick-actions">
+          <button class="action-btn"><i class="fas fa-bell"></i></button>
+          <button class="action-btn"><i class="fas fa-envelope"></i></button>
+        </div>
+      </div>
+      
+      <!-- 🎉 Banner -->
+      <section class="banner" aria-labelledby="banner-heading">
+        <div class="banner-content">
+          <div class="banner-text">
+            <h2 id="banner-heading"><i class="fas fa-book"></i> Mi Álbum de Estampitas</h2>
+            <p>Completa tu colección de estampitas del Mundial 2026</p>
+          </div>
+          <button type="button" id="openPack" aria-label="Abrir sobres del álbum">
+            <i class="fas fa-gift"></i> Abrir Sobres (3)
+          </button>
+        </div>
+      </section>
+
+      <!-- 🎁 Modal para abrir sobres -->
+      <div class="pack-modal" id="packModal">
+        <div class="pack-modal-content">
+          <span class="pack-modal-close" id="closePack">&times;</span>
+          <h2>¡Abriste un sobre! 🎉</h2>
+          <p>Estas son tus estampitas sorpresa:</p>
+          <div class="sticker-cards">
+            <div class="sticker">⭐</div>
+            <div class="sticker">⚽</div>
+            <div class="sticker">🏆</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 📊 Filtros horizontales -->
+      <div class="horizontal-filters">
+        <div class="filter-group">
+          <h4><i class="fas fa-users"></i> Equipos</h4>
+          <div class="filter-options">
+            <label><input type="checkbox" checked> Todos</label>
+            <label><input type="checkbox"> Argentina</label>
+            <label><input type="checkbox"> Brasil</label>
+            <label><input type="checkbox"> Francia</label>
+          </div>
+        </div>
         
-        <!-- 📌 Contenido principal -->
-        <main class="main" id="main-content">
-            <!-- 🔍 Barra de búsqueda y acciones -->
-            <div class="topbar">
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar jugadores, equipos..." />
-                </div>
-                <div class="quick-actions">
-                    <button class="action-btn"><i class="fas fa-bell"></i></button>
-                    <button class="action-btn"><i class="fas fa-envelope"></i></button>
-                </div>
-            </div>
-            
-            <!-- 🎉 Banner -->
-            <section class="banner" aria-labelledby="banner-heading">
-                <div class="banner-content">
-                    <div class="banner-text">
-                        <h2 id="banner-heading"><i class="fas fa-book"></i> Mi Álbum de Estampitas</h2>
-                        <p>Completa tu colección de estampitas del Mundial 2026</p>
-                    </div>
-                    <button type="button" id="openPack" aria-label="Abrir sobres del álbum"><i class="fas fa-gift"></i> Abrir Sobres (3)</button>
-                </div>
-            </section>
-            
-            <!-- 📊 Filtros horizontales -->
-            <div class="horizontal-filters">
-                <div class="filter-group">
-                    <h4><i class="fas fa-users"></i> Equipos</h4>
-                    <div class="filter-options">
-                        <label><input type="checkbox" name="team" checked> Todos</label>
-                        <label><input type="checkbox" name="team"> Argentina</label>
-                        <label><input type="checkbox" name="team"> Brasil</label>
-                        <label><input type="checkbox" name="team"> Francia</label>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <h4><i class="fas fa-crosshairs"></i> Posiciones</h4>
-                    <div class="filter-options">
-                        <label><input type="checkbox" name="position" checked> Todas</label>
-                        <label><input type="checkbox" name="position"> Portero</label>
-                        <label><input type="checkbox" name="position"> Defensa</label>
-                        <label><input type="checkbox" name="position"> Delantero</label>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <h4><i class="fas fa-filter"></i> Estado</h4>
-                    <div class="filter-options">
-                        <label><input type="checkbox" name="status" checked> Todas</label>
-                        <label><input type="checkbox" name="status"> Obtenidas</label>
-                        <label><input type="checkbox" name="status"> Faltantes</label>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 📈 Estadísticas compactas -->
-            <div class="compact-stats">
-                <div class="stat-item">
-                    <h4>Estampitas</h4>
-                    <p>65/100</p>
-                </div>
-                <div class="stat-item">
-                    <h4>Por equipos</h4>
-                    <p>8/10</p>
-                </div>
-                <div class="stat-item">
-                    <h4>Repetidas</h4>
-                    <p>24</p>
-                </div>
-                <div class="stat-item">
-                    <h4>Sobres</h4>
-                    <p>3</p>
-                </div>
-            </div>
-            
-            <!-- 📊 Barra de progreso -->
-            <div class="progress-container">
-                <div class="progress-header">
-                    <h3><i class="fas fa-tasks"></i> Progreso del Álbum</h3>
-                    <span>65% completado</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
-            </div>
-            
-            <!-- 🃏 Grid de estampitas -->
-            <div class="sticker-grid">
-                <!-- Estampitas -->
-                <div class="sticker">
-                    <div class="sticker-number">1</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Lionel Messi</div>
-                        <div class="sticker-team">Argentina</div>
-                    </div>
-                </div>
-                
-                <div class="sticker">
-                    <div class="sticker-number">2</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Neymar Jr</div>
-                        <div class="sticker-team">Brasil</div>
-                    </div>
-                </div>
-                
-                <div class="sticker locked">
-                    <div class="sticker-number">3</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Kylian Mbappé</div>
-                        <div class="sticker-team">Francia</div>
-                    </div>
-                </div>
-                
-                <div class="sticker">
-                    <div class="sticker-number">4</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Cristiano Ronaldo</div>
-                        <div class="sticker-team">Portugal</div>
-                    </div>
-                </div>
-                
-                <div class="sticker locked">
-                    <div class="sticker-number">5</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Luka Modric</div>
-                        <div class="sticker-team">Croacia</div>
-                    </div>
-                </div>
-                
-                <div class="sticker">
-                    <div class="sticker-number">6</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Robert Lewandowski</div>
-                        <div class="sticker-team">Polonia</div>
-                    </div>
-                </div>
-                
-                <div class="sticker">
-                    <div class="sticker-number">7</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Kevin De Bruyne</div>
-                        <div class="sticker-team">Bélgica</div>
-                    </div>
-                </div>
-                
-                <div class="sticker locked">
-                    <div class="sticker-number">8</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Harry Kane</div>
-                        <div class="sticker-team">Inglaterra</div>
-                    </div>
-                </div>
-                
-                <div class="sticker">
-                    <div class="sticker-number">9</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Manuel Neuer</div>
-                        <div class="sticker-team">Alemania</div>
-                    </div>
-                </div>
-                
-                <div class="sticker locked">
-                    <div class="sticker-number">10</div>
-                    <div class="sticker-img">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <div class="sticker-info">
-                        <div class="sticker-name">Luis Suárez</div>
-                        <div class="sticker-team">Uruguay</div>
-                    </div>
-                </div>
-            </div>
-        </main>
+        <div class="filter-group">
+          <h4><i class="fas fa-crosshairs"></i> Posiciones</h4>
+          <div class="filter-options">
+            <label><input type="checkbox" checked> Todas</label>
+            <label><input type="checkbox"> Portero</label>
+            <label><input type="checkbox"> Defensa</label>
+            <label><input type="checkbox"> Delantero</label>
+          </div>
+        </div>
+        
+        <div class="filter-group">
+          <h4><i class="fas fa-filter"></i> Estado</h4>
+          <div class="filter-options">
+            <label><input type="checkbox" checked> Todas</label>
+            <label><input type="checkbox"> Obtenidas</label>
+            <label><input type="checkbox"> Faltantes</label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 📈 Estadísticas compactas -->
+      <div class="compact-stats">
+        <div class="stat-item">
+          <h4>Estampitas</h4>
+          <p>65/100</p>
+        </div>
+        <div class="stat-item">
+          <h4>Por equipos</h4>
+          <p>8/10</p>
+        </div>
+        <div class="stat-item">
+          <h4>Repetidas</h4>
+          <p>24</p>
+        </div>
+        <div class="stat-item">
+          <h4>Sobres</h4>
+          <p>3</p>
+        </div>
+      </div>
+      
+      <!-- 📊 Barra de progreso -->
+      <div class="progress-container">
+        <div class="progress-header">
+          <h3><i class="fas fa-tasks"></i> Progreso del Álbum</h3>
+          <span>65% completado</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress"></div>
+        </div>
+      </div>
+      
+      <div class="sticker-grid">
+        <!-- Estampitas obtenidas -->
+        <div class="sticker">
+          <div class="sticker-number">1</div>
+          <div class="sticker-img">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="sticker-info">
+            <div class="sticker-name">Lionel Messi</div>
+            <div class="sticker-team">Argentina</div>
+          </div>
+        </div>
+        
+        <div class="sticker">
+          <div class="sticker-number">2</div>
+          <div class="sticker-img">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="sticker-info">
+            <div class="sticker-name">Neymar Jr</div>
+            <div class="sticker-team">Brasil</div>
+          </div>
+        </div>
+        
+        <!-- Estampitas bloqueadas -->
+        <div class="sticker locked">
+          <div class="sticker-number">3</div>
+          <div class="sticker-img">
+            <i class="fas fa-lock"></i>
+          </div>
+          <div class="sticker-info">
+            <div class="sticker-name">Kylian Mbappé</div>
+            <div class="sticker-team">Francia</div>
+          </div>
+        </div>
+        
+        <div class="sticker">
+          <div class="sticker-number">4</div>
+          <div class="sticker-img">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="sticker-info">
+            <div class="sticker-name">Cristiano Ronaldo</div>
+            <div class="sticker-team">Portugal</div>
+          </div>
+        </div>
+        
+        <div class="sticker locked">
+          <div class="sticker-number">5</div>
+          <div class="sticker-img">
+            <i class="fas fa-lock"></i>
+          </div>
+          <div class="sticker-info">
+            <div class="sticker-name">Luka Modric</div>
+            <div class="sticker-team">Croacia</div>
+          </div>
+        </div>
+        
+        <div class="sticker">
+          <div class="sticker-number">6</div>
+          <div class="sticker-img">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="sticker-info">
+            <div class="sticker-name">Robert Lewandowski</div>
+            <div class="sticker-team">Polonia</div>
+          </div>
+        </div>
+        
+        <div class="sticker locked">
+          <div class="sticker-number">7</div>
+          <div class="sticker-img">
+            <i class="fas fa-lock"></i>
+          </div>
+          <div class="sticker-info">
+            <div class="sticker-name">Kevin De Bruyne</div>
+            <div class="sticker-team">Bélgica</div>
+          </div>
+        </div>
+        
+        <div class="sticker">
+          <div class="sticker-number">8</div>
+          <div class="sticker-img">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="sticker-info">
+            <div class="sticker-name">Harry Kane</div>
+            <div class="sticker-team">Inglaterra</div>
+          </div>
+        </div>
+        
+    </main>
+    
     <!-- 📌 Perfil lateral derecho -->
     <aside class="profile" aria-labelledby="profile-heading">
-        <h2 id="profile-heading" class="sr-only">Perfil de usuario</h2>
-        <div class="user">
-            <img src="https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg" alt="Avatar de @UsuarioFan" class="avatar">
-            <h3>@UsuarioFan</h3>
-            <p>Nivel: Experto</p>
-        </div>
-        <div class="profile-stats">
-            <p><strong>Álbum:</strong> <span>65% completado</span></p>
-            <p><strong>Cromos:</strong> <span>65/100</span></p>
-            <p><strong>Duplicados:</strong> <span>24</span></p>
-            <p><strong>Puntos:</strong> <span>1,450</span></p>
-        </div>
-        <div class="profile-actions">
-            <button class="profile-btn"><i class="fas fa-user"></i> Mi Perfil</button>
-            <button class="profile-btn"><i class="fas fa-exchange-alt"></i> Intercambios</button>
-            <button class="profile-btn"><i class="fas fa-trophy"></i> Logros</button>
-            <button class="profile-btn"><i class="fas fa-cog"></i> Configuración</button>
-        </div>
+      <h2 id="profile-heading" class="sr-only">Perfil de usuario</h2>
+      <div class="user">
+        <img src="https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg" alt="Avatar" class="avatar">
+        <h3>@UsuarioFan</h3>
+        <p>Nivel: Experto</p>
+      </div>
+      <div class="profile-stats">
+        <p><strong>Álbum:</strong> <span>65% completado</span></p>
+        <p><strong>Cromos:</strong> <span>65/100</span></p>
+        <p><strong>Duplicados:</strong> <span>24</span></p>
+        <p><strong>Puntos:</strong> <span>1,450</span></p>
+      </div>
+      <div class="profile-actions">
+        <button class="profile-btn"><i class="fas fa-user"></i> Mi Perfil</button>
+        <button class="profile-btn"><i class="fas fa-exchange-alt"></i> Intercambios</button>
+        <button class="profile-btn"><i class="fas fa-trophy"></i> Logros</button>
+        <button class="profile-btn"><i class="fas fa-cog"></i> Configuración</button>
+      </div>
     </aside>
-    </div>
+  </div>
 
-    <!-- Modal para abrir sobres - VERSIÓN CORREGIDA -->
-    <div class="pack-modal" id="packModal">
-        <div class="pack-content">
-            <button class="close-modal" id="closeModal">
-                <i class="fas fa-times"></i>
-            </button>
-            
-            <div class="pack-count">
-                <i class="fas fa-gift"></i> 3 disponibles
-            </div>
-            
-            <h2 class="pack-title">¡Sobre de Estampitas!</h2>
-            <p class="pack-subtitle">Has obtenido estas estampitas</p>
-            
-            <div class="pack-stickers">
-                <div class="pack-sticker" style="--delay: 1">
-                    <div class="pack-sticker-top">
-                        <i class="fas fa-user"></i>
-                        <span class="player-rarity">★</span>
-                    </div>
-                    <div class="pack-sticker-bottom">
-                        <div class="player-name">Lionel Messi</div>
-                        <div class="player-team">Argentina</div>
-                    </div>
-                </div>
-                
-                <div class="pack-sticker" style="--delay: 2">
-                    <div class="pack-sticker-top">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="pack-sticker-bottom">
-                        <div class="player-name">Neymar Jr</div>
-                        <div class="player-team">Brasil</div>
-                    </div>
-                </div>
-                
-                <div class="pack-sticker" style="--delay: 3">
-                    <div class="pack-sticker-top">
-                        <i class="fas fa-user"></i>
-                        <span class="player-rarity">★★</span>
-                    </div>
-                    <div class="pack-sticker-bottom">
-                        <div class="player-name">Kylian Mbappé</div>
-                        <div class="player-team">Francia</div>
-                    </div>
-                </div>
-                
-                <div class="pack-sticker" style="--delay: 4">
-                    <div class="pack-sticker-top">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="pack-sticker-bottom">
-                        <div class="player-name">Cristiano Ronaldo</div>
-                        <div class="player-team">Portugal</div>
-                    </div>
-                </div>
-                
-                <div class="pack-sticker" style="--delay: 5">
-                    <div class="pack-sticker-top">
-                        <i class="fas fa-user"></i>
-                        <span class="player-rarity">★★★</span>
-                    </div>
-                    <div class="pack-sticker-bottom">
-                        <div class="player-name">Luka Modric</div>
-                        <div class="player-team">Croacia</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="pack-actions">
-                <button class="pack-button primary" id="addToAlbum">
-                    <i class="fas fa-book"></i> Añadir al álbum
-                </button>
-                <button class="pack-button secondary" id="closeModalBtn">
-                    <i class="fas fa-times"></i> Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
+  <script>
+    const openBtn = document.getElementById("openPack");
+    const modal = document.getElementById("packModal");
+    const closeBtn = document.getElementById("closePack");
 
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const openPackBtn = document.getElementById('openPack');
-            const packModal = document.getElementById('packModal');
-
-            if (openPackBtn && packModal) {
-                openPackBtn.addEventListener('click', function() {
-                    console.log('¡Botón de Abrir Sobres ha sido clickeado!');
-                    packModal.classList.add('active');
-
-                    // Llamar a las funciones de animación y confeti
-                    createConfetti();
-                    resetStickerAnimations();
-                });
-            } else {
-                console.error("No se encontró el botón 'openPack' o el modal 'packModal' en el documento.");
-            }
-
-            // Funcionalidad para cerrar el modal
-            document.getElementById('closeModal').addEventListener('click', function() {
-                document.getElementById('packModal').classList.remove('active');
-            });
-
-            // Cerrar modal al hacer clic en el botón secundario
-            document.getElementById('closeModalBtn').addEventListener('click', function() {
-                document.getElementById('packModal').classList.remove('active');
-            });
-
-            // Cerrar modal al hacer clic fuera del contenido
-            document.getElementById('packModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                }
-            });
-
-            // Cerrar modal con la tecla Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    document.getElementById('packModal').classList.remove('active');
-                }
-            });
-        });
-
-        // Función para crear confeti
-        function createConfetti() {
-            const confettiCount = 100;
-            const confettiContainer = document.createElement('div');
-            confettiContainer.classList.add('confetti-container');
-            document.body.appendChild(confettiContainer);
-
-            for (let i = 0; i < confettiCount; i++) {
-                const confetti = document.createElement('div');
-                confetti.classList.add('confetti');
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.animationDelay = Math.random() * 3 + 's';
-                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                confettiContainer.appendChild(confetti);
-            }
-
-            // Eliminar el contenedor de confeti después de la animación
-            setTimeout(() => {
-                document.body.removeChild(confettiContainer);
-            }, 5000);
-        }
-
-        // Función para reiniciar las animaciones de las estampitas
-        function resetStickerAnimations() {
-            const stickers = document.querySelectorAll('.pack-sticker');
-            stickers.forEach(sticker => {
-                sticker.style.animation = 'none';
-                sticker.offsetHeight; // Reflow para reiniciar la animación
-                sticker.style.animation = '';
-            });
-        }
-    </script>
-
+    openBtn.addEventListener("click", () => modal.classList.add("active"));
+    closeBtn.addEventListener("click", () => modal.classList.remove("active"));
+    window.addEventListener("click", (e) => {
+      if (e.target === modal) modal.classList.remove("active");
+    });
+  </script>
 </body>
 </html>
