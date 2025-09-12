@@ -3,61 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fanscore</title>
-   
+    <title>Fanscore - Enciclopedia</title>
+    <link rel="stylesheet" href="enciclopedia.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-    <!-- 📌 Sidebar -->
-        <aside class="sidebar" aria-label="Navegación principal">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Navegación principal">
         <h2 class="logo">Fanscore</h2>
         <nav aria-label="Navegación principal">
-            <a href="#" class="active" aria-current="page"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="#"><i class="fas fa-book"></i> Álbum</a>
-            <a href="#"><i class="fas fa-globe"></i> Enciclopedia</a>
-            <a href="#"><i class="fas fa-gift"></i> Sobres</a>
-            <a href="#"><i class="fas fa-cog"></i> Configuración</a>
+            <a href="#"><i class="fas fa-home"></i><span> Dashboard</span></a>
+            <a href="#"><i class="fas fa-book"></i><span> Álbum</span></a>
+            <a href="#" class="active"><i class="fas fa-globe"></i><span> Enciclopedia</span></a>
+            <a href="#"><i class="fas fa-gift"></i><span> Sobres</span></a>
+            <a href="#"><i class="fas fa-cog"></i><span> Configuración</span></a>
         </nav>
-        <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
-        </aside>
-        <!-- 📖 Contenido principal -->
+        <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i><span> Cerrar sesión</span></a>
+    </aside>
+
+    <!-- Contenido Enciclopedia -->
     <main class="main-content">
-        <header class="header">
-            <h1>Enciclopedia Mundial 2026</h1>
-            <p>Descubre a las estrellas del torneo</p>
-            <div class="particles" id="particles"></div>
+        <header class="page-header">
+            <h1>Enciclopedia de Jugadores</h1>
+            <p>Explora y descubre las estadísticas de tus jugadores favoritos</p>
         </header>
-        <!-- 📦 Cards -->
-        <section class="players-section" aria-labelledby="players-heading">
-            <h2 id="players-heading">Jugadores Destacados</h2>
-            <div class="cards">
-            <!-- Imagen de Messi corregida (usando placeholder) -->
-            <div class="card" tabindex="0" onclick="openModal('Lionel Messi','https://i.pinimg.com/736x/a1/64/66/a1646641c0dd7b422448e1932d4dfee9.jpg','🇦🇷 Argentina','Delantero','36 años','Inter Miami', 93)">
-                <img src="https://i.pinimg.com/736x/a1/64/66/a1646641c0dd7b422448e1932d4dfee9.jpg" alt="Lionel Messi">
-                <h3>Lionel Messi</h3>
+        
+        <!-- Barra de búsqueda -->
+        <div class="search-bar">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Buscar jugador..." aria-label="Buscar jugador">
+                <button id="searchButton" aria-label="Buscar"><i class="fas fa-arrow-right"></i></button>
             </div>
-            <div class="card" tabindex="0" onclick="openModal('Kylian Mbappé','https://i.pinimg.com/736x/a1/10/d9/a110d992ff21fc4512e45508ec1a1be3.jpg','🇫🇷 Francia','Delantero','25 años','Real Madrid', 91)">
-                <img src="https://i.pinimg.com/736x/a1/10/d9/a110d992ff21fc4512e45508ec1a1be3.jpg" alt="Kylian Mbappé">
-                <h3>Kylian Mbappé</h3>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-container">
+            <h3>Filtrar jugadores</h3>
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="teamFilter">Equipo</label>
+                    <select id="teamFilter" aria-label="Filtrar por equipo">
+                        <option value="">Todos los equipos</option>
+                        <option value="barcelona">Barcelona</option>
+                        <option value="real-madrid">Real Madrid</option>
+                        <option value="psg">PSG</option>
+                        <option value="manchester-city">Manchester City</option>
+                        <option value="liverpool">Liverpool</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="countryFilter">País</label>
+                    <select id="countryFilter" aria-label="Filtrar por país">
+                        <option value="">Todos los países</option>
+                        <option value="argentina">Argentina</option>
+                        <option value="portugal">Portugal</option>
+                        <option value="francia">Francia</option>
+                        <option value="brasil">Brasil</option>
+                        <option value="españa">España</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="positionFilter">Posición</label>
+                    <select id="positionFilter" aria-label="Filtrar por posición">
+                        <option value="">Todas las posiciones</option>
+                        <option value="portero">Portero</option>
+                        <option value="defensa">Defensa</option>
+                        <option value="medio">Mediocampista</option>
+                        <option value="delantero">Delantero</option>
+                    </select>
+                </div>
+
+                <button id="resetFilters" class="reset-btn">
+                    <i class="fas fa-redo"></i> Restablecer
+                </button>
             </div>
-            <div class="card" tabindex="0" onclick="openModal('Cristiano Ronaldo','https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Cristiano+Ronaldo','🇵🇹 Portugal','Delantero','39 años','Al Nassr', 88)">
-                <img src="https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Cristiano+Ronaldo" alt="Cristiano Ronaldo">
-                <h3>Cristiano Ronaldo</h3>
+        </div>
+
+
+        <!-- Tarjetas (solo foto y nombre) -->
+        <section class="cards-container" id="playersContainer">
+            <!-- Messi -->
+            <div class="card" data-player="messi" data-team="psg" data-country="argentina" data-position="delantero">
+                <div class="card-badge">93</div>
+                <div class="card-image">
+                    <img src="https://i.pinimg.com/736x/f0/ee/49/f0ee4946471fcaef678fa207553920d7.jpg" alt="Lionel Messi">
+                    <div class="card-overlay">
+                        <div class="card-team">PSG</div>
+                        <div class="card-country">Argentina</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <h3>Lionel Messi</h3>
+                    <p class="card-position">Delantero</p>
+                </div>
             </div>
-            <div class="card" tabindex="0" onclick="openModal('Erling Haaland','https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Erling+Haaland','🇳🇴 Noruega','Delantero','23 años','Manchester City', 90)">
-                <img src="https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Erling+Haaland" alt="Erling Haaland">
-                <h3>Erling Haaland</h3>
+
+            <!-- Cristiano -->
+            <div class="card" data-player="cristiano" data-team="real-madrid" data-country="portugal" data-position="delantero">
+                <div class="card-badge">92</div>
+                <div class="card-image">
+                    <img src="https://i.pinimg.com/736x/97/8d/fe/978dfe2eed24660a344f07c8784065c8.jpg" alt="Cristiano Ronaldo">
+                    <div class="card-overlay">
+                        <div class="card-team">Real Madrid</div>
+                        <div class="card-country">Portugal</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <h3>Cristiano Ronaldo</h3>
+                    <p class="card-position">Delantero</p>
+                </div>
             </div>
-            <div class="card" tabindex="0" onclick="openModal('Kevin De Bruyne','https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Kevin+De+Bruyne','🇧🇪 Bélgica','Centrocampista','32 años','Manchester City', 89)">
-                <img src="https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Kevin+De+Bruyne" alt="Kevin De Bruyne">
-                <h3>Kevin De Bruyne</h3>
+
+            <!-- Mbappe -->
+            <div class="card" data-player="mbappe" data-team="psg" data-country="francia" data-position="delantero">
+                <div class="card-badge">91</div>
+                <div class="card-image">
+                    <img src="https://i.pinimg.com/736x/12/6b/a1/126ba187a5ac47712556da6bea570429.jpg" alt="Kylian Mbappé">
+                    <div class="card-overlay">
+                        <div class="card-team">PSG</div>
+                        <div class="card-country">Francia</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <h3>Kylian Mbappé</h3>
+                    <p class="card-position">Delantero</p>
+                </div>
             </div>
-            <div class="card" tabindex="0" onclick="openModal('Vinicius Jr','https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Vinicius+Jr','🇧🇷 Brasil','Delantero','23 años','Real Madrid', 87)">
-                <img src="https://via.placeholder.com/400x500/1A1A1A/00E0C7?text=Vinicius+Jr" alt="Vinicius Jr">
-                <h3>Vinicius Jr</h3>
+
+            <!-- Neymar -->
+            <div class="card" data-player="neymar" data-team="psg" data-country="brasil" data-position="delantero">
+                <div class="card-badge">89</div>
+                <div class="card-image">
+                    <img src="https://i.pinimg.com/736x/cd/b0/d7/cdb0d72d2a556da27688275141f01b5c.jpg" alt="Neymar Jr">
+                    <div class="card-overlay">
+                        <div class="card-team">PSG</div>
+                        <div class="card-country">Brasil</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <h3>Neymar Jr</h3>
+                    <p class="card-position">Delantero</p>
+                </div>
             </div>
+
+            <!-- Modric -->
+            <div class="card" data-player="modric" data-team="real-madrid" data-country="croacia" data-position="medio">
+                <div class="card-badge">88</div>
+                <div class="card-image">
+                    <img src="https://i.pinimg.com/736x/c7/5b/63/c75b63a6b5d5bd3ccba540c723f37d6d.jpg" alt="Luka Modrić">
+                    <div class="card-overlay">
+                        <div class="card-team">Real Madrid</div>
+                        <div class="card-country">Croacia</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <h3>Luka Modrić</h3>
+                    <p class="card-position">Mediocampista</p>
+                </div>
             </div>
         </section>
+
+        <!-- Mensaje cuando no hay resultados -->
+        <div id="noResults" class="no-results" style="display: none;">
+            <div class="no-results-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h3>No se encontraron jugadores</h3>
+            <p>Intenta ajustar los filtros o términos de búsqueda</p>
+            <button id="resetSearch" class="reset-btn">Restablecer búsqueda</button>
+        </div>
     </main>
 
+    <!-- Modal con estilo de ficha -->
+    <div id="playerModal" class="modal">
+        <div class="modal-content player-card">
+            <span class="close">&times;</span>
+            <div id="modal-body">
+                <!-- Aquí cargaremos la info del jugador -->
+            </div>
+        </div>
+    </div>
 
+    <script src="enciclopedia.js"></script>
 </body>
+</html>
