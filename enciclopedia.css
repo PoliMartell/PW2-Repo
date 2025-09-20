@@ -34,12 +34,11 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 240px;
+  width: 220px;
   position: sticky;
   top: 0;
   transition: var(--transicion);
   box-shadow: var(--sombra);
-  border-radius: 0 var(--border-radius) var(--border-radius) 0;
 }
 
 .logo {
@@ -48,7 +47,6 @@ body {
   margin-bottom: 2rem;
   text-align: center;
   color: var(--dorado);
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
 }
 
 .sidebar nav {

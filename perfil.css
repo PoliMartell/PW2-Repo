@@ -107,15 +107,6 @@ pre {
     margin-bottom: 15px;
 }
 
-.code-tab {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-light);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: var(--transicion);
-}
 
 .code-tab.active {
     background: var(--gradiente-dorado);
@@ -137,7 +128,6 @@ pre {
     position: relative;
     transition: var(--transicion);
     box-shadow: var(--sombra);
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
 }
 
 .logo {
@@ -163,7 +153,18 @@ pre {
     display: flex;
     align-items: center;
     gap: 0.8rem;
+    font-size: 1rem;
 }
+
+.sidebar nav a i {
+    font-size: 1.2em;
+    color: var(--blanco);
+}
+
+.sidebar nav a span {
+    display: inline;
+}
+
 
 .sidebar nav a:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -174,7 +175,7 @@ pre {
     background: var(--gradiente);
     color: var(--blanco);
     box-shadow: 0 0 12px rgba(229, 37, 59, 0.5);
-    border-color: var(--rojo);
+    border: 1px solid var(--rojo);
 }
 
 .logout {
