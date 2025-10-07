@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro - FanScore</title>
     <link rel="stylesheet" href="registro.css">
-    <!-- <link rel="stylesheet" href="login.css"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- VUE.JS -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         .fade-out {
             animation: fadeOut 0.7s forwards;
@@ -16,6 +17,40 @@
                 opacity: 0;
                 transform: scale(0.98);
             }
+        }
+        /* Estilos Vue */
+        .loading {
+            opacity: 0.7;
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .error-message {
+            color: #E5253B;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        .success-message {
+            color: #009739;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        .input-box input.error {
+            border-color: #E5253B !important;
+            box-shadow: 0 0 0 2px rgba(229, 37, 59, 0.2) !important;
+        }
+        .input-box input.success {
+            border-color: #009739 !important;
+            box-shadow: 0 0 0 2px rgba(0, 151, 57, 0.2) !important;
+        }
+        .success-icon {
+            color: #009739 !important;
+        }
+        .error-icon {
+            color: #E5253B !important;
         }
         /* Estilo visual para input file */
         .input-box input[type="file"] {
@@ -46,180 +81,429 @@
         .input-box input[type="file"]:hover::-webkit-file-upload-button {
             background: #c41a2d;
         }
-        .input-box input[type="file"]::-ms-browse {
-            background: var(--rojo);
-            color: var(--blanco);
-            border-radius: 8px;
-        }
-        .flip-out {
-            animation: flipOut 0.7s forwards;
-        }
-        @keyframes flipOut {
-            to {
-                opacity: 0;
-                transform: perspective(600px) rotateY(60deg) scale(0.98);
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="particles" id="particles"></div>
-    <div class="container">
-        <!-- Panel izquierdo -->
-        <div class="left">
-            <div class="left-content">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <img src="Images/fanscore.png" alt="FanScore Logo" style="height: 65px;">
+    <!-- CONTENEDOR VUE -->
+    <div id="app">
+        <div class="particles" id="particles"></div>
+        <div class="container" :class="{ 'loading': loading }">
+            <!-- Panel izquierdo -->
+            <div class="left">
+                <div class="left-content">
+                    <div class="logo">
+                        <div class="logo-icon">
+                            <img src="Images/fanscore.png" alt="FanScore Logo" style="height: 65px;">
+                        </div>
+                        <div class="logo-text">FanScore</div>
                     </div>
-                    <div class="logo-text">FanScore</div>
+                    <h2>¡Únete a la comunidad FanScore!</h2>
+                    <p>Regístrate y vive la pasión del fútbol con millones de aficionados en todo el mundo.</p>
                 </div>
-                <h2>¡Únete a la comunidad FanScore!</h2>
-                <p>Regístrate y vive la pasión del fútbol con millones de aficionados en todo el mundo.</p>
+            </div>
+            <!-- Panel derecho -->
+            <div class="right">
+                <div class="right-content">
+                    <div>
+                        <h1>Registro</h1>
+                        <p>Crea tu cuenta para acceder a recursos exclusivos.</p>
+                    </div>
+                    
+                    <!-- NOMBRE COMPLETO -->
+                    <div class="input-box">
+                        <input 
+                            type="text" 
+                            placeholder="Nombre completo" 
+                            v-model="form.fullname"
+                            @blur="validateField('fullname')"
+                            @input="validateField('fullname')"
+                            @keyup.enter="handleRegister"
+                            :class="{ 
+                                'error': errors.fullname,
+                                'success': !errors.fullname && form.fullname 
+                            }"
+                        >
+                        <i class="fas fa-user" :class="{ 
+                            'success-icon': !errors.fullname && form.fullname,
+                            'error-icon': errors.fullname 
+                        }"></i>
+                    </div>
+                    <small class="error-message" v-if="errors.fullname">
+                        {{ errors.fullname }}
+                    </small>
+                    <small class="success-message" v-else-if="form.fullname && !errors.fullname">
+                        ✅ Nombre válido
+                    </small>
+                    
+                    <!-- EMAIL -->
+                    <div class="input-box">
+                        <input 
+                            type="email" 
+                            placeholder="Email" 
+                            v-model="form.email"
+                            @blur="validateField('email')"
+                            @input="validateField('email')"
+                            @keyup.enter="handleRegister"
+                            :class="{ 
+                                'error': errors.email,
+                                'success': !errors.email && form.email 
+                            }"
+                        >
+                        <i class="fas fa-envelope" :class="{ 
+                            'success-icon': !errors.email && form.email,
+                            'error-icon': errors.email 
+                        }"></i>
+                    </div>
+                    <small class="error-message" v-if="errors.email">
+                        {{ errors.email }}
+                    </small>
+                    <small class="success-message" v-else-if="form.email && !errors.email">
+                        ✅ Email válido
+                    </small>
+                    
+                    <!-- USUARIO -->
+                    <div class="input-box">
+                        <input 
+                            type="text" 
+                            placeholder="Usuario" 
+                            v-model="form.username"
+                            @blur="validateField('username')"
+                            @input="validateField('username')"
+                            @keyup.enter="handleRegister"
+                            :class="{ 
+                                'error': errors.username,
+                                'success': !errors.username && form.username 
+                            }"
+                        >
+                        <i class="fas fa-user-circle" :class="{ 
+                            'success-icon': !errors.username && form.username,
+                            'error-icon': errors.username 
+                        }"></i>
+                    </div>
+                    <small class="error-message" v-if="errors.username">
+                        {{ errors.username }}
+                    </small>
+                    <small class="success-message" v-else-if="form.username && !errors.username">
+                        ✅ Usuario válido
+                    </small>
+                    
+                    <!-- CONTRASEÑA -->
+                    <div class="input-box">
+                        <input 
+                            type="password" 
+                            placeholder="Contraseña" 
+                            v-model="form.password"
+                            @blur="validateField('password')"
+                            @input="validateField('password')"
+                            @keyup.enter="handleRegister"
+                            :class="{ 
+                                'error': errors.password,
+                                'success': !errors.password && form.password 
+                            }"
+                        >
+                        <i class="fas fa-lock" :class="{ 
+                            'success-icon': !errors.password && form.password,
+                            'error-icon': errors.password 
+                        }"></i>
+                    </div>
+                    <small class="error-message" v-if="errors.password">
+                        {{ errors.password }}
+                    </small>
+                    <small class="success-message" v-else-if="form.password && !errors.password">
+                        ✅ Contraseña segura
+                    </small>
+                    
+                    <!-- CONFIRMAR CONTRASEÑA -->
+                    <div class="input-box">
+                        <input 
+                            type="password" 
+                            placeholder="Confirmar contraseña" 
+                            v-model="form.confirmPassword"
+                            @blur="validateField('confirmPassword')"
+                            @input="validateField('confirmPassword')"
+                            @keyup.enter="handleRegister"
+                            :class="{ 
+                                'error': errors.confirmPassword,
+                                'success': !errors.confirmPassword && form.confirmPassword && form.password === form.confirmPassword 
+                            }"
+                        >
+                        <i class="fas fa-lock" :class="{ 
+                            'success-icon': !errors.confirmPassword && form.confirmPassword && form.password === form.confirmPassword,
+                            'error-icon': errors.confirmPassword 
+                        }"></i>
+                    </div>
+                    <small class="error-message" v-if="errors.confirmPassword">
+                        {{ errors.confirmPassword }}
+                    </small>
+                    <small class="success-message" v-else-if="form.confirmPassword && !errors.confirmPassword && form.password === form.confirmPassword">
+                        ✅ Contraseñas coinciden
+                    </small>
+                    
+                    <!-- FOTO DE PERFIL -->
+                    <div class="input-box">
+                        <input 
+                            type="file" 
+                            id="profilePic" 
+                            accept="image/*" 
+                            @change="handleImageUpload"
+                            style="padding: 8px 0; background: none; color: var(--blanco);"
+                        >
+                        <i class="fas fa-image"></i>
+                    </div>
+                    
+                    <!-- VISTA PREVIA DE IMAGEN -->
+                    <div id="preview" style="text-align:center; margin-bottom:10px;">
+                        <img v-if="imagePreview" :src="imagePreview" alt="Foto de perfil" style="max-width:100px; max-height:100px; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+                    </div>
+                    
+                    <!-- BOTÓN REGISTRARSE -->
+                    <button class="btn" @click="handleRegister" :disabled="loading || !isFormValid">
+                        <span v-if="loading">Registrando...</span>
+                        <span v-else>Registrarse</span>
+                    </button>
+                    
+                    <div class="divider">
+                        <span>o continuar con</span>
+                    </div>
+                    
+                    <button class="btn google-btn" @click="handleGoogleRegister">
+                        <i class="fab fa-google google-icon"></i> Google
+                    </button>
+                    
+                    <div class="signup">
+                        ¿Ya tienes una cuenta? <a href="#" @click.prevent="goToLogin">Inicia sesión</a>
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- Panel derecho -->
-        <div class="right">
-            <div class="right-content">
-                <div>
-                    <h1>Registro</h1>
-                    <p>Crea tu cuenta para acceder a recursos exclusivos.</p>
-                </div>
-                <div class="input-box">
-                    <input type="text" placeholder="Nombre completo" id="fullname">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="input-box">
-                    <input type="email" placeholder="Email" id="email">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div class="input-box">
-                    <input type="text" placeholder="Usuario" id="username">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-                <div class="input-box">
-                    <input type="password" placeholder="Contraseña" id="password">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <div class="input-box">
-                    <input type="password" placeholder="Confirmar contraseña" id="confirmPassword">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <div class="input-box">
-                    <input type="file" id="profilePic" accept="image/*" style="padding: 8px 0; background: none; color: var(--blanco);">
-                    <i class="fas fa-image"></i>
-                </div>
-                <div id="preview" style="text-align:center; margin-bottom:10px;"></div>
-                <button class="btn" id="registerBtn">Registrarse</button>
-                <div class="divider">
-                    <span>o continuar con</span>
-                </div>
-                <button class="btn google-btn">
-                    <i class="fab fa-google google-icon"></i> Google
-                </button>
-                <div class="signup">
-                    ¿Ya tienes una cuenta? <a href="#" id="goToLogin">Inicia sesión</a>
-                </div>
-            </div>
+        
+        <!-- NOTIFICACIÓN -->
+        <div class="notification" 
+             :class="{ 'show': notification.show }" 
+             :style="{ background: notification.isError ? '#E5253B' : '#009739' }">
+            {{ notification.message }}
         </div>
     </div>
-    <div class="notification" id="notification"></div>
+
     <script>
-        // Crear partículas para el fondo
-        function createParticles() {
-            const container = document.getElementById('particles');
-            const particleCount = 30;
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                const size = Math.random() * 15 + 5;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                const posX = Math.random() * 100;
-                const posY = Math.random() * 100;
-                particle.style.left = `${posX}%`;
-                particle.style.top = `${posY}%`;
-                const opacity = Math.random() * 0.3 + 0.1;
-                particle.style.background = `rgba(255, 255, 255, ${opacity})`;
-                const delay = Math.random() * 5;
-                particle.style.animationDelay = `${delay}s`;
-                container.appendChild(particle);
-            }
-        }
-        // Mostrar notificación
-        function showNotification(message, isError = false) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.background = isError ? 'var(--rojo)' : 'var(--verde)';
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-        // Validar formulario de registro
-        function validateRegister() {
-            const fullname = document.getElementById('fullname').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            if (!fullname) {
-                showNotification('Por favor ingresa tu nombre completo', true);
-                return false;
-            }
-            if (!email) {
-                showNotification('Por favor ingresa tu email', true);
-                return false;
-            }
-            if (!username) {
-                showNotification('Por favor ingresa un usuario', true);
-                return false;
-            }
-            if (!password) {
-                showNotification('Por favor ingresa una contraseña', true);
-                return false;
-            }
-            if (password !== confirmPassword) {
-                showNotification('Las contraseñas no coinciden', true);
-                return false;
-            }
-            showNotification('¡Registro exitoso!');
-            return true;
-        }
-        // Vista previa de imagen
-        document.getElementById('profilePic').addEventListener('change', function(e) {
-            const preview = document.getElementById('preview');
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    preview.innerHTML = `<img src='${ev.target.result}' alt='Foto de perfil' style='max-width:100px; max-height:100px; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,0.15);'>`;
-                };
-                reader.readAsDataURL(file);
-            } else {
-                preview.innerHTML = '';
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            createParticles();
-            document.getElementById('registerBtn').addEventListener('click', validateRegister);
-            const inputs = document.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        validateRegister();
-                    }
+        const { createApp, ref, reactive, onMounted, computed } = Vue;
+        
+        createApp({
+            setup() {
+                // ESTADO REACTIVO
+                const form = reactive({
+                    fullname: '',
+                    email: '',
+                    username: '',
+                    password: '',
+                    confirmPassword: ''
                 });
-            });
-            // Transición fade-out al navegar a login
-            document.getElementById('goToLogin').addEventListener('click', function(e) {
-                e.preventDefault();
-                document.body.classList.add('fade-out');
-                setTimeout(function() {
-                    window.location.href = 'Login.html';
-                }, 650);
-            });
-        });
+                
+                const errors = reactive({});
+                const loading = ref(false);
+                const imagePreview = ref('');
+                
+                const notification = reactive({
+                    show: false,
+                    message: '',
+                    isError: false
+                });
+
+                // COMPUTED PROPERTY para validar si el formulario es válido
+                const isFormValid = computed(() => {
+                    return form.fullname && 
+                           form.email && 
+                           form.username && 
+                           form.password && 
+                           form.confirmPassword && 
+                           Object.keys(errors).length === 0 &&
+                           form.password === form.confirmPassword;
+                });
+                
+                // MÉTODOS
+                const showNotification = (message, isError = false) => {
+                    notification.message = message;
+                    notification.isError = isError;
+                    notification.show = true;
+                    
+                    setTimeout(() => {
+                        notification.show = false;
+                    }, 3000);
+                };
+                
+                const isValidEmail = (email) => {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return emailRegex.test(email);
+                };
+                
+                // VALIDACIÓN EN TIEMPO REAL
+                const validateField = (fieldName) => {
+                    if (fieldName === 'fullname') {
+                        if (!form.fullname.trim()) {
+                            errors.fullname = 'Por favor ingresa tu nombre completo';
+                        } else if (form.fullname.trim().length < 2) {
+                            errors.fullname = 'El nombre debe tener al menos 2 caracteres';
+                        } else {
+                            delete errors.fullname;
+                        }
+                    }
+                    
+                    if (fieldName === 'email') {
+                        if (!form.email.trim()) {
+                            errors.email = 'Por favor ingresa tu email';
+                        } else if (!isValidEmail(form.email)) {
+                            errors.email = 'Por favor ingresa un email válido';
+                        } else {
+                            delete errors.email;
+                        }
+                    }
+                    
+                    if (fieldName === 'username') {
+                        if (!form.username.trim()) {
+                            errors.username = 'Por favor ingresa un usuario';
+                        } else if (form.username.length < 3) {
+                            errors.username = 'El usuario debe tener al menos 3 caracteres';
+                        } else if (!/^[a-zA-Z0-9_]+$/.test(form.username)) {
+                            errors.username = 'El usuario solo puede contener letras, números y guiones bajos';
+                        } else {
+                            delete errors.username;
+                        }
+                    }
+                    
+                    if (fieldName === 'password') {
+                        if (!form.password) {
+                            errors.password = 'Por favor ingresa una contraseña';
+                        } else if (form.password.length < 6) {
+                            errors.password = 'La contraseña debe tener al menos 6 caracteres';
+                        } else {
+                            delete errors.password;
+                        }
+                        
+                        // También validar confirmación cuando cambia la contraseña
+                        if (form.confirmPassword) {
+                            validateField('confirmPassword');
+                        }
+                    }
+                    
+                    if (fieldName === 'confirmPassword') {
+                        if (!form.confirmPassword) {
+                            errors.confirmPassword = 'Por favor confirma tu contraseña';
+                        } else if (form.password !== form.confirmPassword) {
+                            errors.confirmPassword = 'Las contraseñas no coinciden';
+                        } else {
+                            delete errors.confirmPassword;
+                        }
+                    }
+                };
+                
+                const handleRegister = async () => {
+                    // Validar todos los campos antes de enviar
+                    validateField('fullname');
+                    validateField('email');
+                    validateField('username');
+                    validateField('password');
+                    validateField('confirmPassword');
+                    
+                    if (Object.keys(errors).length > 0) {
+                        showNotification('❌ Por favor corrige los errores en el formulario', true);
+                        return;
+                    }
+                    
+                    loading.value = true;
+                    
+                    try {
+                        // Simular llamada a API
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                        // Simulación de registro exitoso
+                        showNotification('✅ ¡Registro exitoso! Bienvenido a FanScore', false);
+                        
+                        // Simular redirección después de 2 segundos
+                        setTimeout(() => {
+                            // window.location.href = 'dashboard.html';
+                            console.log('Redirigiendo al dashboard...');
+                        }, 2000);
+                        
+                    } catch (error) {
+                        showNotification('❌ Error en el registro. Intenta nuevamente.', true);
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                const handleImageUpload = (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            imagePreview.value = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        imagePreview.value = '';
+                    }
+                };
+                
+                const handleGoogleRegister = () => {
+                    showNotification('Registro con Google en desarrollo', false);
+                };
+                
+                const goToLogin = () => {
+                    document.body.classList.add('fade-out');
+                    setTimeout(() => {
+                        window.location.href = 'Login.html';
+                    }, 650);
+                };
+                
+                // PARTÍCULAS
+                const createParticles = () => {
+                    const container = document.getElementById('particles');
+                    if (!container) return;
+                    
+                    const particleCount = 30;
+                    
+                    for (let i = 0; i < particleCount; i++) {
+                        const particle = document.createElement('div');
+                        particle.classList.add('particle');
+                        
+                        const size = Math.random() * 15 + 5;
+                        particle.style.width = `${size}px`;
+                        particle.style.height = `${size}px`;
+                        
+                        const posX = Math.random() * 100;
+                        const posY = Math.random() * 100;
+                        particle.style.left = `${posX}%`;
+                        particle.style.top = `${posY}%`;
+                        
+                        const opacity = Math.random() * 0.3 + 0.1;
+                        particle.style.background = `rgba(255, 255, 255, ${opacity})`;
+                        
+                        const delay = Math.random() * 5;
+                        particle.style.animationDelay = `${delay}s`;
+                        
+                        container.appendChild(particle);
+                    }
+                };
+                
+                onMounted(() => {
+                    createParticles();
+                });
+                
+                return {
+                    form,
+                    errors,
+                    loading,
+                    imagePreview,
+                    notification,
+                    isFormValid,
+                    validateField,
+                    handleRegister,
+                    handleImageUpload,
+                    handleGoogleRegister,
+                    goToLogin
+                };
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>
