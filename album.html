@@ -5,253 +5,345 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Álbum - Fanscore</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <link rel="stylesheet" href="album.css"/>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="album.css" />
 </head>
 <body>
-  <div class="dashboard">
-    <!-- 📌 Sidebar -->
-    <aside class="sidebar" aria-label="Navegación principal">
-      <h2 class="logo">Fanscore</h2>
-      <nav aria-label="Navegación principal">
-        <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="album.htm" class="active" aria-current="page"><i class="fas fa-book"></i> Álbum</a>
-        <a href="enciclopedia.html"><i class="fas fa-globe"></i> Enciclopedia</a>
-        <a href="#"><i class="fas fa-gift"></i> Sobres</a>
-        <a href="#"><i class="fas fa-cog"></i> Configuración</a>
-      </nav>
-      <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
-    </aside>
-    
-    <!-- 📌 Contenido principal -->
-    <main class="main" id="main-content">
-      <!-- 🔍 Barra de búsqueda y acciones -->
-      <div class="topbar">
-        <div class="search-container">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Buscar jugadores, equipos..." />
-        </div>
-        <div class="quick-actions">
-          <button class="action-btn"><i class="fas fa-bell"></i></button>
-          <button class="action-btn"><i class="fas fa-envelope"></i></button>
-        </div>
-      </div>
+  <div id="app">
+    <div class="dashboard">
+      <!-- 📌 Sidebar -->
+      <aside class="sidebar" aria-label="Navegación principal">
+        <h2 class="logo">Fanscore</h2>
+        <nav aria-label="Navegación principal">
+          <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+          <a href="album.htm" class="active" aria-current="page"><i class="fas fa-book"></i> Álbum</a>
+          <a href="enciclopedia.html"><i class="fas fa-globe"></i> Enciclopedia</a>
+          <a href="#"><i class="fas fa-gift"></i> Sobres</a>
+          <a href="#"><i class="fas fa-cog"></i> Configuración</a>
+        </nav>
+        <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+      </aside>
       
-      <!-- 🎉 Banner -->
-      <section class="banner" aria-labelledby="banner-heading">
-        <div class="banner-content">
-          <div class="banner-text">
-            <h2 id="banner-heading"><i class="fas fa-book"></i> Mi Álbum de Estampitas</h2>
-            <p>Completa tu colección de estampitas del Mundial 2026</p>
+      <!-- 📌 Contenido principal -->
+      <main class="main" id="main-content">
+        <!-- 🔍 Barra de búsqueda y acciones -->
+        <div class="topbar">
+          <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Buscar jugadores, equipos..." v-model="searchQuery" />
           </div>
-          <button type="button" id="openPack" aria-label="Abrir sobres del álbum">
-            <i class="fas fa-gift"></i> Abrir Sobres (3)
-          </button>
+          <div class="quick-actions">
+            <button class="action-btn"><i class="fas fa-bell"></i></button>
+            <button class="action-btn"><i class="fas fa-envelope"></i></button>
+          </div>
         </div>
-      </section>
+        
+        <!-- 🎉 Banner -->
+        <section class="banner" aria-labelledby="banner-heading">
+          <div class="banner-content">
+            <div class="banner-text">
+              <h2 id="banner-heading"><i class="fas fa-book"></i> Mi Álbum de Estampitas</h2>
+              <p>Completa tu colección de estampitas del Mundial 2026</p>
+            </div>
+            <button type="button" @click="openPack" aria-label="Abrir sobres del álbum" :disabled="availablePacks === 0">
+              <i class="fas fa-gift"></i> Abrir Sobres ({{ availablePacks }})
+            </button>
+          </div>
+        </section>
 
-      <!-- 🎁 Modal para abrir sobres -->
-      <div class="pack-modal" id="packModal">
-        <div class="pack-modal-content">
-          <span class="pack-modal-close" id="closePack">&times;</span>
-          <h2>¡Abriste un sobre! 🎉</h2>
-          <p>Estas son tus estampitas sorpresa:</p>
-          <div class="sticker-cards">
-            <div class="sticker">⭐</div>
-            <div class="sticker">⚽</div>
-            <div class="sticker">🏆</div>
+        <!-- 🎁 Modal para abrir sobres -->
+        <div class="pack-modal" :class="{ active: showPackModal }" @click="closePack">
+          <div class="pack-modal-content" @click.stop>
+            <span class="pack-modal-close" @click="closePack">&times;</span>
+            <h2>¡Abriste un sobre! 🎉</h2>
+            <p>Estas son tus estampitas sorpresa:</p>
+            <div class="sticker-cards">
+              <div class="sticker" v-for="(sticker, index) in newStickers" :key="index">
+                {{ sticker }}
+              </div>
+            </div>
+            <button @click="closePack" class="banner-button" style="margin-top: 20px;">
+              <i class="fas fa-check"></i> ¡Genial!
+            </button>
           </div>
         </div>
-      </div>
 
-      <!-- 📊 Filtros horizontales -->
-      <div class="horizontal-filters">
-        <div class="filter-group">
-          <h4><i class="fas fa-users"></i> Equipos</h4>
-          <div class="filter-options">
-            <label><input type="checkbox" checked> Todos</label>
-            <label><input type="checkbox"> Argentina</label>
-            <label><input type="checkbox"> Brasil</label>
-            <label><input type="checkbox"> Francia</label>
+        <!-- 📊 Filtros horizontales -->
+        <div class="horizontal-filters">
+          <div class="filter-group">
+            <h4><i class="fas fa-users"></i> Equipos</h4>
+            <div class="filter-options">
+              <label>
+                <input type="checkbox" v-model="filters.allTeams" @change="toggleAllTeams"> 
+                Todos
+              </label>
+              <label v-for="team in teams" :key="team">
+                <input type="checkbox" v-model="filters.teams" :value="team" @change="filters.allTeams = false"> 
+                {{ team }}
+              </label>
+            </div>
+          </div>
+          
+          <div class="filter-group">
+            <h4><i class="fas fa-crosshairs"></i> Posiciones</h4>
+            <div class="filter-options">
+              <label>
+                <input type="checkbox" v-model="filters.allPositions" @change="toggleAllPositions"> 
+                Todas
+              </label>
+              <label v-for="position in positions" :key="position">
+                <input type="checkbox" v-model="filters.positions" :value="position" @change="filters.allPositions = false"> 
+                {{ position }}
+              </label>
+            </div>
+          </div>
+          
+          <div class="filter-group">
+            <h4><i class="fas fa-filter"></i> Estado</h4>
+            <div class="filter-options">
+              <label>
+                <input type="checkbox" v-model="filters.allStatus" @change="toggleAllStatus"> 
+                Todas
+              </label>
+              <label>
+                <input type="checkbox" v-model="filters.obtained" @change="filters.allStatus = false"> 
+                Obtenidas
+              </label>
+              <label>
+                <input type="checkbox" v-model="filters.missing" @change="filters.allStatus = false"> 
+                Faltantes
+              </label>
+            </div>
           </div>
         </div>
         
-        <div class="filter-group">
-          <h4><i class="fas fa-crosshairs"></i> Posiciones</h4>
-          <div class="filter-options">
-            <label><input type="checkbox" checked> Todas</label>
-            <label><input type="checkbox"> Portero</label>
-            <label><input type="checkbox"> Defensa</label>
-            <label><input type="checkbox"> Delantero</label>
+        <!-- 📈 Estadísticas compactas -->
+        <div class="compact-stats">
+          <div class="stat-item">
+            <h4>Estampitas</h4>
+            <p>{{ obtainedStickers }}/{{ totalStickers }}</p>
+          </div>
+          <div class="stat-item">
+            <h4>Por equipos</h4>
+            <p>{{ completedTeams }}/{{ totalTeams }}</p>
+          </div>
+          <div class="stat-item">
+            <h4>Repetidas</h4>
+            <p>{{ duplicateStickers }}</p>
+          </div>
+          <div class="stat-item">
+            <h4>Sobres</h4>
+            <p>{{ availablePacks }}</p>
           </div>
         </div>
         
-        <div class="filter-group">
-          <h4><i class="fas fa-filter"></i> Estado</h4>
-          <div class="filter-options">
-            <label><input type="checkbox" checked> Todas</label>
-            <label><input type="checkbox"> Obtenidas</label>
-            <label><input type="checkbox"> Faltantes</label>
+        <!-- 📊 Barra de progreso -->
+        <div class="progress-container">
+          <div class="progress-header">
+            <h3><i class="fas fa-tasks"></i> Progreso del Álbum</h3>
+            <span>{{ progressPercentage }}% completado</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress" :style="{ width: progressPercentage + '%' }"></div>
           </div>
         </div>
-      </div>
+        
+        <!-- 🔍 Resultados de búsqueda -->
+        <div v-if="searchQuery" class="search-results">
+          <p><i class="fas fa-search"></i> Buscando: "{{ searchQuery }}" - {{ filteredStickers.length }} resultados</p>
+        </div>
+        
+        <!-- 🎴 Grid de estampitas -->
+        <div class="sticker-grid">
+          <div 
+            v-for="sticker in filteredStickers" 
+            :key="sticker.id" 
+            class="sticker" 
+            :class="{ locked: !sticker.obtained }"
+            @click="toggleSticker(sticker)"
+            :title="sticker.obtained ? 'Click para marcar como faltante' : 'Click para marcar como obtenida'"
+          >
+            <div class="sticker-number">{{ sticker.number }}</div>
+            <div class="sticker-img">
+              <i :class="sticker.obtained ? 'fas fa-user' : 'fas fa-lock'"></i>
+            </div>
+            <div class="sticker-info">
+              <div class="sticker-name">{{ sticker.name }}</div>
+              <div class="sticker-team">{{ sticker.team }}</div>
+              <div class="sticker-status" :class="{ obtained: sticker.obtained }">
+                {{ sticker.obtained ? '✅ Obtenida' : '❌ Faltante' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
       
-      <!-- 📈 Estadísticas compactas -->
-      <div class="compact-stats">
-        <div class="stat-item">
-          <h4>Estampitas</h4>
-          <p>65/100</p>
+      <!-- 📌 Perfil lateral derecho -->
+      <aside class="profile" aria-labelledby="profile-heading">
+        <h2 id="profile-heading" class="sr-only">Perfil de usuario</h2>
+        <div class="user">
+          <img src="https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg" alt="Avatar" class="avatar">
+          <h3>@UsuarioFan</h3>
+          <p>Nivel: {{ userLevel }}</p>
         </div>
-        <div class="stat-item">
-          <h4>Por equipos</h4>
-          <p>8/10</p>
+        <div class="profile-stats">
+          <p><strong>Álbum:</strong> <span>{{ progressPercentage }}% completado</span></p>
+          <p><strong>Cromos:</strong> <span>{{ obtainedStickers }}/{{ totalStickers }}</span></p>
+          <p><strong>Duplicados:</strong> <span>{{ duplicateStickers }}</span></p>
+          <p><strong>Puntos:</strong> <span>{{ userPoints }}</span></p>
         </div>
-        <div class="stat-item">
-          <h4>Repetidas</h4>
-          <p>24</p>
+        <div class="profile-actions">
+          <button class="profile-btn"><i class="fas fa-user"></i> Mi Perfil</button>
+          <button class="profile-btn"><i class="fas fa-exchange-alt"></i> Intercambios</button>
+          <button class="profile-btn"><i class="fas fa-trophy"></i> Logros</button>
+          <button class="profile-btn"><i class="fas fa-cog"></i> Configuración</button>
         </div>
-        <div class="stat-item">
-          <h4>Sobres</h4>
-          <p>3</p>
-        </div>
-      </div>
-      
-      <!-- 📊 Barra de progreso -->
-      <div class="progress-container">
-        <div class="progress-header">
-          <h3><i class="fas fa-tasks"></i> Progreso del Álbum</h3>
-          <span>65% completado</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress"></div>
-        </div>
-      </div>
-      
-      <div class="sticker-grid">
-        <!-- Estampitas obtenidas -->
-        <div class="sticker">
-          <div class="sticker-number">1</div>
-          <div class="sticker-img">
-            <i class="fas fa-user"></i>
-          </div>
-          <div class="sticker-info">
-            <div class="sticker-name">Lionel Messi</div>
-            <div class="sticker-team">Argentina</div>
-          </div>
-        </div>
-        
-        <div class="sticker">
-          <div class="sticker-number">2</div>
-          <div class="sticker-img">
-            <i class="fas fa-user"></i>
-          </div>
-          <div class="sticker-info">
-            <div class="sticker-name">Neymar Jr</div>
-            <div class="sticker-team">Brasil</div>
-          </div>
-        </div>
-        
-        <!-- Estampitas bloqueadas -->
-        <div class="sticker locked">
-          <div class="sticker-number">3</div>
-          <div class="sticker-img">
-            <i class="fas fa-lock"></i>
-          </div>
-          <div class="sticker-info">
-            <div class="sticker-name">Kylian Mbappé</div>
-            <div class="sticker-team">Francia</div>
-          </div>
-        </div>
-        
-        <div class="sticker">
-          <div class="sticker-number">4</div>
-          <div class="sticker-img">
-            <i class="fas fa-user"></i>
-          </div>
-          <div class="sticker-info">
-            <div class="sticker-name">Cristiano Ronaldo</div>
-            <div class="sticker-team">Portugal</div>
-          </div>
-        </div>
-        
-        <div class="sticker locked">
-          <div class="sticker-number">5</div>
-          <div class="sticker-img">
-            <i class="fas fa-lock"></i>
-          </div>
-          <div class="sticker-info">
-            <div class="sticker-name">Luka Modric</div>
-            <div class="sticker-team">Croacia</div>
-          </div>
-        </div>
-        
-        <div class="sticker">
-          <div class="sticker-number">6</div>
-          <div class="sticker-img">
-            <i class="fas fa-user"></i>
-          </div>
-          <div class="sticker-info">
-            <div class="sticker-name">Robert Lewandowski</div>
-            <div class="sticker-team">Polonia</div>
-          </div>
-        </div>
-        
-        <div class="sticker locked">
-          <div class="sticker-number">7</div>
-          <div class="sticker-img">
-            <i class="fas fa-lock"></i>
-          </div>
-          <div class="sticker-info">
-            <div class="sticker-name">Kevin De Bruyne</div>
-            <div class="sticker-team">Bélgica</div>
-          </div>
-        </div>
-        
-        <div class="sticker">
-          <div class="sticker-number">8</div>
-          <div class="sticker-img">
-            <i class="fas fa-user"></i>
-          </div>
-          <div class="sticker-info">
-            <div class="sticker-name">Harry Kane</div>
-            <div class="sticker-team">Inglaterra</div>
-          </div>
-        </div>
-        
-    </main>
-    
-    <!-- 📌 Perfil lateral derecho -->
-    <aside class="profile" aria-labelledby="profile-heading">
-      <h2 id="profile-heading" class="sr-only">Perfil de usuario</h2>
-      <div class="user">
-        <img src="https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg" alt="Avatar" class="avatar">
-        <h3>@UsuarioFan</h3>
-        <p>Nivel: Experto</p>
-      </div>
-      <div class="profile-stats">
-        <p><strong>Álbum:</strong> <span>65% completado</span></p>
-        <p><strong>Cromos:</strong> <span>65/100</span></p>
-        <p><strong>Duplicados:</strong> <span>24</span></p>
-        <p><strong>Puntos:</strong> <span>1,450</span></p>
-      </div>
-      <div class="profile-actions">
-        <button class="profile-btn"><i class="fas fa-user"></i> Mi Perfil</button>
-        <button class="profile-btn"><i class="fas fa-exchange-alt"></i> Intercambios</button>
-        <button class="profile-btn"><i class="fas fa-trophy"></i> Logros</button>
-        <button class="profile-btn"><i class="fas fa-cog"></i> Configuración</button>
-      </div>
-    </aside>
+      </aside>
+    </div>
   </div>
 
   <script>
-    const openBtn = document.getElementById("openPack");
-    const modal = document.getElementById("packModal");
-    const closeBtn = document.getElementById("closePack");
-
-    openBtn.addEventListener("click", () => modal.classList.add("active"));
-    closeBtn.addEventListener("click", () => modal.classList.remove("active"));
-    window.addEventListener("click", (e) => {
-      if (e.target === modal) modal.classList.remove("active");
-    });
+    const { createApp } = Vue;
+    
+    createApp({
+      data() {
+        return {
+          searchQuery: '',
+          showPackModal: false,
+          availablePacks: 3,
+          duplicateStickers: 24,
+          totalStickers: 100,
+          totalTeams: 10,
+          userPoints: 1450,
+          teams: ['Argentina', 'Brasil', 'Francia', 'Portugal', 'Croacia', 'Polonia', 'Bélgica', 'Inglaterra', 'Alemania', 'España'],
+          positions: ['Portero', 'Defensa', 'Mediocampista', 'Delantero'],
+          filters: {
+            allTeams: true,
+            teams: [],
+            allPositions: true,
+            positions: [],
+            allStatus: true,
+            obtained: false,
+            missing: false
+          },
+          newStickers: ['⭐', '⚽', '🏆'],
+          stickers: [
+            { id: 1, number: 1, name: 'Lionel Messi', team: 'Argentina', obtained: true },
+            { id: 2, number: 2, name: 'Neymar Jr', team: 'Brasil', obtained: true },
+            { id: 3, number: 3, name: 'Kylian Mbappé', team: 'Francia', obtained: false },
+            { id: 4, number: 4, name: 'Cristiano Ronaldo', team: 'Portugal', obtained: true },
+            { id: 5, number: 5, name: 'Luka Modric', team: 'Croacia', obtained: false },
+            { id: 6, number: 6, name: 'Robert Lewandowski', team: 'Polonia', obtained: true },
+            { id: 7, number: 7, name: 'Kevin De Bruyne', team: 'Bélgica', obtained: false },
+            { id: 8, number: 8, name: 'Harry Kane', team: 'Inglaterra', obtained: true },
+            { id: 9, number: 9, name: 'Manuel Neuer', team: 'Alemania', obtained: false },
+            { id: 10, number: 10, name: 'Sergio Ramos', team: 'España', obtained: true }
+          ]
+        }
+      },
+      computed: {
+        obtainedStickers() {
+          return this.stickers.filter(s => s.obtained).length
+        },
+        progressPercentage() {
+          return Math.round((this.obtainedStickers / this.totalStickers) * 100)
+        },
+        completedTeams() {
+          const teamStickers = {}
+          this.stickers.forEach(sticker => {
+            if (sticker.obtained) {
+              teamStickers[sticker.team] = true
+            }
+          })
+          return Object.keys(teamStickers).length
+        },
+        userLevel() {
+          if (this.progressPercentage >= 80) return 'Experto'
+          if (this.progressPercentage >= 50) return 'Avanzado'
+          if (this.progressPercentage >= 25) return 'Intermedio'
+          return 'Principiante'
+        },
+        filteredStickers() {
+          let filtered = this.stickers
+          
+          // Filtro por búsqueda
+          if (this.searchQuery) {
+            const query = this.searchQuery.toLowerCase()
+            filtered = filtered.filter(sticker => 
+              sticker.name.toLowerCase().includes(query) || 
+              sticker.team.toLowerCase().includes(query)
+            )
+          }
+          
+          // Filtro por equipos
+          if (!this.filters.allTeams && this.filters.teams.length > 0) {
+            filtered = filtered.filter(sticker => this.filters.teams.includes(sticker.team))
+          }
+          
+          // Filtro por estado
+          if (!this.filters.allStatus) {
+            if (this.filters.obtained && !this.filters.missing) {
+              filtered = filtered.filter(sticker => sticker.obtained)
+            } else if (this.filters.missing && !this.filters.obtained) {
+              filtered = filtered.filter(sticker => !sticker.obtained)
+            }
+          }
+          
+          return filtered
+        }
+      },
+      methods: {
+        openPack() {
+          if (this.availablePacks > 0) {
+            this.showPackModal = true
+            this.availablePacks--
+            this.duplicateStickers += 3
+            this.userPoints += 50
+            
+            // Simular obtención de nuevas estampitas
+            setTimeout(() => {
+              const lockedStickers = this.stickers.filter(s => !s.obtained)
+              if (lockedStickers.length > 0) {
+                const randomSticker = lockedStickers[Math.floor(Math.random() * lockedStickers.length)]
+                randomSticker.obtained = true
+              }
+            }, 1000)
+          }
+        },
+        closePack() {
+          this.showPackModal = false
+        },
+        toggleSticker(sticker) {
+          sticker.obtained = !sticker.obtained
+          if (sticker.obtained) {
+            this.duplicateStickers++
+            this.userPoints += 10
+          } else {
+            this.duplicateStickers = Math.max(0, this.duplicateStickers - 1)
+            this.userPoints = Math.max(0, this.userPoints - 10)
+          }
+        },
+        toggleAllTeams() {
+          if (this.filters.allTeams) {
+            this.filters.teams = []
+          }
+        },
+        toggleAllPositions() {
+          if (this.filters.allPositions) {
+            this.filters.positions = []
+          }
+        },
+        toggleAllStatus() {
+          if (this.filters.allStatus) {
+            this.filters.obtained = false
+            this.filters.missing = false
+          }
+        }
+      },
+      mounted() {
+        console.log('Álbum Vue.js cargado correctamente!')
+      }
+    }).mount('#app')
   </script>
 </body>
 </html>
