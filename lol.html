@@ -1,118 +1,1815 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Prueba Modal - Estampitas</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-  /* estilos mínimos para probar modal */
-  body { font-family: system-ui, Arial; margin:0; padding:20px; background:#111; color:#fff; }
-  button { cursor:pointer; padding:8px 12px; border-radius:8px; border:none; background:#D4AF37; color:#000; font-weight:600; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Álbum - Fanscore</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    :root {
+      --fondo: #000000;
+      --blanco: #FFFFFF;
+      --dorado: #D4AF37;
+      --rojo: #E5253B;
+      --verde: #009739;
+      --azul: #002F6C;
+      --turquesa: #00B6A5;
+      --morado: #231F5B;
+      --gris-oscuro: #2c2c2c;
+      --gris-claro: #f5f5f5;
+      --gradiente: linear-gradient(135deg, var(--rojo), var(--azul), #000000);
+      --gradiente-dorado: linear-gradient(135deg, #D4AF37, #AA8A2D);
+      --gradiente-verde: linear-gradient(135deg, var(--dorado), var(--turquesa));
+      --sombra: 0 15px 35px rgba(0, 0, 0, 0.5);
+      --sombra-suave: 0 5px 15px rgba(0, 0, 0, 0.08);
+      --transicion: all 0.3s ease;
+      --card-bg: #252a3f;
+      --text-color: #ffffff;
+      --text-light: #a0a0b0;
+      --border-radius: 16px;
+    }
 
-  /* Modal base */
-  .modal {
-    display: none; /* oculto por defecto */
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(3px);
-    justify-content: center;
-    align-items: center;
-  }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* cuando esté abierto */
-  .modal.open { display: flex; }
+    body {
+      font-family: 'Poppins', 'Segoe UI', sans-serif;
+      background-color: var(--fondo);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
 
-  .modal-content {
-    width: min(480px, 92%);
-    background: #fff;
-    color:#111;
-    border-radius: 12px;
-    padding: 18px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 8px 30px rgba(0,0,0,.5);
-    animation: showModal 0.22s ease-out;
-  }
+    .dashboard {
+      display: grid;
+      grid-template-columns: 240px 1fr 280px;
+      min-height: 100vh;
+    }
 
-  .close {
-    position: absolute;
-    top:10px;
-    right:12px;
-    font-size:20px;
-    background:none;
-    border:none;
-    cursor:pointer;
-  }
+    /* Sidebar (idéntico a album.html) */
+    .sidebar {
+      background: linear-gradient(135deg, var(--gris-oscuro), #000000);
+      color: var(--blanco);
+      padding: 1.5rem 1rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 220px;
+      max-width: 260px;
+      box-shadow: var(--sombra);
+    }
 
-  .stickers { display:flex; justify-content:center; gap:12px; margin-top:12px; }
-  .sticker { font-size:2rem; }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: var(--dorado);
+    }
 
-  @keyframes showModal { from { opacity:0; transform: scale(.96); } to { opacity:1; transform: scale(1); } }
+    .sidebar nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
 
-  /* Bloqueo scroll cuando modal abierto */
-  body.modal-open { overflow: hidden; }
-</style>
+    .sidebar nav a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      padding: 0.8rem 1rem;
+      border-radius: var(--border-radius);
+      transition: var(--transicion);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 1.1rem;
+    }
+
+    .sidebar nav a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--blanco);
+    }
+
+    .sidebar nav a.active {
+      background: var(--gradiente);
+      color: var(--blanco);
+      box-shadow: 0 0 12px rgba(229, 37, 59, 0.5);
+      border-color: var(--rojo);
+    }
+
+    .logout {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      padding: 0.8rem 1rem;
+      border-radius: var(--border-radius);
+      transition: var(--transicion);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-top: auto;
+    }
+
+    .logout:hover {
+      background-color: rgba(229, 37, 59, 0.2);
+      color: var(--rojo);
+    }
+
+    /* Contenido principal */
+    .main {
+      padding: 1.5rem;
+      background-color: var(--fondo);
+    }
+
+    /* Topbar */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+    }
+
+    .search-container {
+      flex: 1;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 0.8rem 1.2rem 0.8rem 3rem;
+      border: none;
+      border-radius: 50px;
+      background-color: var(--gris-oscuro);
+      color: var(--text-color);
+      font-size: 1rem;
+    }
+
+    .search-container i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 0.8rem;
+    }
+
+    .action-btn {
+      background-color: var(--gris-oscuro);
+      color: var(--text-color);
+      border: none;
+      padding: 0.8rem;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: var(--transicion);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+
+    .action-btn:hover {
+      background: var(--gradiente);
+    }
+
+    /* Banner */
+    .banner {
+      background: var(--gradiente);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      color: var(--blanco);
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 100%;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="80" cy="20" r="15" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="50" r="20" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="80" r="10" fill="rgba(255,255,255,0.1)"/></svg>');
+      background-repeat: no-repeat;
+      background-position: center right;
+    }
+
+    .banner-text h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      color: var(--dorado);
+    }
+
+    .banner-text p {
+      margin-bottom: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .banner button {
+      background-color: var(--blanco);
+      color: var(--morado);
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transicion);
+    }
+
+    .banner button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    .banner button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .banner-button {
+      background-color: var(--blanco);
+      color: var(--morado);
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transicion);
+    }
+
+    .banner-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    /* Modal sobres */
+    .pack-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .3s ease, visibility .3s ease;
+      z-index: 1000;
+    }
+
+    .pack-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .pack-modal-content {
+      background: var(--gris-oscuro);
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      max-width: 500px;
+      text-align: center;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .pack-modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--rojo);
+      transition: var(--transicion);
+    }
+
+    .pack-modal-close:hover {
+      color: var(--blanco);
+    }
+
+    /* Modal Zoom Estampita */
+    .sticker-zoom-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .3s ease, visibility .3s ease;
+      z-index: 1001;
+    }
+
+    .sticker-zoom-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .sticker-zoom-content {
+      background: var(--gris-oscuro);
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      max-width: 90%;
+      max-height: 90%;
+      text-align: center;
+      position: relative;
+      border: 2px solid var(--dorado);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .sticker-zoom-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: var(--rojo);
+      transition: var(--transicion);
+      background: rgba(0,0,0,0.7);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sticker-zoom-close:hover {
+      color: var(--blanco);
+      background: var(--rojo);
+    }
+
+    .sticker-zoom-image {
+      max-width: 400px;
+      max-height: 500px;
+      width: auto;
+      height: auto;
+      border-radius: 12px;
+      border: 3px solid var(--dorado);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      filter: brightness(1.1) contrast(1.15) saturate(1.1); /* Foto más vistosa en el modal */
+    }
+
+    .sticker-zoom-info {
+      text-align: center;
+      color: white;
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      margin-top: 1rem;
+    }
+
+    .sticker-zoom-number {
+      font-size: 1.2rem;
+      color: var(--dorado);
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    .sticker-zoom-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--blanco);
+    }
+
+    .sticker-zoom-team {
+      font-size: 1.1rem;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+    }
+
+    .sticker-zoom-position {
+      font-size: 1rem;
+      color: var(--dorado);
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    .sticker-zoom-duplicates {
+      background: rgba(212, 175, 55, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1px solid var(--dorado);
+      font-weight: bold;
+      margin-bottom: 1rem;
+      display: inline-block;
+      font-size: 1rem;
+    }
+
+    .sticker-zoom-status {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .sticker-zoom-status.obtained {
+      background: var(--verde);
+      color: white;
+    }
+
+    .sticker-zoom-status.missing {
+      background: var(--rojo);
+      color: white;
+    }
+
+    /* Sistema de sobres y cartas */
+    .pack-container {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+      cursor: pointer;
+    }
+
+    .pack {
+      width: 200px;
+      height: 150px;
+      perspective: 1000px;
+    }
+
+    .pack-front {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--dorado), #b8941f);
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+      transition: all 0.3s ease;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .pack-front:hover {
+      transform: translateY(-10px) scale(1.05);
+      box-shadow: 0 15px 40px rgba(212, 175, 55, 0.6);
+    }
+
+    .pack-front i {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Sistema de cartas que se voltean */
+    .sticker-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+      justify-items: center;
+    }
+
+    .card {
+      width: 120px;
+      height: 160px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-front {
+      background: linear-gradient(45deg, var(--azul), var(--morado));
+      border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .card-back-pattern {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 2%, transparent 2.5%),
+        radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1) 2%, transparent 2.5%),
+        radial-gradient(circle at 50% 20%, rgba(255,255,255,0.1) 1%, transparent 1.5%),
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 1%, transparent 1.5%);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-back-pattern i {
+      font-size: 2rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-shine {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    .card-back {
+      background: linear-gradient(135deg, var(--gris-oscuro), #1a1a2e);
+      transform: rotateY(180deg);
+      border: 2px solid var(--dorado);
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .sticker-revealed {
+      text-align: center;
+      color: white;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sticker-image {
+      width: 100%;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 8px;
+    }
+
+    .sticker-name {
+      font-weight: bold;
+      font-size: 0.75rem;
+      margin-bottom: 4px;
+      color: var(--dorado);
+      line-height: 1.2;
+    }
+
+    .sticker-team {
+      font-size: 0.65rem;
+      color: var(--text-light);
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .new-badge {
+      background: var(--verde);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 0.55rem;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Resultados del sobre */
+    .pack-results {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .results-summary h3 {
+      color: var(--dorado);
+      margin-bottom: 1rem;
+    }
+
+    .results-stats {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .results-stats span {
+      background: rgba(212, 175, 55, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1px solid var(--dorado);
+      font-weight: bold;
+    }
+
+    /* Filtros */
+    .horizontal-filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .filter-group {
+      background: var(--gris-oscuro);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: var(--transicion);
+    }
+
+    .filter-group:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--sombra-suave);
+    }
+
+    .filter-group h4 {
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      color: var(--dorado);
+    }
+
+    .filter-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    /* Scroll específico para equipos y posiciones */
+    .filter-group.scroll-group .filter-options {
+      display: flex;
+      flex-direction: column;
+      max-height: 250px;
+      overflow-y: auto;
+      gap: 0.8rem;
+      padding-right: 10px;
+    }
+
+    /* Scrollbar personalizado mejorado */
+    .filter-group.scroll-group .filter-options::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .filter-group.scroll-group .filter-options::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .filter-group.scroll-group .filter-options::-webkit-scrollbar-thumb {
+      background: linear-gradient(var(--dorado), #b8941f);
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .filter-group.scroll-group .filter-options::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(#b8941f, var(--dorado));
+    }
+
+    .filter-options label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.5rem 0.8rem;
+      border-radius: var(--border-radius);
+      background: rgba(255, 255, 255, 0.05);
+      transition: var(--transicion);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+
+    .filter-options label:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--dorado);
+    }
+
+    /* Stats idénticos a album.html */
+    .compact-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+      background: var(--gris-oscuro);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+      transition: var(--transicion);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-item::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradiente-dorado);
+    }
+
+    .stat-item:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--sombra);
+    }
+
+    .stat-item h4 {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-bottom: 0.8rem;
+      font-weight: 500;
+    }
+
+    .stat-item p {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: var(--gradiente-dorado);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Progreso */
+    .progress-container {
+      margin: 1.5rem 0;
+      background: var(--gris-oscuro);
+      padding: 1.2rem;
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .progress-header h3 {
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      color: var(--dorado);
+    }
+
+    .progress-header span {
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .progress-bar {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50px;
+      height: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress {
+      width: 65%;
+      height: 100%;
+      background: var(--gradiente-verde);
+      border-radius: 50px;
+      transition: width 1s ease-in-out;
+    }
+
+    /* Grid estampitas - DISEÑO MEJORADO */
+    .sticker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .sticker {
+      background: var(--gris-oscuro);
+      border-radius: 12px;
+      transition: var(--transicion);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 200px; /* Reducida para más espacio para la foto */
+      cursor: pointer;
+    }
+
+    .sticker::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradiente-dorado);
+    }
+
+    .sticker:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--sombra);
+    }
+
+    .sticker.locked {
+      opacity: 0.6;
+      filter: grayscale(0.7);
+    }
+
+    .sticker.locked .sticker-image {
+      filter: blur(2px) grayscale(0.7);
+    }
+
+    .sticker-number {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      color: var(--dorado);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      z-index: 2;
+    }
+
+    .sticker-image {
+      width: 100%;
+      height: 140px; /* Más espacio para la foto */
+      object-fit: cover;
+      border-bottom: 2px solid var(--dorado);
+      transition: var(--transicion);
+      filter: brightness(1.05) contrast(1.1); /* Mejorar contraste y brillo */
+    }
+
+    .sticker:hover .sticker-image {
+      transform: scale(1.08); /* Efecto de zoom más pronunciado */
+      filter: brightness(1.15) contrast(1.2); /* Más brillo al hacer hover */
+    }
+
+    .sticker-info {
+      padding: 6px; /* Menos padding */
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .sticker-name {
+      font-weight: 600;
+      margin-bottom: 2px; /* Menos espacio */
+      color: var(--blanco);
+      font-size: 0.7rem; /* Texto más pequeño */
+      line-height: 1.1; /* Menor interlineado */
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sticker-team {
+      font-size: 0.6rem; /* Texto más pequeño */
+      color: var(--text-light);
+      text-align: center;
+      line-height: 1.1; /* Menor interlineado */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Indicador de repetidas en estampitas pequeñas */
+    .duplicates-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(212, 175, 55, 0.9);
+      color: #000;
+      font-size: 0.6rem;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 10px;
+      z-index: 2;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    /* Perfil lateral derecho (idéntico a album.html) */
+    .profile {
+      background-color: var(--gris-oscuro);
+      padding: 1.5rem;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .user {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 0.8rem;
+      border: 3px solid var(--dorado);
+    }
+
+    .user h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.3rem;
+      color: var(--dorado);
+    }
+
+    .user p {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .profile-stats {
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 1.2rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1.5rem;
+    }
+
+    .profile-stats p {
+      margin-bottom: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .profile-stats p:last-child {
+      margin-bottom: 0;
+    }
+
+    .profile-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .profile-btn {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--text-color);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.8rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transicion);
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .profile-btn:hover {
+      background: linear-gradient(90deg, rgba(212, 175, 55, 0.2), rgba(0, 182, 165, 0.2));
+      border-color: var(--dorado);
+    }
+
+    /* Resultados de búsqueda */
+    .search-results {
+      background: var(--gris-oscuro);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      margin: 1rem 0;
+      border-left: 4px solid var(--dorado);
+    }
+
+    .search-results p {
+      margin: 0;
+      color: var(--text-light);
+    }
+
+    /* ===== NUEVOS ESTILOS ===== */
+    
+    /* Sistema de notificaciones Toast */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: var(--gris-oscuro);
+      color: white;
+      padding: 12px 16px;
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--sombra);
+      border-left: 4px solid var(--dorado);
+      animation: slideIn 0.3s ease;
+      min-width: 300px;
+    }
+
+    .toast.success {
+      border-left-color: var(--verde);
+    }
+
+    .toast.error {
+      border-left-color: var(--rojo);
+    }
+
+    .toast.warning {
+      border-left-color: #ff9800;
+    }
+
+    .toast.info {
+      border-left-color: var(--turquesa);
+    }
+
+    .toast button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Barra de experiencia */
+    .xp-container {
+      margin: 1rem 0;
+    }
+
+    .xp-bar {
+      background: rgba(255, 255, 255, 0.1);
+      height: 8px;
+      border-radius: 4px;
+      margin: 5px 0;
+      overflow: hidden;
+    }
+
+    .xp-progress {
+      background: var(--gradiente-verde);
+      height: 100%;
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+
+    /* Efectos de partículas */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .particle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--dorado);
+      border-radius: 50%;
+      animation: float 2s ease-in-out forwards;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Efectos especiales para estampitas */
+    .sticker.obtained {
+      position: relative;
+    }
+
+    .sticker.obtained::after {
+      content: "✨";
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      font-size: 1rem;
+      animation: sparkle 2s infinite;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Mejoras visuales para estadísticas */
+    .stat-item.highlight {
+      background: linear-gradient(135deg, var(--gris-oscuro), #1a1a2e);
+      border: 1px solid var(--dorado);
+    }
+
+    .stat-item.highlight::before {
+      background: var(--gradiente-verde);
+    }
+
+    /* Responsividad */
+    @media (max-width: 1200px) {
+      .dashboard {
+        grid-template-columns: 200px 1fr;
+      }
+      
+      .profile {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+      
+      .sidebar {
+        height: auto;
+        position: relative;
+        padding: 1rem;
+      }
+      
+      .sidebar nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+      }
+      
+      .sidebar nav a {
+        white-space: nowrap;
+      }
+      
+      .main {
+        padding: 1rem;
+      }
+      
+      .compact-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .horizontal-filters {
+        grid-template-columns: 1fr;
+      }
+      
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .search-container {
+        max-width: 100%;
+      }
+      
+      .quick-actions {
+        align-self: center;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div id="app">
+    <div class="dashboard">
+      <!-- Sidebar -->
+      <aside class="sidebar" aria-label="Navegación principal">
+        <h2 class="logo">Fanscore</h2>
+        <nav aria-label="Navegación principal">
+          <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+          <a href="album.htm" class="active" aria-current="page"><i class="fas fa-book"></i> Álbum</a>
+          <a href="enciclopedia.html"><i class="fas fa-globe"></i> Enciclopedia</a>
+          <a href="#"><i class="fas fa-gift"></i> Sobres</a>
+          <a href="#"><i class="fas fa-cog"></i> Configuración</a>
+        </nav>
+        <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+      </aside>
 
-<h1>Prueba: Abrir sobres</h1>
-<button id="openPack"><i class="fas fa-gift"></i> Abrir Sobres</button>
+      <!-- Contenido principal -->
+      <main class="main">
+        <!-- Topbar -->
+        <div class="topbar">
+          <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Buscar estampitas, jugadores..." v-model="searchQuery">
+          </div>
+          <div class="quick-actions">
+            <button class="action-btn">
+              <i class="fas fa-bell"></i>
+            </button>
+            <button class="action-btn">
+              <i class="fas fa-cog"></i>
+            </button>
+          </div>
+        </div>
 
-<!-- Modal -->
-<div id="packModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
-  <div class="modal-content" role="document">
-    <button class="close" aria-label="Cerrar modal">&times;</button>
-    <h3>🎁 ¡Abriste un sobre!</h3>
-    <p>Aquí aparecerán tus estampitas sorpresa ✨</p>
-    <div class="stickers">
-      <div class="sticker">⭐</div>
-      <div class="sticker">⚽</div>
-      <div class="sticker">🏆</div>
+        <!-- Banner -->
+        <div class="banner">
+          <div class="banner-text">
+            <h2>¡Colecciona todas las estampitas!</h2>
+            <p>Completa tu álbum y participa por premios exclusivos. Cada sobre contiene 5 estampitas aleatorias.</p>
+            <button @click="openPackModal" :disabled="!canOpenPack">
+              <i class="fas fa-gift"></i> Abrir Sobre ({{ packsAvailable }} disponibles)
+            </button>
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="compact-stats">
+          <div class="stat-item">
+            <h4>Estampitas Total</h4>
+            <p>{{ totalStickers }}</p>
+          </div>
+          
+          <div class="stat-item">
+            <h4>Coleccionadas</h4>
+            <p>{{ collectedStickers }}</p>
+          </div>
+
+          <div class="stat-item">
+            <h4>Faltantes</h4>
+            <p>{{ missingStickers }}</p>
+          </div>
+
+          <div class="stat-item">
+            <h4>Sobres</h4>
+            <p>{{ packsAvailable }}</p>
+          </div>
+        </div>
+
+        <!-- Barra de progreso -->
+        <div class="progress-container">
+          <div class="progress-header">
+            <h3><i class="fas fa-chart-line"></i> Progreso del Álbum</h3>
+            <span>{{ collectedStickers }} / {{ totalStickers }}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress" :style="{ width: progressPercentage + '%' }"></div>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="horizontal-filters">
+          <div class="filter-group">
+            <h4><i class="fas fa-filter"></i> Estado</h4>
+            <div class="filter-options">
+              <label>
+                <input type="checkbox" v-model="filters.status" value="obtained"> Obtenidas
+              </label>
+              <label>
+                <input type="checkbox" v-model="filters.status" value="missing"> Faltantes
+              </label>
+              <label>
+                <input type="checkbox" v-model="filters.status" value="repeated"> Repetidas
+              </label>
+            </div>
+          </div>
+          
+          <div class="filter-group scroll-group">
+            <h4><i class="fas fa-users"></i> Equipos</h4>
+            <div class="filter-options">
+              <label v-for="team in teams" :key="team">
+                <input type="checkbox" v-model="filters.teams" :value="team"> {{ team }}
+              </label>
+            </div>
+          </div>
+
+          <!-- NUEVO: Filtro de Posiciones -->
+          <div class="filter-group scroll-group">
+            <h4><i class="fas fa-map-marker-alt"></i> Posiciones</h4>
+            <div class="filter-options">
+              <label v-for="position in positions" :key="position">
+                <input type="checkbox" v-model="filters.positions" :value="position"> {{ position }}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid de estampitas -->
+        <div class="sticker-grid">
+          <div 
+            v-for="sticker in filteredStickers" 
+            :key="sticker.id" 
+            class="sticker"
+            :class="{ 
+              'obtained': sticker.obtained,
+              'locked': !sticker.obtained 
+            }"
+            @click="openStickerZoom(sticker)"
+          >
+            <div class="sticker-number">#{{ sticker.number }}</div>
+            
+            <!-- Badge de repetidas -->
+            <div class="duplicates-badge" v-if="sticker.duplicates > 0">
+              +{{ sticker.duplicates }}
+            </div>
+            
+            <img :src="sticker.image" :alt="sticker.name" class="sticker-image">
+            <div class="sticker-info">
+              <div class="sticker-name">{{ sticker.name }}</div>
+              <div class="sticker-team">{{ sticker.team }} • {{ sticker.position }}</div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Panel de perfil -->
+      <aside class="profile">
+        <div class="user">
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" alt="Usuario" class="avatar">
+          <h3>@UsuarioFan</h3>
+          <p>Nivel 15</p>
+        </div>
+        <div class="profile-stats">
+          <p><strong>Álbum:</strong> <span>{{ progressPercentage }}% completado</span></p>
+          <p><strong>Cromos:</strong> <span>{{ collectedStickers }}/{{ totalStickers }}</span></p>
+         <!-- <p><strong>Duplicados:</strong> <span>{{ duplicateStickers }}</span></p> -->
+          <p><strong>Sobres:</strong> <span>{{ packsAvailable }}</span></p>
+        </div>
+        <div class="profile-actions">
+          <button class="profile-btn"><i class="fas fa-user"></i> Mi Perfil</button>
+          <button class="profile-btn"><i class="fas fa-exchange-alt"></i> Intercambios</button>
+        <!--  <button class="profile-btn"><i class="fas fa-trophy"></i> Logros</button>
+          <button class="profile-btn"><i class="fas fa-cog"></i> Configuración</button>
+        -->
+        </div>
+      </aside>
+    </div>
+
+    <!-- Modal para abrir sobres -->
+    <div class="pack-modal" :class="{ active: showPackModal }">
+      <div class="pack-modal-content">
+        <div class="pack-modal-close" @click="closePackModal">
+          <i class="fas fa-times"></i>
+        </div>
+        <h2>Abrir Sobre</h2>
+        <p>¡Obtén 5 estampitas aleatorias!</p>
+        
+        <div class="pack-container" @click="openPack">
+          <div class="pack">
+            <div class="pack-front">
+              <i class="fas fa-gift"></i>
+              <span>Sobre Premium</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="sticker-cards" v-if="packResult.length > 0">
+          <div 
+            v-for="(sticker, index) in packResult" 
+            :key="index" 
+            class="card"
+            :class="{ flipped: sticker.revealed }"
+            @click="revealSticker(index)"
+          >
+            <div class="card-inner">
+              <div class="card-front">
+                <div class="card-shine"></div>
+                <div class="card-back-pattern">
+                  <i class="fas fa-question"></i>
+                </div>
+              </div>
+              <div class="card-back">
+                <div class="sticker-revealed">
+                  <img :src="sticker.image" :alt="sticker.name" class="sticker-image">
+                  <div class="sticker-name">{{ sticker.name }}</div>
+                  <div class="sticker-team">{{ sticker.team }} • {{ sticker.position }}</div>
+                  <div class="new-badge" v-if="sticker.isNew">NUEVA</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="pack-results" v-if="packResult.length > 0">
+          <div class="results-summary">
+            <h3>Resultados del Sobre</h3>
+            <div class="results-stats">
+              <span>Nuevas: {{ newStickersCount }}</span>
+              <span>Repetidas: {{ repeatedStickersCount }}</span>
+            </div>
+          </div>
+          <button class="banner-button" @click="closePackModal">
+            <i class="fas fa-check"></i> Aceptar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para ver estampita en grande -->
+    <div class="sticker-zoom-modal" :class="{ active: selectedSticker }">
+      <div class="sticker-zoom-content">
+        <div class="sticker-zoom-close" @click="selectedSticker = null">
+          <i class="fas fa-times"></i>
+        </div>
+        
+        <!-- Mostrar cantidad de repetidas -->
+        <div class="sticker-zoom-duplicates" v-if="selectedSticker && selectedSticker.duplicates > 0">
+          <i class="fas fa-copy"></i> Tienes {{ selectedSticker.duplicates }} repetidas
+        </div>
+        
+        <img 
+          v-if="selectedSticker" 
+          :src="selectedSticker.image" 
+          :alt="selectedSticker.name" 
+          class="sticker-zoom-image"
+        >
+        
+        <div class="sticker-zoom-info" v-if="selectedSticker">
+          <div class="sticker-zoom-number">#{{ selectedSticker.number }}</div>
+          <div class="sticker-zoom-name">{{ selectedSticker.name }}</div>
+          <div class="sticker-zoom-position">{{ selectedSticker.position }}</div>
+          <div class="sticker-zoom-team">{{ selectedSticker.team }}</div>
+          
+          <div class="sticker-zoom-status" :class="selectedSticker.obtained ? 'obtained' : 'missing'">
+            {{ selectedSticker.obtained ? 'OBTENIDA' : 'FALTANTE' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sistema de notificaciones -->
+    <div class="toast-container">
+      <div 
+        v-for="toast in toasts" 
+        :key="toast.id" 
+        class="toast"
+        :class="toast.type"
+      >
+        <i :class="getToastIcon(toast.type)"></i>
+        <span>{{ toast.message }}</span>
+        <button @click="removeToast(toast.id)">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const openPackBtn = document.getElementById('openPack');
-  const modal = document.getElementById('packModal');
-
-  if (!openPackBtn) { console.error('No se encontró #openPack'); return; }
-  if (!modal) { console.error('No se encontró #packModal'); return; }
-
-  const closeBtn = modal.querySelector('.close');
-
-  function openModal() {
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
-    // dar foco al primer elemento interactivo del modal
-    (closeBtn || modal.querySelector('button, a, [tabindex]'))?.focus();
-  }
-
-  function closeModal() {
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
-    openPackBtn.focus();
-  }
-
-  openPackBtn.addEventListener('click', openModal);
-  if (closeBtn) closeBtn.addEventListener('click', closeModal);
-
-  // clic fuera del contenido
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-
-  // Esc para cerrar
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
-  });
-});
-</script>
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+    
+    createApp({
+      setup() {
+        // Datos de la aplicación
+        const searchQuery = ref('');
+        const showPackModal = ref(false);
+        const selectedSticker = ref(null);
+        const packsAvailable = ref(3);
+        const packResult = ref([]);
+        const toasts = ref([]);
+        
+        // Filtros
+        const filters = ref({
+          status: ['obtained', 'missing', 'repeated'],
+          teams: [],
+          positions: [] // NUEVO: Filtro de posiciones
+        });
+        
+        // Datos de ejemplo para estampitas
+        const stickers = ref([
+          {
+            id: 1,
+            number: 1,
+            name: 'Lionel Messi',
+            team: 'Argentina',
+            position: 'Delantero',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: true,
+            duplicates: 2
+          },
+          {
+            id: 2,
+            number: 7,
+            name: 'Cristiano Ronaldo',
+            team: 'Portugal',
+            position: 'Delantero',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: true,
+            duplicates: 1
+          },
+          {
+            id: 3,
+            number: 10,
+            name: 'Neymar Jr',
+            team: 'Brasil',
+            position: 'Delantero',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: false,
+            duplicates: 0
+          },
+          {
+            id: 4,
+            number: 9,
+            name: 'Erling Haaland',
+            team: 'Noruega',
+            position: 'Delantero',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: true,
+            duplicates: 0
+          },
+          {
+            id: 5,
+            number: 11,
+            name: 'Kylian Mbappé',
+            team: 'Francia',
+            position: 'Delantero',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: true,
+            duplicates: 3
+          },
+          {
+            id: 6,
+            number: 5,
+            name: 'Kevin De Bruyne',
+            team: 'Bélgica',
+            position: 'Mediocampista',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: false,
+            duplicates: 0
+          },
+          {
+            id: 7,
+            number: 4,
+            name: 'Virgil van Dijk',
+            team: 'Países Bajos',
+            position: 'Defensa',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: true,
+            duplicates: 1
+          },
+          {
+            id: 8,
+            number: 1,
+            name: 'Thibaut Courtois',
+            team: 'Bélgica',
+            position: 'Portero',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: false,
+            duplicates: 0
+          },
+          {
+            id: 9,
+            number: 8,
+            name: 'Toni Kroos',
+            team: 'Alemania',
+            position: 'Mediocampista',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: true,
+            duplicates: 0
+          },
+          {
+            id: 10,
+            number: 3,
+            name: 'Sergio Ramos',
+            team: 'España',
+            position: 'Defensa',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: true,
+            duplicates: 2
+          }
+        ]);
+        
+        // Equipos disponibles
+        const teams = ref(['Argentina', 'Brasil', 'Francia', 'Portugal', 'España', 'Alemania', 'Bélgica', 'Inglaterra', 'Países Bajos', 'Italia', 'Noruega']);
+        
+        // NUEVO: Posiciones disponibles
+        const positions = ref(['Portero', 'Defensa', 'Mediocampista', 'Delantero']);
+        
+        // Computed properties
+        const totalStickers = computed(() => stickers.value.length);
+        const collectedStickers = computed(() => stickers.value.filter(s => s.obtained).length);
+        const missingStickers = computed(() => totalStickers.value - collectedStickers.value);
+        const progressPercentage = computed(() => Math.round((collectedStickers.value / totalStickers.value) * 100));
+        const canOpenPack = computed(() => packsAvailable.value > 0);
+        
+        const newStickersCount = computed(() => packResult.value.filter(s => s.isNew).length);
+        const repeatedStickersCount = computed(() => packResult.value.filter(s => !s.isNew).length);
+        
+        // Filtrado de estampitas
+        const filteredStickers = computed(() => {
+          return stickers.value.filter(sticker => {
+            // Filtro por búsqueda
+            if (searchQuery.value && 
+                !sticker.name.toLowerCase().includes(searchQuery.value.toLowerCase()) &&
+                !sticker.team.toLowerCase().includes(searchQuery.value.toLowerCase()) &&
+                !sticker.position.toLowerCase().includes(searchQuery.value.toLowerCase())) {
+              return false;
+            }
+            
+            // Filtro por estado
+            const statusFilters = filters.value.status;
+            if (statusFilters.length > 0) {
+              const statusMatch = 
+                (statusFilters.includes('obtained') && sticker.obtained) ||
+                (statusFilters.includes('missing') && !sticker.obtained) ||
+                (statusFilters.includes('repeated') && sticker.duplicates > 0);
+              
+              if (!statusMatch) return false;
+            }
+            
+            // Filtro por equipos
+            const teamFilters = filters.value.teams;
+            if (teamFilters.length > 0 && !teamFilters.includes(sticker.team)) {
+              return false;
+            }
+            
+            // NUEVO: Filtro por posiciones
+            const positionFilters = filters.value.positions;
+            if (positionFilters.length > 0 && !positionFilters.includes(sticker.position)) {
+              return false;
+            }
+            
+            return true;
+          });
+        });
+        
+        // Métodos
+        const openPackModal = () => {
+          if (canOpenPack.value) {
+            showPackModal.value = true;
+            packResult.value = [];
+          } else {
+            showToast('No tienes sobres disponibles', 'error');
+          }
+        };
+        
+        const closePackModal = () => {
+          showPackModal.value = false;
+          packResult.value = [];
+        };
+        
+        const openPack = () => {
+          if (packsAvailable.value <= 0) {
+            showToast('No tienes sobres disponibles', 'error');
+            return;
+          }
+          
+          // Generar 5 estampitas aleatorias
+          const newPack = [];
+          for (let i = 0; i < 5; i++) {
+            const randomSticker = { ...stickers.value[Math.floor(Math.random() * stickers.value.length)] };
+            randomSticker.revealed = false;
+            randomSticker.isNew = !randomSticker.obtained;
+            newPack.push(randomSticker);
+          }
+          
+          packResult.value = newPack;
+          packsAvailable.value--;
+          
+          showToast('¡Sobre abierto! Revela tus estampitas', 'success');
+        };
+        
+        const revealSticker = (index) => {
+          if (!packResult.value[index].revealed) {
+            packResult.value[index].revealed = true;
+            
+            // Actualizar la estampita en la colección si es nueva
+            if (packResult.value[index].isNew) {
+              const stickerIndex = stickers.value.findIndex(s => s.id === packResult.value[index].id);
+              if (stickerIndex !== -1) {
+                stickers.value[stickerIndex].obtained = true;
+              }
+            } else {
+              // Si es repetida, incrementar el contador
+              const stickerIndex = stickers.value.findIndex(s => s.id === packResult.value[index].id);
+              if (stickerIndex !== -1) {
+                stickers.value[stickerIndex].duplicates++;
+              }
+            }
+          }
+        };
+        
+        const openStickerZoom = (sticker) => {
+          selectedSticker.value = sticker;
+        };
+        
+        const showToast = (message, type = 'info') => {
+          const id = Date.now();
+          toasts.value.push({ id, message, type });
+          
+          // Auto-remover después de 5 segundos
+          setTimeout(() => {
+            removeToast(id);
+          }, 5000);
+        };
+        
+        const removeToast = (id) => {
+          toasts.value = toasts.value.filter(toast => toast.id !== id);
+        };
+        
+        const getToastIcon = (type) => {
+          const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+          };
+          return icons[type] || 'fas fa-info-circle';
+        };
+        
+        // Inicialización
+        onMounted(() => {
+          // Cargar datos iniciales si es necesario
+        });
+        
+        return {
+          searchQuery,
+          showPackModal,
+          selectedSticker,
+          packsAvailable,
+          packResult,
+          toasts,
+          filters,
+          stickers,
+          teams,
+          positions, // NUEVO: Exponer posiciones
+          totalStickers,
+          collectedStickers,
+          missingStickers,
+          progressPercentage,
+          canOpenPack,
+          newStickersCount,
+          repeatedStickersCount,
+          filteredStickers,
+          openPackModal,
+          closePackModal,
+          openPack,
+          revealSticker,
+          openStickerZoom,
+          showToast,
+          removeToast,
+          getToastIcon
+        };
+      }
+    }).mount('#app');
+  </script>
 </body>
 </html>
