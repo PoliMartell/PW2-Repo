@@ -647,17 +647,17 @@
       font-weight: bold;
     }
 
-    /* Filtros */
+    /* Filtros - MODIFICADO: Menos espacio vertical */
     .horizontal-filters {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin: 1.5rem 0;
+      gap: 1rem; /* Reducido de 1.5rem */
+      margin: 1rem 0; /* Reducido de 1.5rem */
     }
 
     .filter-group {
       background: var(--gris-oscuro);
-      padding: 1.5rem;
+      padding: 1rem; /* Reducido de 1.5rem */
       border-radius: var(--border-radius);
       border: 1px solid rgba(255, 255, 255, 0.1);
       transition: var(--transicion);
@@ -669,8 +669,8 @@
     }
 
     .filter-group h4 {
-      margin-bottom: 1.2rem;
-      font-size: 1.1rem;
+      margin-bottom: 0.8rem; /* Reducido de 1.2rem */
+      font-size: 1rem; /* Reducido de 1.1rem */
       display: flex;
       align-items: center;
       gap: 0.8rem;
@@ -680,16 +680,16 @@
     .filter-options {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.8rem; /* Reducido de 1rem */
     }
 
     /* Scroll específico para equipos y posiciones */
     .filter-group.scroll-group .filter-options {
       display: flex;
       flex-direction: column;
-      max-height: 250px;
+      max-height: 200px; /* Reducido de 250px */
       overflow-y: auto;
-      gap: 0.8rem;
+      gap: 0.6rem; /* Reducido de 0.8rem */
       padding-right: 10px;
     }
 
@@ -718,12 +718,13 @@
       align-items: center;
       gap: 0.5rem;
       cursor: pointer;
-      padding: 0.5rem 0.8rem;
+      padding: 0.4rem 0.6rem; /* Reducido de 0.5rem 0.8rem */
       border-radius: var(--border-radius);
       background: rgba(255, 255, 255, 0.05);
       transition: var(--transicion);
       border: 1px solid rgba(255, 255, 255, 0.1);
       flex-shrink: 0;
+      font-size: 0.9rem; /* Texto ligeramente más pequeño */
     }
 
     .filter-options label:hover {
@@ -1294,9 +1295,10 @@
             <p>{{ collectedStickers }}</p>
           </div>
 
+          <!-- MODIFICADO: Cambiado de "Faltantes" a "Duplicadas" -->
           <div class="stat-item">
-            <h4>Faltantes</h4>
-            <p>{{ missingStickers }}</p>
+            <h4>Duplicadas</h4>
+            <p>{{ duplicateStickers }}</p>
           </div>
 
           <div class="stat-item">
@@ -1316,7 +1318,7 @@
           </div>
         </div>
 
-        <!-- Filtros -->
+        <!-- Filtros - MODIFICADO: Menos espacio vertical -->
         <div class="horizontal-filters">
           <div class="filter-group">
             <h4><i class="fas fa-filter"></i> Estado</h4>
@@ -1391,15 +1393,13 @@
         <div class="profile-stats">
           <p><strong>Álbum:</strong> <span>{{ progressPercentage }}% completado</span></p>
           <p><strong>Cromos:</strong> <span>{{ collectedStickers }}/{{ totalStickers }}</span></p>
-         <!-- <p><strong>Duplicados:</strong> <span>{{ duplicateStickers }}</span></p> -->
+          <!-- MODIFICADO: Descomentado y actualizado para mostrar duplicadas -->
+          <p><strong>Duplicados:</strong> <span>{{ duplicateStickers }}</span></p>
           <p><strong>Sobres:</strong> <span>{{ packsAvailable }}</span></p>
         </div>
         <div class="profile-actions">
           <button class="profile-btn"><i class="fas fa-user"></i> Mi Perfil</button>
           <button class="profile-btn"><i class="fas fa-exchange-alt"></i> Intercambios</button>
-        <!--  <button class="profile-btn"><i class="fas fa-trophy"></i> Logros</button>
-          <button class="profile-btn"><i class="fas fa-cog"></i> Configuración</button>
-        -->
         </div>
       </aside>
     </div>
@@ -1646,7 +1646,10 @@
         // Computed properties
         const totalStickers = computed(() => stickers.value.length);
         const collectedStickers = computed(() => stickers.value.filter(s => s.obtained).length);
-        const missingStickers = computed(() => totalStickers.value - collectedStickers.value);
+        // MODIFICADO: Cambiado para mostrar duplicadas en lugar de faltantes
+        const duplicateStickers = computed(() => {
+          return stickers.value.reduce((total, sticker) => total + sticker.duplicates, 0);
+        });
         const progressPercentage = computed(() => Math.round((collectedStickers.value / totalStickers.value) * 100));
         const canOpenPack = computed(() => packsAvailable.value > 0);
         
@@ -1790,10 +1793,10 @@
           filters,
           stickers,
           teams,
-          positions, // NUEVO: Exponer posiciones
+          positions, 
           totalStickers,
           collectedStickers,
-          missingStickers,
+          duplicateStickers, 
           progressPercentage,
           canOpenPack,
           newStickersCount,
