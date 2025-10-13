@@ -1,0 +1,48 @@
+.dashboard {
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
+  min-height: 100vh;
+}
+
+.main {
+  padding: 1.5rem;
+  background-color: var(--fondo);
+}
+
+/* Responsividad */
+@media (max-width: 1200px) {
+  .dashboard {
+    grid-template-columns: 200px 1fr;
+  }
+  
+  .profile {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  
+  .sidebar {
+    height: auto;
+    position: relative;
+    padding: 1rem;
+  }
+  
+  .sidebar nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  
+  .sidebar nav a {
+    white-space: nowrap;
+  }
+  
+  .main {
+    padding: 1rem;
+  }
+}

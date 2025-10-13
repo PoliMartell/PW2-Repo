@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Fanscore</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="../styles/globals.css">
+    <link rel="stylesheet" href="../styles/layout.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div id="app">
+    <app-layout
+        :menu-items="sidebarMenu"
+        :user="userProfile"
+        :stats="profileStats"
+        :actions="profileActions"
+        :topbar="topbarConfig"
+        @logout="handleLogout"
+        @action-click="handleProfileAction"
+        @topbar-action="handleTopbarAction"
+        @search="handleSearch"
+    >
+        <!-- Contenido específico del álbum -->
+        <div class="topbar">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Buscar estampitas, jugadores..." v-model="searchQuery">
+            </div>
+            <div class="quick-actions">
+                <button class="action-btn">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="action-btn">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+
+      <div class="banner">
+        <div class="banner-text">
+          <h2>¡Colecciona todas las estampitas!</h2>
+          <p>Completa tu álbum y participa por premios exclusivos. Cada sobre contiene 5 estampitas aleatorias.</p>
+          <button @click="openPackModal" :disabled="!canOpenPack">
+            <i class="fas fa-gift"></i> Abrir Sobre ({{ packsAvailable }} disponibles)
+          </button>
+        </div>
+      </div>
+
+      <!-- Aquí va el resto de tu contenido del álbum -->
+      
+    </app-layout>
+  </div>
+
+  <!-- Incluir componentes -->
+  <script src="../components/sidebar-component.js"></script>
+  <script src="../components/profile-component.js"></script>
+  <script src="../components/layout-component.js"></script>
+  
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+    
+    // Registrar componentes globalmente primero
+    const app = createApp({
+      setup() {
+        // Datos reactivos
+        const searchQuery = ref('');
+        const packsAvailable = ref(3);
+        
+        // Menu del sidebar
+        const sidebarMenu = ref([
+          { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: true },
+          { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
+          { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
+          { name: 'Sobres', link: 'sobres.html', icon: 'fas fa-gift', active: false },
+          { name: 'Configuración', link: '#', icon: 'fas fa-cog', active: false }
+        ]);
+
+        // Perfil del usuario
+        const userProfile = ref({
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+          username: '@UsuarioFan',
+          level: 15
+        });
+
+        // Stats del perfil
+        const profileStats = ref([
+          { label: 'Álbum', value: '65% completado' },
+          { label: 'Cromos', value: '7/10' },
+          { label: 'Duplicados', value: '9' },
+          { label: 'Sobres', value: '3' }
+        ]);
+
+        // Acciones del perfil
+        const profileActions = ref([
+          { name: 'Mi Perfil', icon: 'fas fa-user' },
+          { name: 'Intercambios', icon: 'fas fa-exchange-alt' }
+        ]);
+
+        // Computed
+        const canOpenPack = computed(() => packsAvailable.value > 0);
+
+        // Métodos
+        const handleLogout = () => {
+          console.log('Cerrando sesión...');
+          // Tu lógica de logout aquí
+        };
+
+        const handleProfileAction = (actionName) => {
+          console.log('Acción del perfil:', actionName);
+          // Tu lógica para acciones del perfil
+        };
+
+        const openPackModal = () => {
+          console.log('Abriendo modal de sobre...');
+          // Tu lógica para abrir modal
+        };
+
+        return {
+          searchQuery,
+          packsAvailable,
+          sidebarMenu,
+          userProfile,
+          profileStats,
+          profileActions,
+          canOpenPack,
+          handleLogout,
+          handleProfileAction,
+          openPackModal
+        };
+      }
+    });
+
+    // Registrar componentes
+    app.component('sidebar-main', SidebarComponent);
+    app.component('profile-sidebar', ProfileComponent);
+    app.component('app-layout', LayoutComponent);
+
+    app.mount('#app');
+  </script>
+</body>
+</html>

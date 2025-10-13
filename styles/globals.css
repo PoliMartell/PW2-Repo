@@ -1,0 +1,36 @@
+:root {
+  --fondo: #000000;
+  --blanco: #FFFFFF;
+  --dorado: #D4AF37;
+  --rojo: #E5253B;
+  --verde: #009739;
+  --azul: #002F6C;
+  --turquesa: #00B6A5;
+  --morado: #231F5B;
+  --gris-oscuro: #2c2c2c;
+  --gris-claro: #f5f5f5;
+  --gradiente: linear-gradient(135deg, var(--rojo), var(--azul));
+  --gradiente-dorado: linear-gradient(135deg, #D4AF37, #AA8A2D);
+  --gradiente-verde: linear-gradient(135deg, var(--dorado), var(--turquesa));
+  --sombra: 0 15px 35px rgba(0, 0, 0, 0.5);
+  --sombra-suave: 0 5px 15px rgba(0, 0, 0, 0.08);
+  --transicion: all 0.3s ease;
+  --card-bg: #252a3f;
+  --text-color: #ffffff;
+  --text-light: #a0a0b0;
+  --border-radius: 16px;
+}
+
+/* Reset y estilos base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  background-color: var(--fondo);
+  color: var(--text-color);
+  line-height: 1.6;
+}

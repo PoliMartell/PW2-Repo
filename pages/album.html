@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Álbum - Fanscore</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  
+  <link rel="stylesheet" href="../styles/globals.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/album.css">
+</head>
+<body>
+  <div id="app">
+    <app-layout
+      :menu-items="sidebarMenu"
+      :user="userProfile"
+      :stats="profileStats"
+      :actions="profileActions"
+      :topbar="topbarConfig"
+      :search-value="searchQuery"
+      @logout="handleLogout"
+      @action-click="handleProfileAction"
+      @topbar-action="handleTopbarAction"
+      @search="handleSearch"
+    >
+      <!-- Banner específico del álbum -->
+      <banner-component
+        title="¡Colecciona todas las estampitas!"
+        description="Completa tu álbum y participa por premios exclusivos. Cada sobre contiene 5 estampitas aleatorias."
+        :button-text="`Abrir Sobre (${packsAvailable} disponibles)`"
+        button-icon="fas fa-gift"
+        :button-disabled="!canOpenPack"
+        @button-click="openPackModal"
+      />
+
+      <!-- Estadísticas del álbum (componente local) -->
+      <album-stats :stats="albumStats" />
+
+      <!-- Barra de progreso -->
+      <div class="progress-container">
+        <div class="progress-header">
+          <h3><i class="fas fa-chart-line"></i> Progreso del Álbum</h3>
+          <span>{{ collectedStickers }} / {{ totalStickers }}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress" :style="{ width: progressPercentage + '%' }"></div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="horizontal-filters">
+        <div class="filter-group">
+          <h4><i class="fas fa-filter"></i> Estado</h4>
+          <div class="filter-options">
+            <label>
+              <input type="checkbox" v-model="filters.status" value="obtained"> Obtenidas
+            </label>
+            <label>
+              <input type="checkbox" v-model="filters.status" value="missing"> Faltantes
+            </label>
+            <label>
+              <input type="checkbox" v-model="filters.status" value="repeated"> Repetidas
+            </label>
+          </div>
+        </div>
+        
+        <div class="filter-group scroll-group">
+          <h4><i class="fas fa-users"></i> Equipos</h4>
+          <div class="filter-options">
+            <label v-for="team in teams" :key="team">
+              <input type="checkbox" v-model="filters.teams" :value="team"> {{ team }}
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group scroll-group">
+          <h4><i class="fas fa-map-marker-alt"></i> Posiciones</h4>
+          <div class="filter-options">
+            <label v-for="position in positions" :key="position">
+              <input type="checkbox" v-model="filters.positions" :value="position"> {{ position }}
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid de estampitas -->
+      <sticker-grid
+        :stickers="filteredStickers"
+        @sticker-click="openStickerZoom"
+      />
+
+    </app-layout>
+
+    <!-- Modales locales del álbum -->
+    <pack-modal
+      :show="showPackModal"
+      :pack-result="packResult"
+      :new-stickers-count="newStickersCount"
+      :repeated-stickers-count="repeatedStickersCount"
+      @close="closePackModal"
+      @open-pack="openPack"
+      @reveal-sticker="revealSticker"
+    />
+
+    <sticker-zoom-modal
+      :sticker="selectedSticker"
+      @close="selectedSticker = null"
+    />
+
+    <toast-container
+      :toasts="toasts"
+      @remove-toast="removeToast"
+    />
+  </div>
+
+  <!-- Componentes globales -->
+  <script src="../components/sidebar-component.js"></script>
+  <script src="../components/profile-component.js"></script>
+  <script src="../components/layout-component.js"></script>
+  <script src="../components/topbar-component.js"></script>
+  <script src="../components/search-component.js"></script>
+  <script src="../components/banner-component.js"></script>
+  
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+    
+    // ✅ COMPONENTES LOCALES DEL ÁLBUM (agregar antes del createApp)
+
+const AlbumStats = {
+  template: `
+    <div class="compact-stats">
+      <div 
+        v-for="stat in stats" 
+        :key="stat.label"
+        class="stat-item"
+        :class="{ highlight: stat.highlight }"
+      >
+        <h4>{{ stat.label }}</h4>
+        <p>{{ stat.value }}</p>
+      </div>
+    </div>
+  `,
+  props: ['stats']
+};
+
+const StickerGrid = {
+  template: `
+    <div class="sticker-grid">
+      <div 
+        v-for="sticker in stickers" 
+        :key="sticker.id"
+        class="sticker"
+        :class="{ 
+          'obtained': sticker.obtained,
+          'locked': !sticker.obtained 
+        }"
+        @click="$emit('sticker-click', sticker)"
+      >
+        <div class="sticker-number">#{{ sticker.number }}</div>
+        <div class="duplicates-badge" v-if="sticker.duplicates > 0">
+          +{{ sticker.duplicates }}
+        </div>
+        <img :src="sticker.image" :alt="sticker.name" class="sticker-image">
+        <div class="sticker-info">
+          <div class="sticker-name">{{ sticker.name }}</div>
+          <div class="sticker-team">{{ sticker.team }} • {{ sticker.position }}</div>
+        </div>
+      </div>
+    </div>
+  `,
+  props: ['stickers'],
+  emits: ['sticker-click']
+};
+
+const PackModal = {
+  template: `
+    <div class="pack-modal" :class="{ active: show }">
+      <div class="pack-modal-content">
+        <div class="pack-modal-close" @click="$emit('close')">
+          <i class="fas fa-times"></i>
+        </div>
+        
+        <div class="pack-modal-header">
+          <h2>Abrir Sobre</h2>
+          <p>¡Obtén 5 estampitas aleatorias!</p>
+        </div>
+        
+        <div class="pack-modal-body">
+          <div class="pack-container" @click="$emit('open-pack')">
+            <div class="pack">
+              <div class="pack-front">
+                <i class="fas fa-gift"></i>
+                <span>Sobre Premium</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="sticker-cards" v-if="packResult.length > 0">
+            <div 
+              v-for="(sticker, index) in packResult" 
+              :key="index" 
+              class="card"
+              :class="{ flipped: sticker.revealed }"
+              @click="$emit('reveal-sticker', index)"
+            >
+              <div class="card-inner">
+                <div class="card-front">
+                  <div class="card-shine"></div>
+                  <div class="card-back-pattern">
+                    <i class="fas fa-question"></i>
+                  </div>
+                </div>
+                <div class="card-back">
+                  <div class="sticker-revealed">
+                    <img :src="sticker.image" :alt="sticker.name" class="sticker-image">
+                    <div class="sticker-name">{{ sticker.name }}</div>
+                    <div class="sticker-team">{{ sticker.team }} • {{ sticker.position }}</div>
+                    <div class="new-badge" v-if="sticker.isNew">NUEVA</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pack-results" v-if="packResult.length > 0">
+            <div class="results-summary">
+              <h3>Resultados del Sobre</h3>
+              <div class="results-stats">
+                <span>Nuevas: {{ newStickersCount }}</span>
+                <span>Repetidas: {{ repeatedStickersCount }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="pack-modal-footer">
+          <button class="banner-button" @click="$emit('close')">
+            <i class="fas fa-check"></i> Aceptar
+          </button>
+        </div>
+      </div>
+    </div>
+  `,
+  props: ['show', 'packResult', 'newStickersCount', 'repeatedStickersCount'],
+  emits: ['close', 'open-pack', 'reveal-sticker']
+};
+
+const StickerZoomModal = {
+  template: `
+    <div class="sticker-zoom-modal" :class="{ active: sticker }">
+      <div class="sticker-zoom-content">
+        <div class="sticker-zoom-close" @click="$emit('close')">
+          <i class="fas fa-times"></i>
+        </div>
+        
+        <div class="sticker-zoom-duplicates" v-if="sticker && sticker.duplicates > 0">
+          <i class="fas fa-copy"></i> Tienes {{ sticker.duplicates }} repetidas
+        </div>
+        
+        <div class="sticker-zoom-image-container">
+          <img 
+            v-if="sticker" 
+            :src="sticker.image" 
+            :alt="sticker.name" 
+            class="sticker-zoom-image"
+          >
+        </div>
+        
+        <div class="sticker-zoom-info" v-if="sticker">
+          <div class="sticker-zoom-number">#{{ sticker.number }}</div>
+          <div class="sticker-zoom-name">{{ sticker.name }}</div>
+          <div class="sticker-zoom-position">{{ sticker.position }}</div>
+          <div class="sticker-zoom-team">{{ sticker.team }}</div>
+          
+          <div class="sticker-zoom-status" :class="sticker.obtained ? 'obtained' : 'missing'">
+            {{ sticker.obtained ? 'OBTENIDA' : 'FALTANTE' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  props: ['sticker'],
+  emits: ['close']
+};
+
+const ToastContainer = {
+  template: `
+    <div class="toast-container">
+      <div 
+        v-for="toast in toasts" 
+        :key="toast.id" 
+        class="toast"
+        :class="toast.type"
+      >
+        <i :class="getToastIcon(toast.type)"></i>
+        <span>{{ toast.message }}</span>
+        <button @click="$emit('remove-toast', toast.id)">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+  `,
+  props: ['toasts'],
+  emits: ['remove-toast'],
+  methods: {
+    getToastIcon(type) {
+      const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+      };
+      return icons[type] || 'fas fa-info-circle';
+    }
+  }
+};
+    
+
+    const app = createApp({
+      setup() {
+        // ... todo tu setup() original (sin los componentes locales) ...
+        const searchQuery = ref('');
+        const showPackModal = ref(false);
+        const selectedSticker = ref(null);
+        const packsAvailable = ref(3);
+        const packResult = ref([]);
+        const toasts = ref([]);
+        
+        // Filtros
+        const filters = ref({
+          status: ['obtained', 'missing', 'repeated'],
+          teams: [],
+          positions: []
+        });
+        
+        // Datos de ejemplo para estampitas
+        const stickers = ref([
+          {
+            id: 1,
+            number: 1,
+            name: 'Lionel Messi',
+            team: 'Argentina',
+            position: 'Delantero',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: true,
+            duplicates: 2
+          },
+          {
+            id: 2,
+            number: 7,
+            name: 'Cristiano Ronaldo',
+            team: 'Portugal',
+            position: 'Delantero',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: true,
+            duplicates: 1
+          },
+          {
+            id: 3,
+            number: 10,
+            name: 'Neymar Jr',
+            team: 'Brasil',
+            position: 'Delantero',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
+            obtained: false,
+            duplicates: 0
+          }
+        ]);
+        
+        // Equipos y posiciones
+        const teams = ref(['Argentina', 'Brasil', 'Francia', 'Portugal', 'España']);
+        const positions = ref(['Portero', 'Defensa', 'Mediocampista', 'Delantero']);
+        
+        // Computed properties
+        const totalStickers = computed(() => stickers.value.length);
+        const collectedStickers = computed(() => stickers.value.filter(s => s.obtained).length);
+        const duplicateStickers = computed(() => {
+          return stickers.value.reduce((total, sticker) => total + sticker.duplicates, 0);
+        });
+        const progressPercentage = computed(() => {
+          const percentage = Math.round((collectedStickers.value / totalStickers.value) * 100);
+          return isNaN(percentage) ? 0 : percentage;
+        });
+        const canOpenPack = computed(() => packsAvailable.value > 0);
+        
+        const newStickersCount = computed(() => packResult.value.filter(s => s.isNew).length);
+        const repeatedStickersCount = computed(() => packResult.value.filter(s => !s.isNew).length);
+        
+        // Stats para el álbum
+        const albumStats = computed(() => [
+          { label: 'Estampitas Total', value: totalStickers.value },
+          { label: 'Coleccionadas', value: collectedStickers.value, highlight: true },
+          { label: 'Duplicadas', value: duplicateStickers.value },
+          { label: 'Sobres', value: packsAvailable.value }
+        ]);
+
+        // Stats para el perfil
+        const profileStats = computed(() => [
+          { label: 'Álbum', value: `${progressPercentage.value}% completado` },
+          { label: 'Cromos', value: `${collectedStickers.value}/${totalStickers.value}` },
+          { label: 'Duplicados', value: duplicateStickers.value },
+          { label: 'Sobres', value: packsAvailable.value }
+        ]);
+
+        // Filtrado de estampitas
+        const filteredStickers = computed(() => {
+          if (!stickers.value.length) return [];
+          
+          return stickers.value.filter(sticker => {
+            // Filtro por búsqueda
+            if (searchQuery.value && 
+                !sticker.name.toLowerCase().includes(searchQuery.value.toLowerCase()) &&
+                !sticker.team.toLowerCase().includes(searchQuery.value.toLowerCase()) &&
+                !sticker.position.toLowerCase().includes(searchQuery.value.toLowerCase())) {
+              return false;
+            }
+            
+            // Filtro por estado
+            const statusFilters = filters.value.status;
+            if (statusFilters.length > 0) {
+              const statusMatch = 
+                (statusFilters.includes('obtained') && sticker.obtained) ||
+                (statusFilters.includes('missing') && !sticker.obtained) ||
+                (statusFilters.includes('repeated') && sticker.duplicates > 0);
+              
+              if (!statusMatch) return false;
+            }
+            
+            // Filtro por equipos
+            const teamFilters = filters.value.teams;
+            if (teamFilters.length > 0 && !teamFilters.includes(sticker.team)) {
+              return false;
+            }
+            
+            // Filtro por posiciones
+            const positionFilters = filters.value.positions;
+            if (positionFilters.length > 0 && !positionFilters.includes(sticker.position)) {
+              return false;
+            }
+            
+            return true;
+          });
+        });
+        
+        // Configuración del layout
+        const sidebarMenu = ref([
+          { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: false },
+          { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: true },
+          { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
+          { name: 'Sobres', link: 'sobres.html', icon: 'fas fa-gift', active: false },
+          { name: 'Configuración', link: '#', icon: 'fas fa-cog', active: false }
+        ]);
+
+        const userProfile = ref({
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+          username: '@UsuarioFan',
+          level: 15
+        });
+
+        const profileActions = ref([
+          { name: 'Mi Perfil', icon: 'fas fa-user' },
+          { name: 'Intercambios', icon: 'fas fa-exchange-alt' }
+        ]);
+
+        const topbarConfig = ref({
+          searchPlaceholder: 'Buscar estampitas, jugadores...',
+          actions: [
+            { name: 'notifications', icon: 'fas fa-bell', title: 'Notificaciones' },
+            { name: 'settings', icon: 'fas fa-cog', title: 'Configuración' }
+          ]
+        });
+
+        // Métodos
+        const openPackModal = () => {
+          if (canOpenPack.value) {
+            showPackModal.value = true;
+            packResult.value = [];
+          } else {
+            showToast('No tienes sobres disponibles', 'error');
+          }
+        };
+        
+        const closePackModal = () => {
+          showPackModal.value = false;
+          packResult.value = [];
+        };
+        
+        const openPack = () => {
+          if (packsAvailable.value <= 0) {
+            showToast('No tienes sobres disponibles', 'error');
+            return;
+          }
+          
+          // Generar 5 estampitas aleatorias
+          const newPack = [];
+          for (let i = 0; i < 5; i++) {
+            const randomIndex = Math.floor(Math.random() * stickers.value.length);
+            const randomSticker = { ...stickers.value[randomIndex] };
+            randomSticker.revealed = false;
+            randomSticker.isNew = !randomSticker.obtained;
+            newPack.push(randomSticker);
+          }
+          
+          packResult.value = newPack;
+          packsAvailable.value--;
+          
+          showToast('¡Sobre abierto! Revela tus estampitas', 'success');
+        };
+        
+        const revealSticker = (index) => {
+          if (!packResult.value[index].revealed) {
+            packResult.value[index].revealed = true;
+            
+            // Actualizar la estampita en la colección si es nueva
+            if (packResult.value[index].isNew) {
+              const stickerIndex = stickers.value.findIndex(s => s.id === packResult.value[index].id);
+              if (stickerIndex !== -1) {
+                stickers.value[stickerIndex].obtained = true;
+              }
+            } else {
+              // Si es repetida, incrementar el contador
+              const stickerIndex = stickers.value.findIndex(s => s.id === packResult.value[index].id);
+              if (stickerIndex !== -1) {
+                stickers.value[stickerIndex].duplicates++;
+              }
+            }
+          }
+        };
+        
+        const openStickerZoom = (sticker) => {
+          selectedSticker.value = sticker;
+        };
+        
+        const showToast = (message, type = 'info') => {
+          const id = Date.now();
+          toasts.value.push({ id, message, type });
+          
+          // Auto-remover después de 5 segundos
+          setTimeout(() => {
+            removeToast(id);
+          }, 5000);
+        };
+        
+        const removeToast = (id) => {
+          toasts.value = toasts.value.filter(toast => toast.id !== id);
+        };
+        
+        const handleLogout = () => {
+          console.log('Cerrando sesión...');
+        };
+
+        const handleProfileAction = (actionName) => {
+          console.log('Acción del perfil:', actionName);
+        };
+
+        const handleTopbarAction = (actionName) => {
+          console.log('Acción topbar:', actionName);
+        };
+
+        const handleSearch = (searchTerm) => {
+          searchQuery.value = searchTerm;
+        };
+
+        // Inicialización
+        onMounted(() => {
+          console.log('Componente montado');
+        });
+
+        return {
+          searchQuery,
+          showPackModal,
+          selectedSticker,
+          packsAvailable,
+          packResult,
+          toasts,
+          filters,
+          stickers,
+          teams,
+          positions,
+          sidebarMenu,
+          userProfile,
+          profileStats,
+          profileActions,
+          topbarConfig,
+          albumStats,
+          totalStickers,
+          collectedStickers,
+          duplicateStickers,
+          progressPercentage,
+          canOpenPack,
+          newStickersCount,
+          repeatedStickersCount,
+          filteredStickers,
+          openPackModal,
+          closePackModal,
+          openPack,
+          revealSticker,
+          openStickerZoom,
+          showToast,
+          removeToast,
+          handleLogout,
+          handleProfileAction,
+          handleTopbarAction,
+          handleSearch
+        };
+      }
+    });
+
+    // ✅ Registrar componentes GLOBALES
+    app.component('sidebar-main', SidebarComponent);
+    app.component('profile-sidebar', ProfileComponent);
+    app.component('app-layout', LayoutComponent);
+    app.component('topbar-component', TopbarComponent);
+    app.component('search-component', SearchComponent);
+    app.component('banner-component', BannerComponent);
+
+    // ✅ Registrar componentes LOCALES (solo para álbum)
+    app.component('album-stats', AlbumStats);
+    app.component('sticker-grid', StickerGrid);
+    app.component('pack-modal', PackModal);
+    app.component('sticker-zoom-modal', StickerZoomModal);
+    app.component('toast-container', ToastContainer);
+
+    app.mount('#app');
+  </script>
+</body>
+</html>

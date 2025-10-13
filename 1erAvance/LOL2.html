@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanscore - Enciclopedia</title>
+    <!-- Vue.js desde CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Variables */
+        :root {
+          --fondo: #000000;
+          --blanco: #FFFFFF;
+          --dorado: #D4AF37;
+          --rojo: #E5253B;
+          --gris-oscuro: #2c2c2c;
+          --gris-medio: #444;
+          --gradiente: linear-gradient(135deg, var(--rojo), var(--azul), #000000);
+          --gradiente-dorado: linear-gradient(135deg, #D4AF37, #AA8A2D);
+          --sombra: 0 15px 35px rgba(0, 0, 0, 0.5);
+          --sombra-suave: 0 5px 15px rgba(0, 0, 0, 0.3);
+          --transicion: all 0.3s ease;
+          --border-radius: 16px;
+          --border-radius-sm: 8px;
+        }
+
+        /* Layout principal */
+        body {
+          margin: 0;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: var(--fondo);
+          color: var(--blanco);
+          display: flex;
+          min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+          background: linear-gradient(135deg, var(--gris-oscuro), #000000);
+          color: var(--blanco);
+          padding: 1.5rem 1rem;
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          width: 220px;
+          position: sticky;
+          top: 0;
+          transition: var(--transicion);
+          box-shadow: var(--sombra);
+        }
+
+        .logo {
+          font-size: 1.8rem;
+          font-weight: 700;
+          margin-bottom: 2rem;
+          text-align: center;
+          color: var(--dorado);
+        }
+
+        .sidebar nav {
+          display: flex;
+          flex-direction: column;
+          gap: 0.8rem;
+        }
+
+        .sidebar nav a {
+          color: rgba(255, 255, 255, 0.8);
+          text-decoration: none;
+          padding: 0.8rem 1rem;
+          border-radius: var(--border-radius);
+          transition: var(--transicion);
+          display: flex;
+          align-items: center;
+          gap: 0.8rem;
+        }
+
+        .sidebar nav a:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+          color: var(--blanco);
+          transform: translateX(5px);
+        }
+
+        .sidebar nav a.active {
+          background: var(--gradiente);
+          color: var(--blanco);
+          box-shadow: 0 0 12px rgba(229, 37, 59, 0.5);
+          border: 1px solid var(--rojo);
+        }
+
+        .logout {
+          color: rgba(255, 255, 255, 0.8);
+          text-decoration: none;
+          padding: 0.8rem 1rem;
+          border-radius: var(--border-radius);
+          transition: var(--transicion);
+          display: flex;
+          align-items: center;
+          gap: 0.8rem;
+          margin-top: auto;
+        }
+
+        .logout:hover {
+          background-color: rgba(229, 37, 59, 0.2);
+          color: var(--rojo);
+        }
+
+        /* Contenido principal */
+        .main-content {
+          flex: 1;
+          padding: 2rem;
+          overflow-y: auto;
+        }
+
+        .page-header {
+          text-align: center;
+          margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+          color: var(--dorado);
+          margin-bottom: 0.5rem;
+          font-size: 2.2rem;
+          text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .page-header p {
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 1rem;
+        }
+
+        /* Barra de búsqueda */
+        .search-bar {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 2rem;
+        }
+
+        .search-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+          width: 100%;
+          max-width: 500px;
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 15px;
+          color: rgba(255, 255, 255, 0.7);
+          z-index: 2;
+        }
+
+        .search-bar input {
+          padding: 0.8rem 1.2rem 0.8rem 3rem;
+          border-radius: var(--border-radius);
+          border: none;
+          outline: none;
+          width: 100%;
+          font-size: 1rem;
+          background: var(--gris-oscuro);
+          color: var(--blanco);
+          transition: var(--transicion);
+          box-shadow: var(--sombra-suave);
+        }
+
+        .search-bar input:focus {
+          background: var(--gris-medio);
+          box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .search-bar button {
+          position: absolute;
+          right: 5px;
+          padding: 0.7rem;
+          border: none;
+          background: var(--gradiente);
+          color: var(--blanco);
+          border-radius: 50%;
+          cursor: pointer;
+          transition: var(--transicion);
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .search-bar button:hover {
+          transform: scale(1.05) rotate(5deg);
+          box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Filtros */
+        .filters-container {
+          margin-bottom: 2rem;
+        }
+
+        .filters-container h3 {
+          color: var(--dorado);
+          margin-bottom: 1rem;
+          font-size: 1.2rem;
+        }
+
+        .filters {
+          display: flex;
+          justify-content: center;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+          align-items: end;
+        }
+
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          min-width: 160px;
+        }
+
+        .filter-group label {
+          margin-bottom: 0.5rem;
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        .filters select {
+          padding: 0.8rem 1rem;
+          border-radius: var(--border-radius-sm);
+          border: none;
+          outline: none;
+          background: var(--gris-oscuro);
+          color: var(--blanco);
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: var(--transicion);
+          box-shadow: var(--sombra-suave);
+        }
+
+        .filters select:hover {
+          background: var(--gris-medio);
+          transform: translateY(-2px);
+        }
+
+        .reset-btn {
+          padding: 0.8rem 1.2rem;
+          border-radius: var(--border-radius-sm);
+          border: none;
+          background: transparent;
+          color: var(--blanco);
+          cursor: pointer;
+          transition: var(--transicion);
+          border: 1px solid var(--rojo);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 1.6rem;
+        }
+
+        .reset-btn:hover {
+          background: rgba(229, 37, 59, 0.2);
+          transform: translateY(-2px);
+        }
+
+        /* Contador de resultados */
+        .results-counter {
+          text-align: center;
+          margin-bottom: 1.5rem;
+          color: #ccc;
+          font-size: 1rem;
+          padding: 0.8rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: var(--border-radius-sm);
+        }
+
+        .results-counter span {
+          color: var(--dorado);
+          font-weight: bold;
+          font-size: 1.2rem;
+        }
+
+        /* Tarjetas (solo imagen y nombre) */
+        .cards-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 2rem;
+        }
+
+        .card {
+          background: var(--gris-oscuro);
+          border-radius: var(--border-radius);
+          box-shadow: var(--sombra-suave);
+          overflow: hidden;
+          transition: var(--transicion);
+          cursor: pointer;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          transform: translateY(0);
+        }
+
+        .card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        .card-badge {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: var(--gradiente-dorado);
+          color: var(--blanco);
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 1.1rem;
+          z-index: 2;
+          box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        .card-image {
+          position: relative;
+          overflow: hidden;
+          height: 250px;
+        }
+
+        .card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: var(--transicion);
+        }
+
+        .card:hover img {
+          transform: scale(1.08);
+        }
+
+        .card-overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+          padding: 1rem;
+          display: flex;
+          justify-content: space-between;
+          opacity: 0;
+          transition: var(--transicion);
+        }
+
+        .card:hover .card-overlay {
+          opacity: 1;
+        }
+
+        .card-team, .card-country {
+          font-size: 0.8rem;
+          color: var(--blanco);
+          background: rgba(0, 0, 0, 0.6);
+          padding: 0.3rem 0.6rem;
+          border-radius: var(--border-radius-sm);
+        }
+
+        .card-content {
+          padding: 1.2rem;
+          text-align: center;
+        }
+
+        .card h3 {
+          margin: 0 0 0.3rem 0;
+          color: var(--blanco);
+          font-size: 1.2rem;
+          transition: var(--transicion);
+        }
+
+        .card:hover h3 {
+          color: var(--dorado);
+        }
+
+        .card-position {
+          margin: 0;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 0.9rem;
+        }
+
+        /* Mensaje sin resultados */
+        .no-results {
+          text-align: center;
+          padding: 3rem;
+          color: #999;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .no-results-icon {
+          font-size: 4rem;
+          margin-bottom: 1.5rem;
+          color: var(--gris-medio);
+        }
+
+        .no-results h3 {
+          color: var(--blanco);
+          margin-bottom: 0.5rem;
+          font-size: 1.5rem;
+        }
+
+        .no-results p {
+          margin-bottom: 1.5rem;
+        }
+
+        /* Modal con estilo de ficha */
+        .modal {
+          display: none;
+          position: fixed;
+          z-index: 1000;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+          background-color: rgba(0,0,0,0.8);
+          backdrop-filter: blur(5px);
+          animation: fadeInBg 0.3s ease forwards;
+        }
+
+        .modal.closing { 
+          animation: fadeOutBg 0.3s ease forwards; 
+        }
+
+        @keyframes fadeInBg {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes fadeOutBg { 
+          from { opacity: 1; }
+          to { opacity: 0; } 
+        }
+
+        .modal-content.player-card {
+          background: var(--gris-oscuro);
+          margin: 2% auto;
+          padding: 0;
+          border-radius: var(--border-radius);
+          width: 90%;
+          max-width: 700px;
+          box-shadow: var(--sombra);
+          color: var(--blanco);
+          animation: modalFadeIn 0.4s ease;
+          position: relative;
+          overflow: hidden;
+          border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        @keyframes modalFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        .player-card-header {
+          background: var(--gradiente);
+          padding: 2rem;
+          text-align: center;
+          position: relative;
+        }
+
+        .player-card-image {
+          width: 150px;
+          height: 150px;
+          border-radius: 50%;
+          overflow: hidden;
+          margin: 0 auto 1rem;
+          border: 4px solid var(--dorado);
+          box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+          position: relative;
+        }
+
+        .player-card-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .player-card-name {
+          font-size: 2rem;
+          margin: 0;
+          color: var(--blanco);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 700;
+        }
+
+        .player-card-position {
+          color: var(--dorado);
+          font-size: 1.2rem;
+          margin: 0.5rem 0;
+          font-weight: 500;
+        }
+
+        .player-card-body {
+          padding: 2rem;
+        }
+
+        .player-card-section {
+          margin-bottom: 2rem;
+        }
+
+        .player-card-section h3 {
+          color: var(--dorado);
+          font-size: 1.3rem;
+          margin-bottom: 1rem;
+          border-bottom: 2px solid var(--rojo);
+          padding-bottom: 0.5rem;
+          display: inline-block;
+        }
+
+        .player-card-info {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .player-card-info p {
+          margin: 0.5rem 0;
+          display: flex;
+          align-items: center;
+        }
+
+        .player-card-info strong {
+          color: var(--dorado);
+          margin-right: 0.5rem;
+          min-width: 80px;
+        }
+
+        .player-card-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          text-align: center;
+          margin: 1.5rem 0;
+        }
+
+        .player-stat {
+          background: rgba(255, 255, 255, 0.05);
+          padding: 1rem;
+          border-radius: var(--border-radius);
+          transition: var(--transicion);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .player-stat::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 4px;
+          background: var(--gradiente-dorado);
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 0.3s ease;
+        }
+
+        .player-stat:hover::before {
+          transform: scaleX(1);
+        }
+
+        .player-stat:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-value {
+          display: block;
+          font-size: 2rem;
+          font-weight: bold;
+          color: var(--dorado);
+        }
+
+        .stat-label {
+          font-size: 0.9rem;
+          color: #ccc;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .player-card-description {
+          background: rgba(255, 255, 255, 0.05);
+          padding: 1.5rem;
+          border-radius: var(--border-radius);
+          border-left: 4px solid var(--rojo);
+          line-height: 1.6;
+        }
+
+        .close {
+          color: var(--rojo);
+          position: absolute;
+          top: 1rem;
+          right: 1.5rem;
+          font-size: 2rem;
+          font-weight: bold;
+          cursor: pointer;
+          transition: var(--transicion);
+          z-index: 10;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+        }
+
+        .close:hover {
+          color: #fff;
+          background: rgba(229, 37, 59, 0.2);
+          transform: rotate(90deg);
+        }
+
+        /* Estrellas de calificación */
+        .rating-stars {
+          display: flex;
+          gap: 0.5rem;
+          font-size: 2rem;
+          color: #666;
+          cursor: pointer;
+          margin-bottom: 1rem;
+          justify-content: center;
+        }
+
+        .rating-stars span {
+          transition: var(--transicion);
+        }
+
+        .rating-stars span:hover {
+          transform: scale(1.2);
+        }
+
+        .rating-stars span.selected {
+          color: var(--dorado);
+          text-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
+          transform: scale(1.2);
+        }
+
+        /* Caja de comentarios */
+        #commentBox {
+          width: 100%;
+          border-radius: var(--border-radius-sm);
+          background: var(--gris-medio);
+          color: var(--blanco);
+          border: none;
+          padding: 0.8rem;
+          margin-bottom: 1rem;
+          resize: none;
+          font-family: inherit;
+          transition: var(--transicion);
+        }
+
+        #commentBox:focus {
+          outline: 1px solid var(--dorado);
+          box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .comment-btn {
+          background: var(--gradiente-dorado);
+          border: none;
+          padding: 0.8rem 1.5rem;
+          border-radius: var(--border-radius-sm);
+          cursor: pointer;
+          transition: var(--transicion);
+          display: block;
+          margin-bottom: 1.5rem;
+          color: var(--blanco);
+          font-weight: 600;
+          width: 100%;
+        }
+
+        .comment-btn:hover {
+          opacity: 0.9;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .comments-list {
+          max-height: 200px;
+          overflow-y: auto;
+        }
+
+        .comments-list p {
+          background: rgba(255, 255, 255, 0.05);
+          padding: 0.8rem;
+          border-radius: var(--border-radius-sm);
+          margin: 0.5rem 0;
+          font-size: 0.9rem;
+          border-left: 3px solid var(--dorado);
+        }
+
+        /* Responsividad */
+        @media (max-width: 1024px) {
+          .cards-container {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          }
+          
+          .player-card-stats {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 768px) {
+          body {
+            flex-direction: column;
+          }
+          
+          .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            border-radius: 0;
+            padding: 1rem;
+          }
+          
+          .sidebar nav {
+            flex-direction: row;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+          }
+          
+          .sidebar nav a {
+            white-space: nowrap;
+          }
+          
+          .main-content {
+            padding: 1.5rem;
+          }
+          
+          .filters {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+          }
+          
+          .filter-group, .reset-btn {
+            width: 100%;
+          }
+          
+          .reset-btn {
+            margin-top: 0;
+            justify-content: center;
+          }
+          
+          .player-card-info {
+            grid-template-columns: 1fr;
+          }
+          
+          .player-card-stats {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          
+          .cards-container {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .main-content {
+            padding: 1rem;
+          }
+          
+          .cards-container {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+          
+          .modal-content.player-card {
+            margin: 5% auto;
+            width: 95%;
+          }
+          
+          .player-card-stats {
+            grid-template-columns: 1fr;
+          }
+          
+          .player-card-image {
+            width: 120px;
+            height: 120px;
+          }
+          
+          .player-card-name {
+            font-size: 1.5rem;
+          }
+        }
+
+        /* Estados para filtros activos */
+        .card.hidden {
+          display: none;
+        }
+
+        /* Animaciones adicionales */
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .card {
+          animation: fadeIn 0.5s ease forwards;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+
+        /* Scroll personalizado */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: var(--gris-oscuro);
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: var(--dorado);
+          border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background: #AA8A2D;
+        }
+
+        /* Estilos mejorados para el modal con estructura de ficha */
+        .modal-content.player-card {
+          background: var(--gris-oscuro);
+          margin: 2% auto;
+          padding: 0;
+          border-radius: var(--border-radius);
+          width: 90%;
+          max-width: 800px;
+          box-shadow: var(--sombra);
+          color: var(--blanco);
+          animation: modalFadeIn 0.4s ease;
+          position: relative;
+          overflow: hidden;
+          border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .player-card-header {
+          background: var(--gradiente);
+          padding: 2rem;
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 2rem;
+        }
+
+        .player-card-image {
+          width: 150px;
+          height: 150px;
+          border-radius: 50%;
+          overflow: hidden;
+          border: 4px solid var(--dorado);
+          box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+          flex-shrink: 0;
+        }
+
+        .player-card-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .player-card-info {
+          flex: 1;
+        }
+
+        .player-card-name {
+          font-size: 2.2rem;
+          margin: 0 0 0.5rem 0;
+          color: var(--blanco);
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .player-card-position {
+          color: var(--dorado);
+          font-size: 1.4rem;
+          margin: 0 0 1.5rem 0;
+          font-weight: 500;
+        }
+
+        .player-card-meta {
+          display: flex;
+          gap: 2rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .meta-item {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .meta-label {
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+          margin-bottom: 0.3rem;
+        }
+
+        .meta-value {
+          font-size: 1.1rem;
+          font-weight: 600;
+        }
+
+        .player-card-actions {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .action-btn {
+          padding: 0.6rem 1.2rem;
+          border-radius: var(--border-radius-sm);
+          border: none;
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--blanco);
+          cursor: pointer;
+          transition: var(--transicion);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+          background: var(--dorado);
+          color: var(--fondo);
+        }
+
+        .player-card-body {
+          padding: 2rem;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 2rem;
+        }
+
+        .player-card-section {
+          margin-bottom: 0;
+        }
+
+        .player-card-section h3 {
+          color: var(--dorado);
+          font-size: 1.3rem;
+          margin-bottom: 1.2rem;
+          border-bottom: 2px solid var(--rojo);
+          padding-bottom: 0.5rem;
+          display: inline-block;
+        }
+
+        .stats-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+        }
+
+        .stat-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.8rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: var(--border-radius-sm);
+          transition: var(--transicion);
+        }
+
+        .stat-item:hover {
+          background: rgba(255, 255, 255, 0.1);
+          transform: translateX(5px);
+        }
+
+        .stat-label {
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 0.95rem;
+        }
+
+        .stat-value {
+          color: var(--dorado);
+          font-weight: 700;
+          font-size: 1.2rem;
+        }
+
+        .skills-grid, .achievements-grid {
+          display: grid;
+          gap: 0.8rem;
+        }
+
+        .skill-item, .achievement-item {
+          display: flex;
+          align-items: center;
+          gap: 0.8rem;
+          padding: 0.6rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: var(--border-radius-sm);
+          transition: var(--transicion);
+        }
+
+        .skill-item:hover, .achievement-item:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        .skill-icon, .achievement-icon {
+          color: var(--dorado);
+          width: 24px;
+          text-align: center;
+        }
+
+        /* Responsividad para el modal */
+        @media (max-width: 768px) {
+          .player-card-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+          }
+          
+          .player-card-meta {
+            justify-content: center;
+          }
+          
+          .player-card-body {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+          
+          .stats-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .player-card-meta {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+          }
+          
+          .player-card-actions {
+            flex-direction: column;
+          }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+          <!-- Sidebar idéntico a album.html -->
+          <div class="dashboard">
+            <aside class="sidebar" aria-label="Navegación principal">
+              <h2 class="logo">Fanscore</h2>
+              <nav aria-label="Navegación principal">
+                <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="album.htm" class="active" aria-current="page"><i class="fas fa-book"></i> Álbum</a>
+                <a href="enciclopedia.html"><i class="fas fa-globe"></i> Enciclopedia</a>
+                <a href="#"><i class="fas fa-gift"></i> Sobres</a>
+                <a href="#"><i class="fas fa-cog"></i> Configuración</a>
+              </nav>
+              <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+            </aside>
+
+            <!-- Contenido principal -->
+            <main class="main-content">
+            <header class="page-header">
+                <h1>Enciclopedia de Jugadores</h1>
+                <p>Explora y descubre las estadísticas de tus jugadores favoritos</p>
+            </header>
+            
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" 
+                           v-model="searchQuery" 
+                           placeholder="Buscar jugador..." 
+                           aria-label="Buscar jugador"
+                           @input="filterPlayers">
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters-container">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="teamFilter">Equipo</label>
+                        <select id="teamFilter" 
+                                v-model="teamFilter" 
+                                aria-label="Filtrar por equipo"
+                                @change="filterPlayers">
+                            <option value="">Todos los equipos</option>
+                            <option value="barcelona">Barcelona</option>
+                            <option value="real-madrid">Real Madrid</option>
+                            <option value="psg">PSG</option>
+                            <option value="manchester-city">Manchester City</option>
+                            <option value="liverpool">Liverpool</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="countryFilter">País</label>
+                        <select id="countryFilter" 
+                                v-model="countryFilter" 
+                                aria-label="Filtrar por país"
+                                @change="filterPlayers">
+                            <option value="">Todos los países</option>
+                            <option value="argentina">Argentina</option>
+                            <option value="portugal">Portugal</option>
+                            <option value="francia">Francia</option>
+                            <option value="brasil">Brasil</option>
+                            <option value="españa">España</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="positionFilter">Posición</label>
+                        <select id="positionFilter" 
+                                v-model="positionFilter" 
+                                aria-label="Filtrar por posición"
+                                @change="filterPlayers">
+                            <option value="">Todas las posiciones</option>
+                            <option value="portero">Portero</option>
+                            <option value="defensa">Defensa</option>
+                            <option value="medio">Mediocampista</option>
+                            <option value="delantero">Delantero</option>
+                        </select>
+                    </div>
+
+                    <button class="reset-btn" @click="resetFilters">
+                        <i class="fas fa-redo"></i> Restablecer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contador de resultados -->
+            <div class="results-counter" v-if="filteredPlayers.length > 0">
+                Mostrando <span>{{ filteredPlayers.length }}</span> de <span>{{ players.length }}</span> jugadores
+            </div>
+
+            <!-- Tarjetas (solo foto y nombre) -->
+            <section class="cards-container" id="playersContainer">
+                <div class="card" 
+                     v-for="player in filteredPlayers" 
+                     :key="player.id"
+                     :data-player="player.id"
+                     :data-team="player.team"
+                     :data-country="player.country"
+                     :data-position="player.position"
+                     @click="openPlayerModal(player)">
+                    <div class="card-badge">{{ player.overall }}</div>
+                    <div class="card-image">
+                        <img :src="player.image" :alt="player.name">
+                        <div class="card-overlay">
+                            <div class="card-team">{{ player.team }}</div>
+                            <div class="card-country">{{ player.country }}</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>{{ player.name }}</h3>
+                        <p class="card-position">{{ player.position }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mensaje cuando no hay resultados -->
+            <div class="no-results" v-if="filteredPlayers.length === 0">
+                <div class="no-results-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>No se encontraron jugadores</h3>
+                <p>Intenta ajustar los filtros o términos de búsqueda</p>
+                <button class="reset-btn" @click="resetFilters">Restablecer búsqueda</button>
+            </div>
+          </main>
+          <!-- Panel de perfil derecho idéntico a album.html -->
+          <aside class="profile">
+            <div class="user">
+              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" alt="Usuario" class="avatar">
+              <h3>@UsuarioFan</h3>
+              <p>Nivel 15</p>
+            </div>
+            <div class="profile-stats">
+              <p><strong>Álbum:</strong> <span>{{ progressPercentage }}% completado</span></p>
+              <p><strong>Cromos:</strong> <span>{{ collectedStickers }}/{{ totalStickers }}</span></p>
+              <p><strong>Duplicados:</strong> <span>{{ duplicateStickers }}</span></p>
+              <p><strong>Sobres:</strong> <span>{{ packsAvailable }}</span></p>
+            </div>
+            <div class="profile-actions">
+              <button class="profile-btn"><i class="fas fa-user"></i> Mi Perfil</button>
+              <button class="profile-btn"><i class="fas fa-exchange-alt"></i> Intercambios</button>
+            </div>
+          </aside>
+        </div>
+
+        <!-- Modal con estilo de ficha -->
+        <div class="modal" :style="{ display: showModal ? 'block' : 'none' }">
+            <div class="modal-content player-card">
+                <span class="close" @click="closePlayerModal">&times;</span>
+                <div id="modal-body">
+                    <!-- Contenido del modal -->
+                    <div v-if="selectedPlayer" class="player-card-header">
+                        <div class="player-card-image">
+                            <img :src="selectedPlayer.image" :alt="selectedPlayer.name">
+                        </div>
+                        <div class="player-card-info">
+                            <h2 class="player-card-name">{{ selectedPlayer.name }}</h2>
+                            <p class="player-card-position">{{ selectedPlayer.position }} | #10</p>
+                            
+                            <div class="player-card-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">País</span>
+                                    <span class="meta-value">{{ selectedPlayer.country }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Club</span>
+                                    <span class="meta-value">{{ selectedPlayer.team }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="player-card-actions">
+                                <button class="action-btn"><i class="fas fa-plus"></i> Seguir</button>
+                                <button class="action-btn"><i class="fas fa-share-alt"></i> Compartir</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div v-if="selectedPlayer" class="player-card-body">
+                        <div class="player-card-section">
+                            <h3>Estadísticas</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Velocidad</span>
+                                    <span class="stat-value">{{ selectedPlayer.pace }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Regate</span>
+                                    <span class="stat-value">{{ selectedPlayer.dribbling }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Tiro</span>
+                                    <span class="stat-value">{{ selectedPlayer.attack }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Pases</span>
+                                    <span class="stat-value">{{ selectedPlayer.passing || 80 }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Defensa</span>
+                                    <span class="stat-value">{{ selectedPlayer.defense }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Físico</span>
+                                    <span class="stat-value">{{ selectedPlayer.physical }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="player-card-section">
+                            <h3>Habilidades Especiales</h3>
+                            <div class="skills-grid">
+                                <div class="skill-item">
+                                    <span>Velocidad explosiva</span>
+                                </div>
+                                <div class="skill-item">
+                                    <span>Definición</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="player-card-section">
+                            <h3>Logros Destacados</h3>
+                            <div class="achievements-grid">
+                                <div class="achievement-item">
+                                    <span>Copa Mundial 2018</span>
+                                </div>
+                                <div class="achievement-item">
+                                    <span class="achievement-icon">⭐</span>
+                                    <span>5 Ligas Francesas</span>
+                                </div>
+                                <div class="achievement-item">
+                                    <span class="achievement-icon">⭐</span>
+                                    <span>Máximo goleador Ligue 1 (4 veces)</span>
+                                </div>
+                                <div class="achievement-item">
+                                    <span class="achievement-icon">⭐</span>
+                                    <span>Joven del año FIFA 2018</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="player-card-section">
+                            <h3>Biografía</h3>
+                            <div class="player-card-description"><p>{{ selectedPlayer.description }}</p></div>
+                        </div>
+                        
+                        <h3 style="margin-top: 1.5rem;">Calificación</h3>
+                        <div class="rating-stars">
+                            <span v-for="star in 5" 
+                                  :key="star"
+                                  :data-star="star"
+                                  :class="{ selected: star <= currentRating, hover: star <= hoverRating }"
+                                  @click="setRating(star)"
+                                  @mouseover="hoverRating = star"
+                                  @mouseout="hoverRating = 0">★</span>
+                        </div>
+                        <textarea v-model="newComment" placeholder="Escribe tu comentario..." rows="3"></textarea>
+                        <button class="comment-btn" @click="addComment">Enviar comentario</button>
+                        <div class="comments-list">
+                            <p v-for="(comment, index) in playerComments[selectedPlayer.id] || []" :key="index">💬 {{ comment }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, reactive, computed, onMounted } = Vue;
+        
+        createApp({
+            setup() {
+                // Datos reactivos
+                const searchQuery = ref('');
+                const teamFilter = ref('');
+                const countryFilter = ref('');
+                const positionFilter = ref('');
+                const showModal = ref(false);
+                const selectedPlayer = ref(null);
+                const currentRating = ref(0);
+                const hoverRating = ref(0);
+                const newComment = ref('');
+                
+                // Comentarios por jugador
+                const playerComments = reactive({});
+                
+                // Datos de jugadores
+                const players = reactive([
+                    {
+                        id: 'messi',
+                        name: "Lionel Messi",
+                        team: "PSG",
+                        country: "Argentina",
+                        position: "Delantero",
+                        overall: 93,
+                        attack: 94,
+                        dribbling: 92,
+                        pace: 85,
+                        physical: 75,
+                        defense: 45,
+                        passing: 90,
+                        description: "Considerado uno de los mejores jugadores de todos los tiempos. Ha ganado 7 Balones de Oro y múltiples títulos con el FC Barcelona y la selección argentina.",
+                        image: "https://i.pinimg.com/736x/f0/ee/49/f0ee4946471fcaef678fa207553920d7.jpg"
+                    },
+                    {
+                        id: 'cristiano',
+                        name: "Cristiano Ronaldo",
+                        team: "Real Madrid",
+                        country: "Portugal",
+                        position: "Delantero",
+                        overall: 92,
+                        attack: 93,
+                        dribbling: 88,
+                        pace: 89,
+                        physical: 85,
+                        defense: 40,
+                        passing: 85,
+                        description: "Uno de los goleadores más prolíficos en la historia del fútbol. Ha ganado 5 Balones de Oro y ha triunfado en Inglaterra, España e Italia.",
+                        image: "https://i.pinimg.com/736x/97/8d/fe/978dfe2eed24660a344f07c8784065c8.jpg"
+                    },
+                    {
+                        id: 'mbappe',
+                        name: "Kylian Mbappé",
+                        team: "PSG",
+                        country: "Francia",
+                        position: "Delantero",
+                        overall: 91,
+                        attack: 92,
+                        dribbling: 90,
+                        pace: 96,
+                        physical: 80,
+                        defense: 42,
+                        passing: 82,
+                        description: "Joven talento francés que ya ha ganado una Copa del Mundo. Conocido por su velocidad excepcional y capacidad goleadora.",
+                        image: "https://i.pinimg.com/736x/12/6b/a1/126ba187a5ac47712556da6bea570429.jpg"
+                    },
+                    {
+                        id: 'neymar',
+                        name: "Neymar Jr",
+                        team: "PSG",
+                        country: "Brasil",
+                        position: "Delantero",
+                        overall: 89,
+                        attack: 90,
+                        dribbling: 93,
+                        pace: 90,
+                        physical: 65,
+                        defense: 38,
+                        passing: 88,
+                        description: "Uno de los jugadores más habilidosos del mundo. Destaca por su regate, visión de juego y capacidad para desequilibrar defensas.",
+                        image: "https://i.pinimg.com/736x/cd/b0/d7/cdb0d72d2a556da27688275141f01b5c.jpg"
+                    },
+                    {
+                        id: 'modric',
+                        name: "Luka Modrić",
+                        team: "Real Madrid",
+                        country: "Croacia",
+                        position: "Mediocampista",
+                        overall: 88,
+                        attack: 82,
+                        dribbling: 87,
+                        pace: 75,
+                        physical: 70,
+                        defense: 72,
+                        passing: 89,
+                        description: "Mediocentro de gran calidad técnica y visión de juego. Ganador del Balón de Oro 2018 y clave en el éxito del Real Madrid.",
+                        image: "https://i.pinimg.com/736x/c7/5b/63/c75b63a6b5d5bd3ccba540c723f37d6d.jpg"
+                    }
+                ]);
+                
+                // Jugadores filtrados
+                const filteredPlayers = computed(() => {
+                    return players.filter(player => {
+                        const matchesSearch = player.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+                        const matchesTeam = !teamFilter.value || player.team === teamFilter.value;
+                        const matchesCountry = !countryFilter.value || player.country === countryFilter.value;
+                        const matchesPosition = !positionFilter.value || player.position === positionFilter.value;
+                        
+                        return matchesSearch && matchesTeam && matchesCountry && matchesPosition;
+                    });
+                });
+                
+                // Métodos
+                const filterPlayers = () => {
+                    // La reactividad de Vue se encarga automáticamente
+                };
+                
+                const resetFilters = () => {
+                    searchQuery.value = '';
+                    teamFilter.value = '';
+                    countryFilter.value = '';
+                    positionFilter.value = '';
+                };
+                
+                const openPlayerModal = (player) => {
+                    selectedPlayer.value = player;
+                    currentRating.value = 0;
+                    hoverRating.value = 0;
+                    newComment.value = '';
+                    showModal.value = true;
+                    document.body.style.overflow = "hidden";
+                };
+                
+                const closePlayerModal = () => {
+                    showModal.value = false;
+                    document.body.style.overflow = "auto";
+                };
+                
+                const setRating = (rating) => {
+                    currentRating.value = rating;
+                };
+                
+                const addComment = () => {
+                    if (newComment.value.trim() && selectedPlayer.value) {
+                        const playerId = selectedPlayer.value.id;
+                        
+                        if (!playerComments[playerId]) {
+                            playerComments[playerId] = [];
+                        }
+                        
+                        playerComments[playerId].push(newComment.value.trim());
+                        newComment.value = '';
+                    }
+                };
+                
+                const logout = () => {
+                    alert('Cerrando sesión...');
+                };
+                
+                // Cerrar modal con Escape
+                const handleKeydown = (e) => {
+                    if (e.key === "Escape" && showModal.value) {
+                        closePlayerModal();
+                    }
+                };
+                
+                // Cerrar modal al hacer clic fuera
+                const handleClickOutside = (e) => {
+                    if (showModal.value && e.target.classList.contains('modal')) {
+                        closePlayerModal();
+                    }
+                };
+                
+                // Inicialización
+                onMounted(() => {
+                    document.addEventListener('keydown', handleKeydown);
+                    document.addEventListener('click', handleClickOutside);
+                });
+                
+                // Exponer datos y métodos al template
+                return {
+                    searchQuery,
+                    teamFilter,
+                    countryFilter,
+                    positionFilter,
+                    showModal,
+                    selectedPlayer,
+                    currentRating,
+                    hoverRating,
+                    newComment,
+                    playerComments,
+                    players,
+                    
+                    filteredPlayers,
+                    filterPlayers,
+                    resetFilters,
+                    openPlayerModal,
+                    closePlayerModal,
+                    setRating,
+                    addComment,
+                    logout
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
