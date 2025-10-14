@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Fanscore</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="../styles/dashboard.css">
     <link rel="stylesheet" href="../styles/globals.css">
     <link rel="stylesheet" href="../styles/layout.css">
     <link rel="stylesheet" href="../styles/components.css">
@@ -18,38 +19,133 @@
         :stats="profileStats"
         :actions="profileActions"
         :topbar="topbarConfig"
+        :search-value="searchQuery"
         @logout="handleLogout"
         @action-click="handleProfileAction"
         @topbar-action="handleTopbarAction"
         @search="handleSearch"
     >
-        <!-- Contenido específico del álbum -->
-        <div class="topbar">
-            <div class="search-container">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Buscar estampitas, jugadores..." v-model="searchQuery">
-            </div>
-            <div class="quick-actions">
-                <button class="action-btn">
-                    <i class="fas fa-bell"></i>
-                </button>
-                <button class="action-btn">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </div>
+        <!-- 🎉 Banner -->
+        <div class="banner">
+          <div class="banner-text">
+            <h2>¡Completa tu Álbum!</h2>
+            <p>Colecciona todas las estampitas y participa por premios exclusivos. Cada sobre contiene 5 estampitas aleatorias.</p>
+            <button @click="openPackModal" :disabled="!canOpenPack" class="banner-button">
+              <i class="fas fa-gift"></i> Abrir Sobre ({{ packsAvailable }} disponibles)
+            </button>
+          </div>
         </div>
 
-      <div class="banner">
-        <div class="banner-text">
-          <h2>¡Colecciona todas las estampitas!</h2>
-          <p>Completa tu álbum y participa por premios exclusivos. Cada sobre contiene 5 estampitas aleatorias.</p>
-          <button @click="openPackModal" :disabled="!canOpenPack">
-            <i class="fas fa-gift"></i> Abrir Sobre ({{ packsAvailable }} disponibles)
-          </button>
+        <!-- 📊 Sección de estadísticas y jugador destacado -->
+        <div class="dashboard-grid">
+            <!-- Estadísticas - Ocupa 2/3 -->
+            <section class="stats">
+                <div class="stat-card">
+                    <span class="stat-icon"><i class="fas fa-stamp"></i></span>
+                    <h3>Cromos Obtenidos</h3>
+                    <p>{{ collectedStickers }}/{{ totalStickers }}</p>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon"><i class="fas fa-chart-pie"></i></span>
+                    <h3>Progreso del Álbum</h3>
+                    <p>{{ progressPercentage }}%</p>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon"><i class="fas fa-gift"></i></span>
+                    <h3>Sobres Disponibles</h3>
+                    <p>{{ packsAvailable }}</p>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon"><i class="fas fa-exchange-alt"></i></span>
+                    <h3>Intercambios</h3>
+                    <p>{{ exchanges }}</p>
+                </div>
+            </section>
+            
+            <!-- Jugador Destacado - Ocupa 1/3 -->
+            <section class="top-player">
+                <h2><i class="fas fa-crown"></i> Jugador Destacado</h2>
+                <div class="player-featured">
+                    <div class="player-card-featured">
+                        <div class="player-img-featured">
+                            <i class="fas fa-user"></i>
+                            <div class="player-rating">{{ featuredPlayer.rating }}</div>
+                        </div>
+                        <div class="player-info-featured">
+                            <h3>{{ featuredPlayer.name }}</h3>
+                            <p class="player-position">{{ featuredPlayer.position }} • {{ featuredPlayer.team }}</p>
+                            <div class="player-stats-featured">
+                                <div class="stat-featured">
+                                    <div class="stat-value">{{ featuredPlayer.overall }}</div>
+                                    <div class="stat-label">Overall</div>
+                                </div>
+                                <div class="stat-featured">
+                                    <div class="stat-value">{{ featuredPlayer.votes }}</div>
+                                    <div class="stat-label">Votos</div>
+                                </div>
+                                <div class="stat-featured">
+                                    <div class="stat-value">{{ featuredPlayer.approval }}%</div>
+                                    <div class="stat-label">Aprobación</div>
+                                </div>
+                            </div>
+                            <div class="player-badges">
+                                <span class="badge" v-for="badge in featuredPlayer.badges" :key="badge">
+                                    <i :class="badge.icon"></i> {{ badge.text }}
+                                </span>
+                            </div>
+                            <button class="vote-btn" @click="voteForPlayer(featuredPlayer.id)">
+                                <i class="fas fa-check"></i> Votar ahora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
-      </div>
 
-      <!-- Aquí va el resto de tu contenido del álbum -->
+        <!-- 👥 Jugadores destacados -->
+        <section class="featured-players">
+            <h2>Jugadores Destacados</h2>
+            <div class="players-grid">
+                <div class="player-card" v-for="player in topPlayers" :key="player.id">
+                    <div class="player-img">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="player-info">
+                        <h3>{{ player.name }}</h3>
+                        <p>{{ player.position }} • {{ player.team }}</p>
+                        <div class="player-stats">
+                            <div class="stat">
+                                <div class="stat-value">{{ player.overall }}</div>
+                                <div class="stat-label">Overall</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">{{ player.stickers }}</div>
+                                <div class="stat-label">Cromos</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">{{ player.rating }}</div>
+                                <div class="stat-label">Rating</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 📰 Noticias -->
+        <section class="news">
+            <h2>Noticias Destacadas</h2>
+            <div class="news-cards">
+                <article class="news-card" v-for="newsItem in news" :key="newsItem.id" @click="openNews(newsItem.id)">
+                    <h3>{{ newsItem.title }}</h3>
+                    <p>{{ newsItem.description }}</p>
+                    <div class="news-meta">
+                        <span class="news-date">{{ newsItem.date }}</span>
+                        <span class="news-category">{{ newsItem.category }}</span>
+                    </div>
+                </article>
+            </div>
+        </section>
       
     </app-layout>
   </div>
@@ -58,17 +154,122 @@
   <script src="../components/sidebar-component.js"></script>
   <script src="../components/profile-component.js"></script>
   <script src="../components/layout-component.js"></script>
+  <script src="../components/topbar-component.js"></script>
   
   <script>
-    const { createApp, ref, computed, onMounted } = Vue;
-    
-    // Registrar componentes globalmente primero
+    // SearchComponent para el topbar
+    const SearchComponent = {
+      template: `
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            :placeholder="placeholder"
+            :value="modelValue"
+            @input="$emit('update:modelValue', $event.target.value)"
+          >
+        </div>
+      `,
+      props: {
+        placeholder: {
+          type: String,
+          default: 'Buscar...'
+        },
+        modelValue: {
+          type: String,
+          default: ''
+        }
+      },
+      emits: ['update:modelValue']
+    };
+
+    const { createApp, ref, computed } = Vue;
+
     const app = createApp({
       setup() {
         // Datos reactivos
         const searchQuery = ref('');
         const packsAvailable = ref(3);
-        
+        const exchanges = ref(12);
+
+        // Datos del álbum
+        const totalStickers = ref(180);
+        const collectedStickers = ref(120);
+        const progressPercentage = computed(() => Math.round((collectedStickers.value / totalStickers.value) * 100));
+        const canOpenPack = computed(() => packsAvailable.value > 0);
+
+        // Jugador destacado
+        const featuredPlayer = ref({
+          id: 1,
+          name: 'Kylian Mbappé',
+          position: 'Delantero',
+          team: 'Francia',
+          rating: 9.4,
+          overall: 91,
+          votes: 4892,
+          approval: 98,
+          badges: [
+            { icon: 'fas fa-trophy', text: 'Mejor jugador' },
+            { icon: 'fas fa-star', text: 'Más votado' }
+          ]
+        });
+
+        // Jugadores top
+        const topPlayers = ref([
+          {
+            id: 1,
+            name: 'Lionel Messi',
+            position: 'Delantero',
+            team: 'Argentina',
+            overall: 94,
+            stickers: 12,
+            rating: 4.8
+          },
+          {
+            id: 2,
+            name: 'Kylian Mbappé',
+            position: 'Delantero',
+            team: 'Francia',
+            overall: 91,
+            stickers: 8,
+            rating: 4.6
+          },
+          {
+            id: 3,
+            name: 'Pedri González',
+            position: 'Centrocampista',
+            team: 'España',
+            overall: 86,
+            stickers: 5,
+            rating: 4.5
+          }
+        ]);
+
+        // Noticias
+        const news = ref([
+          {
+            id: 1,
+            title: '⚽ Sorteo oficial del Mundial confirmado',
+            description: 'El sorteo de grupos para el Mundial 2026 se realizará el próximo mes en una ceremonia especial.',
+            date: 'Hace 2 días',
+            category: 'Eventos'
+          },
+          {
+            id: 2,
+            title: '🌍 México, USA y Canadá listos como anfitriones',
+            description: 'Los tres países anfitriones ultiman detalles para recibir a las selecciones y aficionados.',
+            date: 'Hace 5 días',
+            category: 'Organización'
+          },
+          {
+            id: 3,
+            title: '🔥 Jóvenes promesas que brillarán en 2026',
+            description: 'Conoce a los futbolistas jóvenes que están destinados a destacar en el próximo Mundial.',
+            date: 'Ayer',
+            category: 'Jugadores'
+          }
+        ]);
+
         // Menu del sidebar
         const sidebarMenu = ref([
           { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: true },
@@ -80,7 +281,7 @@
 
         // Perfil del usuario
         const userProfile = ref({
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+          avatar: 'https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg',
           username: '@UsuarioFan',
           level: 15
         });
@@ -88,8 +289,8 @@
         // Stats del perfil
         const profileStats = ref([
           { label: 'Álbum', value: '65% completado' },
-          { label: 'Cromos', value: '7/10' },
-          { label: 'Duplicados', value: '9' },
+          { label: 'Cromos', value: '120/180' },
+          { label: 'Duplicados', value: '20' },
           { label: 'Sobres', value: '3' }
         ]);
 
@@ -99,44 +300,84 @@
           { name: 'Intercambios', icon: 'fas fa-exchange-alt' }
         ]);
 
-        // Computed
-        const canOpenPack = computed(() => packsAvailable.value > 0);
+        // Topbar config
+        const topbarConfig = ref({
+          searchPlaceholder: 'Buscar jugadores, equipos...',
+          actions: [
+            { name: 'notifications', icon: 'fas fa-bell', title: 'Notificaciones' },
+            { name: 'settings', icon: 'fas fa-cog', title: 'Configuración' }
+          ]
+        });
 
         // Métodos
-        const handleLogout = () => {
-          console.log('Cerrando sesión...');
-          // Tu lógica de logout aquí
-        };
-
-        const handleProfileAction = (actionName) => {
-          console.log('Acción del perfil:', actionName);
-          // Tu lógica para acciones del perfil
-        };
-
         const openPackModal = () => {
-          console.log('Abriendo modal de sobre...');
-          // Tu lógica para abrir modal
+          if (packsAvailable.value > 0) {
+            console.log('🎁 Abriendo modal de sobres...');
+            // Aquí iría la lógica para abrir el modal
+            alert('Redirigiendo a la página de sobres...');
+          }
         };
+
+        const voteForPlayer = (playerId) => {
+          console.log('Votando por el jugador:', playerId);
+          featuredPlayer.value.votes++;
+          alert('¡Voto registrado! Gracias por participar.');
+        };
+
+        const openNews = (newsId) => {
+          console.log('Abriendo noticia:', newsId);
+          // Aquí iría la lógica para abrir la noticia completa
+        };
+
+        const handleLogout = () => console.log('Cerrando sesión...');
+        const handleProfileAction = (action) => console.log('Acción perfil:', action);
+        const handleTopbarAction = (action) => console.log('Acción topbar:', action);
+        const handleSearch = (value) => console.log('Buscando:', value);
 
         return {
+          // Datos
           searchQuery,
           packsAvailable,
+          exchanges,
+          totalStickers,
+          collectedStickers,
+          featuredPlayer,
+          topPlayers,
+          news,
+          
+          // Computed
+          progressPercentage,
+          canOpenPack,
+          
+          // Datos del layout
           sidebarMenu,
           userProfile,
           profileStats,
           profileActions,
-          canOpenPack,
+          topbarConfig,
+          
+          // Métodos
+          openPackModal,
+          voteForPlayer,
+          openNews,
           handleLogout,
           handleProfileAction,
-          openPackModal
+          handleTopbarAction,
+          handleSearch
         };
       }
     });
 
-    // Registrar componentes
+    // ====================
+    // REGISTRAR COMPONENTES
+    // ====================
+
+    // Componentes globales
     app.component('sidebar-main', SidebarComponent);
     app.component('profile-sidebar', ProfileComponent);
     app.component('app-layout', LayoutComponent);
+    app.component('topbar-component', TopbarComponent);
+    app.component('search-component', SearchComponent);
 
     app.mount('#app');
   </script>

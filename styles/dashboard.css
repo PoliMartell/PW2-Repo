@@ -1,0 +1,407 @@
+
+        /* Estilos específicos del dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--gris-oscuro);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: var(--transicion);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--sombra-suave);
+        }
+
+        .stat-icon {
+            font-size: 1.8rem;
+            color: var(--dorado);
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+        }
+
+        .stat-card p {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dorado);
+        }
+
+        /* Jugador destacado */
+        .top-player {
+            background: var(--gris-oscuro);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: fit-content;
+        }
+
+        .top-player h2 {
+            color: var(--dorado);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .player-card-featured {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .player-img-featured {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--azul), var(--morado));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .player-rating {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--dorado);
+            color: black;
+            padding: 3px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .player-info-featured h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--blanco);
+            text-align: center;
+        }
+
+        .player-position {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .player-stats-featured {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-featured {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--dorado);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+
+        .player-badges {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--dorado);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            border: 1px solid var(--dorado);
+        }
+
+        .vote-btn {
+            background: var(--gradiente);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.2rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transicion);
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .vote-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Jugadores destacados */
+        .featured-players {
+            background: var(--gris-oscuro);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 1.5rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .featured-players h2 {
+            color: var(--dorado);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            padding: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transicion);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .player-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--sombra-suave);
+        }
+
+        .player-img {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--azul), var(--morado));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-info h3 {
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+            color: var(--blanco);
+        }
+
+        .player-info p {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--dorado);
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            color: var(--text-light);
+        }
+
+        /* Noticias */
+        .news {
+            background: var(--gris-oscuro);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .news h2 {
+            color: var(--dorado);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .news-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .news-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.2rem;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transicion);
+            cursor: pointer;
+        }
+
+        .news-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--sombra-suave);
+            border-color: var(--dorado);
+        }
+
+        .news-card h3 {
+            font-size: 0.95rem;
+            margin-bottom: 0.8rem;
+            color: var(--blanco);
+        }
+
+        .news-card p {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+
+        .news-category {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--dorado);
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        /* Banner */
+        .banner {
+            background: var(--gradiente);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            color: var(--blanco);
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="80" cy="20" r="10" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="50" r="15" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="80" r="8" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center right;
+        }
+
+        .banner-text h2 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+            color: var(--dorado);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .banner-text p {
+            margin-bottom: 1.2rem;
+            opacity: 0.9;
+            max-width: 500px;
+            font-size: 0.95rem;
+        }
+
+        .banner button {
+            background-color: var(--blanco);
+            color: var(--morado);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transicion);
+            font-size: 0.9rem;
+        }
+
+        .banner button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .banner button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .players-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .news-cards {
+                grid-template-columns: 1fr;
+            }
+        }
