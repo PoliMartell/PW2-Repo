@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - FanScore</title>
+    
+    <!-- Estilos globales -->
+    <link rel="stylesheet" href="../styles/globals.css">
+    <link rel="stylesheet" href="../styles/layout.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="../styles/auth.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Componentes globales -->
+    <script src="../components/topbar-component.js"></script>
+    <script src="../components/layout-component.js"></script>
+    <script src="../components/auth-component.js"></script>
+
+    <div id="auth-app">
+        <!-- Efecto de partículas en el fondo -->
+        <div class="particles" id="particles"></div>
+        
+        <div class="auth-container" :class="{ 'loading': loading }">
+            <!-- Panel izquierdo -->
+            <div class="auth-left">
+                <div class="auth-left-content">
+                    <div class="auth-logo">
+                        <div class="auth-logo-icon">
+                            <img src="../Images/fanscore.png" alt="FanScore Logo" style="height: 65px;">
+                        </div>
+                        <div class="auth-logo-text">FanScore</div>
+                    </div>
+                    <h2>Únete a la comunidad</h2>
+                    <p>Crea tu cuenta y forma parte de la mayor comunidad de fútbol. Sigue tus equipos favoritos y comparte la pasión.</p>
+                </div>
+            </div>
+            
+            <!-- Panel derecho -->
+            <div class="auth-right">
+                <div class="auth-right-content">
+                    <div class="auth-header">
+                        <h1>CREAR CUENTA</h1>
+                        <p>Comienza tu experiencia FIFA 2026.</p>
+                    </div>
+                    
+                    <!-- Formulario de Registro -->
+                    <form class="auth-form" @submit.prevent="handleRegister">
+                        <!-- Campos de Nombre y Apellido -->
+                        <div class="form-row">
+                            <div class="input-box">
+                                <input 
+                                    type="text" 
+                                    placeholder="Nombre" 
+                                    v-model="form.firstName"
+                                    :class="{ 'error': formSubmitted && errors.firstName }"
+                                    required
+                                >
+                                <i class="fas fa-user"></i>
+                            </div>
+                            
+                            <div class="input-box">
+                                <input 
+                                    type="text" 
+                                    placeholder="Apellido" 
+                                    v-model="form.lastName"
+                                    :class="{ 'error': formSubmitted && errors.lastName }"
+                                    required
+                                >
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+
+                        <!-- Campo Email -->
+                        <div class="input-box">
+                            <input 
+                                type="email" 
+                                placeholder="Email" 
+                                v-model="form.email"
+                                :class="{ 'error': formSubmitted && errors.email }"
+                                required
+                            >
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <small class="error-message" v-if="formSubmitted && errors.email">
+                            {{ errors.email }}
+                        </small>
+
+                        <!-- Campo Contraseña -->
+                        <div class="input-box">
+                            <input 
+                                type="password" 
+                                placeholder="Contraseña" 
+                                v-model="form.password"
+                                :class="{ 'error': formSubmitted && errors.password }"
+                                @input="updatePasswordStrength"
+                                required
+                            >
+                            <i class="fas fa-lock"></i>
+                            <div class="password-strength">
+                                <div class="strength-bar" :class="passwordStrength"></div>
+                            </div>
+                        </div>
+                        <small class="error-message" v-if="formSubmitted && errors.password">
+                            {{ errors.password }}
+                        </small>
+
+                        <!-- Confirmar Contraseña -->
+                        <div class="input-box">
+                            <input 
+                                type="password" 
+                                placeholder="Confirmar Contraseña" 
+                                v-model="form.confirmPassword"
+                                :class="{ 'error': formSubmitted && errors.confirmPassword }"
+                                required
+                            >
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <small class="error-message" v-if="formSubmitted && errors.confirmPassword">
+                            {{ errors.confirmPassword }}
+                        </small>
+                        
+                        <!-- Términos y condiciones -->
+                        <div class="auth-options">
+                            <label class="checkbox-container">
+                                <input 
+                                    type="checkbox" 
+                                    v-model="form.acceptTerms"
+                                    :class="{ 'error': formSubmitted && errors.acceptTerms }"
+                                >
+                                <span class="checkmark"></span>
+                                Acepto los <a href="#" class="link">términos y condiciones</a>
+                            </label>
+                        </div>
+                        
+                        <!-- Botón de Registro -->
+                        <button type="submit" class="auth-btn" :disabled="loading">
+                            <span v-if="loading">Creando cuenta...</span>
+                            <span v-else>Crear Cuenta</span>
+                        </button>
+                    </form>
+                    
+                    <div class="auth-divider">
+                        <span>o registrarse con</span>
+                    </div>
+                    
+                    <!-- Registro con Google -->
+                    <button class="auth-btn google-btn" @click="handleGoogleRegister">
+                        <i class="fab fa-google google-icon"></i> Google
+                    </button>
+                    
+                    <div class="auth-footer">
+                        ¿Ya tienes una cuenta? 
+                        <a href="../pages/login.html" @click.prevent="goToLogin">
+                            Inicia sesión aquí
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Scripts locales -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/registro.js"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - FanScore</title>
+    
+    <!-- Estilos globales -->
+    <link rel="stylesheet" href="../styles/globals.css">
+    <link rel="stylesheet" href="../styles/layout.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="../styles/auth.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .fade-out {
+            animation: fadeOut 0.7s forwards;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Componentes globales -->
+    <script src="../components/topbar-component.js"></script>
+    <script src="../components/layout-component.js"></script>
+    <script src="../components/auth-component.js"></script>
+
+    <div id="auth-app">
+        <!-- Efecto de partículas en el fondo -->
+        <div class="particles" id="particles"></div>
+        
+        <div class="auth-container" :class="{ 'loading': loading }">
+            <!-- Panel izquierdo -->
+            <div class="auth-left">
+                <div class="auth-left-content">
+                    <div class="auth-logo">
+                        <div class="auth-logo-icon">
+                            <img src="../Images/fanscore.png" alt="FanScore Logo" style="height: 65px;">
+                        </div>
+                        <div class="auth-logo-text">FanScore</div>
+                    </div>
+                    <h2>Vive la pasión del fútbol</h2>
+                    <p>Únete a millones de aficionados en todo el mundo siguiendo partidos, estadísticas y más con FanScore.</p>
+                </div>
+            </div>
+            
+            <!-- Panel derecho -->
+            <div class="auth-right">
+                <div class="auth-right-content">
+                    <div class="auth-header">
+                        <h1>HOLA FIFA</h1>
+                        <p>Bienvenido a la Experiencia FIFA 2026.</p>
+                    </div>
+                    
+                    <!-- Formulario de Login -->
+                    <form class="auth-form" @submit.prevent="handleLogin">
+                        <!-- Campo Email -->
+                        <div class="input-box">
+                            <input 
+                                type="email" 
+                                placeholder="Email" 
+                                v-model="form.username"
+                                :class="{ 'error': formSubmitted && errors.username }"
+                                required
+                            >
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <small class="error-message" v-if="formSubmitted && errors.username">
+                            {{ errors.username }}
+                        </small>
+
+                        <!-- Campo Contraseña -->
+                        <div class="input-box">
+                            <input 
+                                type="password" 
+                                placeholder="Contraseña" 
+                                v-model="form.password"
+                                :class="{ 'error': formSubmitted && errors.password }"
+                                required
+                            >
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <small class="error-message" v-if="formSubmitted && errors.password">
+                            {{ errors.password }}
+                        </small>
+                        
+                        <div class="auth-options">
+                            <a href="#" @click.prevent="handleForgotPassword" class="forgot-link">
+                                ¿Olvidaste tu contraseña?
+                            </a>
+                        </div>
+                        
+                        <!-- Botón de Login -->
+                        <button type="submit" class="auth-btn" :disabled="loading">
+                            <span v-if="loading">Iniciando sesión...</span>
+                            <span v-else>Iniciar Sesión</span>
+                        </button>
+                    </form>
+                    
+                    <div class="auth-divider">
+                        <span>o continuar con</span>
+                    </div>
+                    
+                    <!-- Login con Google -->
+                    <button class="auth-btn google-btn" @click="handleGoogleLogin">
+                        <i class="fab fa-google google-icon"></i> Google
+                    </button>
+                    
+                    <div class="auth-footer">
+                        ¿No tienes una cuenta? 
+                        <a href="../pages/registro.html" @click.prevent="goToRegister">
+                            Regístrate ahora
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Scripts locales -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/login.js"></script>
+</body>
+</html>
