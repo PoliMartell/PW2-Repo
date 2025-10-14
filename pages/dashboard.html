@@ -157,229 +157,358 @@
   <script src="../components/topbar-component.js"></script>
   
   <script>
-    // SearchComponent para el topbar
-    const SearchComponent = {
-      template: `
-        <div class="search-container">
-          <i class="fas fa-search"></i>
-          <input 
-            type="text" 
-            :placeholder="placeholder"
-            :value="modelValue"
-            @input="$emit('update:modelValue', $event.target.value)"
-          >
-        </div>
-      `,
-      props: {
-        placeholder: {
-          type: String,
-          default: 'Buscar...'
-        },
-        modelValue: {
-          type: String,
-          default: ''
-        }
-      },
-      emits: ['update:modelValue']
-    };
+// SearchComponent para el topbar
+const SearchComponent = {
+  template: `
+    <div class="search-container">
+      <i class="fas fa-search"></i>
+      <input 
+        type="text" 
+        :placeholder="placeholder"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
+      >
+    </div>
+  `,
+  props: {
+    placeholder: {
+      type: String,
+      default: 'Buscar...'
+    },
+    modelValue: {
+      type: String,
+      default: ''
+    }
+  },
+  emits: ['update:modelValue']
+};
 
-    const { createApp, ref, computed } = Vue;
+const { createApp, ref, computed } = Vue;
 
-    const app = createApp({
-      setup() {
-        // Datos reactivos
-        const searchQuery = ref('');
-        const packsAvailable = ref(3);
-        const exchanges = ref(12);
+const app = createApp({
+  setup() {
+    // Datos reactivos del dashboard
+    const searchQuery = ref('');
+    const packsAvailable = ref(3);
+    const exchanges = ref(12);
+    const toasts = ref([]);
 
-        // Datos del álbum
-        const totalStickers = ref(180);
-        const collectedStickers = ref(120);
-        const progressPercentage = computed(() => Math.round((collectedStickers.value / totalStickers.value) * 100));
-        const canOpenPack = computed(() => packsAvailable.value > 0);
+    // Datos del álbum para el dashboard
+    const totalStickers = ref(20);
+    const collectedStickers = ref(13);
+    const duplicateStickers = computed(() => {
+      // En un caso real, esto vendría de tu base de datos
+      return 12;
+    });
+    
+    // Computed properties del dashboard
+    const progressPercentage = computed(() => Math.round((collectedStickers.value / totalStickers.value) * 100));
+    const canOpenPack = computed(() => packsAvailable.value > 0);
 
-        // Jugador destacado
-        const featuredPlayer = ref({
-          id: 1,
-          name: 'Kylian Mbappé',
-          position: 'Delantero',
-          team: 'Francia',
-          rating: 9.4,
-          overall: 91,
-          votes: 4892,
-          approval: 98,
-          badges: [
-            { icon: 'fas fa-trophy', text: 'Mejor jugador' },
-            { icon: 'fas fa-star', text: 'Más votado' }
-          ]
-        });
-
-        // Jugadores top
-        const topPlayers = ref([
-          {
-            id: 1,
-            name: 'Lionel Messi',
-            position: 'Delantero',
-            team: 'Argentina',
-            overall: 94,
-            stickers: 12,
-            rating: 4.8
-          },
-          {
-            id: 2,
-            name: 'Kylian Mbappé',
-            position: 'Delantero',
-            team: 'Francia',
-            overall: 91,
-            stickers: 8,
-            rating: 4.6
-          },
-          {
-            id: 3,
-            name: 'Pedri González',
-            position: 'Centrocampista',
-            team: 'España',
-            overall: 86,
-            stickers: 5,
-            rating: 4.5
-          }
-        ]);
-
-        // Noticias
-        const news = ref([
-          {
-            id: 1,
-            title: '⚽ Sorteo oficial del Mundial confirmado',
-            description: 'El sorteo de grupos para el Mundial 2026 se realizará el próximo mes en una ceremonia especial.',
-            date: 'Hace 2 días',
-            category: 'Eventos'
-          },
-          {
-            id: 2,
-            title: '🌍 México, USA y Canadá listos como anfitriones',
-            description: 'Los tres países anfitriones ultiman detalles para recibir a las selecciones y aficionados.',
-            date: 'Hace 5 días',
-            category: 'Organización'
-          },
-          {
-            id: 3,
-            title: '🔥 Jóvenes promesas que brillarán en 2026',
-            description: 'Conoce a los futbolistas jóvenes que están destinados a destacar en el próximo Mundial.',
-            date: 'Ayer',
-            category: 'Jugadores'
-          }
-        ]);
-
-        // Menu del sidebar
-        const sidebarMenu = ref([
-          { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: true },
-          { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
-          { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
-          //{ name: 'Sobres', link: 'sobres.html', icon: 'fas fa-gift', active: false },
-          //{ name: 'Configuración', link: '#', icon: 'fas fa-cog', active: false }
-        ]);
-
-        // Perfil del usuario
-        const userProfile = ref({
-          avatar: 'https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg',
-          username: '@UsuarioFan',
-          level: 15
-        });
-
-        // Stats del perfil
-        const profileStats = ref([
-          { label: 'Álbum', value: '65% completado' },
-          { label: 'Cromos', value: '120/180' },
-          { label: 'Duplicados', value: '20' },
-          { label: 'Sobres', value: '3' }
-        ]);
-
-        // Acciones del perfil
-        const profileActions = ref([
-          { name: 'Mi Perfil', icon: 'fas fa-user' },
-          { name: 'Intercambios', icon: 'fas fa-exchange-alt' }
-        ]);
-
-        // Topbar config
-        const topbarConfig = ref({
-          searchPlaceholder: 'Buscar jugadores, equipos...',
-          actions: [
-            { name: 'notifications', icon: 'fas fa-bell', title: 'Notificaciones' },
-            { name: 'settings', icon: 'fas fa-cog', title: 'Configuración' }
-          ]
-        });
-
-        // Métodos
-        const openPackModal = () => {
-          if (packsAvailable.value > 0) {
-            console.log('🎁 Abriendo modal de sobres...');
-            // Aquí iría la lógica para abrir el modal
-            alert('Redirigiendo a la página de sobres...');
-          }
-        };
-
-        const voteForPlayer = (playerId) => {
-          console.log('Votando por el jugador:', playerId);
-          featuredPlayer.value.votes++;
-          alert('¡Voto registrado! Gracias por participar.');
-        };
-
-        const openNews = (newsId) => {
-          console.log('Abriendo noticia:', newsId);
-          // Aquí iría la lógica para abrir la noticia completa
-        };
-
-        const handleLogout = () => console.log('Cerrando sesión...');
-        const handleProfileAction = (action) => console.log('Acción perfil:', action);
-        const handleTopbarAction = (action) => console.log('Acción topbar:', action);
-        const handleSearch = (value) => console.log('Buscando:', value);
-
-        return {
-          // Datos
-          searchQuery,
-          packsAvailable,
-          exchanges,
-          totalStickers,
-          collectedStickers,
-          featuredPlayer,
-          topPlayers,
-          news,
-          
-          // Computed
-          progressPercentage,
-          canOpenPack,
-          
-          // Datos del layout
-          sidebarMenu,
-          userProfile,
-          profileStats,
-          profileActions,
-          topbarConfig,
-          
-          // Métodos
-          openPackModal,
-          voteForPlayer,
-          openNews,
-          handleLogout,
-          handleProfileAction,
-          handleTopbarAction,
-          handleSearch
-        };
-      }
+    // Jugador destacado
+    const featuredPlayer = ref({
+      id: 1,
+      name: 'Kylian Mbappé',
+      position: 'Delantero',
+      team: 'Francia',
+      rating: 9.4,
+      overall: 91,
+      votes: 4892,
+      approval: 98,
+      badges: [
+        { icon: 'fas fa-trophy', text: 'Mejor jugador' },
+        { icon: 'fas fa-star', text: 'Más votado' }
+      ]
     });
 
-    // ====================
-    // REGISTRAR COMPONENTES
-    // ====================
+    // Jugadores top
+    const topPlayers = ref([
+      {
+        id: 1,
+        name: 'Lionel Messi',
+        position: 'Delantero',
+        team: 'Argentina',
+        overall: 94,
+        stickers: 12,
+        rating: 4.8
+      },
+      {
+        id: 2,
+        name: 'Kylian Mbappé',
+        position: 'Delantero',
+        team: 'Francia',
+        overall: 91,
+        stickers: 8,
+        rating: 4.6
+      },
+      {
+        id: 3,
+        name: 'Pedri González',
+        position: 'Centrocampista',
+        team: 'España',
+        overall: 86,
+        stickers: 5,
+        rating: 4.5
+      }
+    ]);
 
-    // Componentes globales
-    app.component('sidebar-main', SidebarComponent);
-    app.component('profile-sidebar', ProfileComponent);
-    app.component('app-layout', LayoutComponent);
-    app.component('topbar-component', TopbarComponent);
-    app.component('search-component', SearchComponent);
+    // Noticias del dashboard
+    const news = ref([
+      {
+        id: 1,
+        title: '⚽ Sorteo oficial del Mundial confirmado',
+        description: 'El sorteo de grupos para el Mundial 2026 se realizará el próximo mes en una ceremonia especial.',
+        date: 'Hace 2 días',
+        category: 'Eventos'
+      },
+      {
+        id: 2,
+        title: '🌍 México, USA y Canadá listos como anfitriones',
+        description: 'Los tres países anfitriones ultiman detalles para recibir a las selecciones y aficionados.',
+        date: 'Hace 5 días',
+        category: 'Organización'
+      },
+      {
+        id: 3,
+        title: '🔥 Jóvenes promesas que brillarán en 2026',
+        description: 'Conoce a los futbolistas jóvenes que están destinados a destacar en el próximo Mundial.',
+        date: 'Ayer',
+        category: 'Jugadores'
+      }
+    ]);
 
-    app.mount('#app');
+    // Métodos del dashboard
+    const openPackModal = () => {
+      if (canOpenPack.value) {
+        console.log('🎁 Abriendo modal de sobres...');
+        showToast('Redirigiendo a la página de sobres...', 'info');
+        // Aquí iría la lógica para abrir el modal o redirigir
+      } else {
+        showToast('No tienes sobres disponibles', 'error');
+      }
+    };
+
+    const voteForPlayer = (playerId) => {
+      console.log('Votando por el jugador:', playerId);
+      featuredPlayer.value.votes++;
+      showToast('¡Voto registrado! Gracias por participar.', 'success');
+    };
+
+    const openNews = (newsId) => {
+      console.log('Abriendo noticia:', newsId);
+      showToast(`Abriendo noticia: ${news.find(n => n.id === newsId)?.title}`, 'info');
+    };
+
+    // Sistema de notificaciones toast (igual que en álbum)
+    const showToast = (message, type = 'info') => {
+      const id = Date.now();
+      toasts.value.push({ id, message, type });
+      
+      // Auto-remover después de 5 segundos
+      setTimeout(() => {
+        removeToast(id);
+      }, 5000);
+    };
+
+    const removeToast = (id) => {
+      toasts.value = toasts.value.filter(toast => toast.id !== id);
+    };
+
+    const getToastIcon = (type) => {
+      const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+      };
+      return icons[type] || 'fas fa-info-circle';
+    };
+
+    // Menu del sidebar - Dashboard activo
+    const sidebarMenu = ref([
+      { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: true },
+      { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
+      { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
+    ]);
+
+    // Perfil del usuario
+    const userProfile = ref({
+      avatar: 'https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg',
+      username: '@UsuarioFan',
+      level: 15
+    });
+
+    // Stats del perfil - COMPUTED como en álbum
+    const profileStats = computed(() => [
+      { 
+        label: 'Álbum', 
+        value: `${progressPercentage.value}% completado`,
+        icon: 'fas fa-chart-pie'
+      },
+      { 
+        label: 'Cromos', 
+        value: `${collectedStickers.value}/${totalStickers.value}`,
+        icon: 'fas fa-stamp'
+      },
+      { 
+        label: 'Duplicados', 
+        value: `${duplicateStickers.value}`,
+        icon: 'fas fa-copy'
+      },
+      { 
+        label: 'Sobres', 
+        value: `${packsAvailable.value}`,
+        icon: 'fas fa-gift'
+      },
+     /* { 
+        label: 'Intercambios', 
+        value: `${exchanges.value}`,
+        icon: 'fas fa-exchange-alt'
+      },
+      { 
+        label: 'Nivel', 
+        value: `${userProfile.value.level}`,
+        icon: 'fas fa-star'
+      }*/
+    ]);
+
+    // Acciones del perfil mejoradas
+    const profileActions = ref([
+      { 
+        name: 'Mi Perfil', 
+        icon: 'fas fa-user',
+        description: 'Ver tu perfil completo'
+      },
+      { 
+        name: 'Intercambios', 
+        icon: 'fas fa-exchange-alt',
+        description: 'Gestionar intercambios'
+      }
+    ]);
+
+    // Topbar config actualizada
+    const topbarConfig = ref({
+      searchPlaceholder: 'Buscar jugadores, equipos, noticias...',
+      actions: [
+        { 
+          name: 'notifications', 
+          icon: 'fas fa-bell', 
+          title: 'Notificaciones',
+          badge: 3
+        },
+        /*
+        { 
+          name: 'messages', 
+          icon: 'fas fa-envelope', 
+          title: 'Mensajes',
+          badge: 1
+        },
+        */
+        { 
+          name: 'settings', 
+          icon: 'fas fa-cog', 
+          title: 'Configuración' 
+        }
+      ]
+    });
+
+    // Métodos del layout actualizados
+    const handleLogout = () => {
+      console.log('Cerrando sesión...');
+      showToast('Cerrando sesión...', 'info');
+    };
+
+    const handleProfileAction = (action) => {
+      console.log('Acción perfil:', action);
+      switch(action.name) {
+        case 'Mi Perfil':
+          showToast('Redirigiendo a tu perfil...', 'info');
+          break;
+        case 'Intercambios':
+          showToast('Abriendo intercambios...', 'info');
+          break;
+        case 'Logros':
+          showToast('Mostrando logros...', 'info');
+          break;
+        case 'Configuración':
+          showToast('Abriendo configuración...', 'info');
+          break;
+      }
+    };
+
+    const handleTopbarAction = (action) => {
+      console.log('Acción topbar:', action);
+      switch(action.name) {
+        case 'notifications':
+          showToast('Mostrando notificaciones...', 'info');
+          break;
+        case 'messages':
+          showToast('Abriendo mensajes...', 'info');
+          break;
+        case 'settings':
+          showToast('Abriendo configuración...', 'info');
+          break;
+      }
+    };
+
+    const handleSearch = (value) => {
+      console.log('Buscando:', value);
+      if (value.length > 2) {
+        showToast(`Buscando: "${value}"`, 'info');
+      }
+    };
+
+    return {
+      // Datos
+      searchQuery,
+      packsAvailable,
+      exchanges,
+      totalStickers,
+      collectedStickers,
+      featuredPlayer,
+      topPlayers,
+      news,
+      toasts,
+      
+      // Computed
+      progressPercentage,
+      canOpenPack,
+      duplicateStickers,
+      
+      // Datos del layout
+      sidebarMenu,
+      userProfile,
+      profileStats,
+      profileActions,
+      topbarConfig,
+      
+      // Métodos
+      openPackModal,
+      voteForPlayer,
+      openNews,
+      showToast,
+      removeToast,
+      getToastIcon,
+      handleLogout,
+      handleProfileAction,
+      handleTopbarAction,
+      handleSearch
+    };
+  }
+});
+
+// ====================
+// REGISTRAR COMPONENTES
+// ====================
+
+// Componentes globales
+app.component('sidebar-main', SidebarComponent);
+app.component('profile-sidebar', ProfileComponent);
+app.component('app-layout', LayoutComponent);
+app.component('topbar-component', TopbarComponent);
+app.component('search-component', SearchComponent);
+
+app.mount('#app');
   </script>
 </body>
 </html>

@@ -57,7 +57,7 @@
         }
 
         .top-player h2 {
-            color: var(--dorado);
+            color: var(--turquesa);
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
@@ -152,7 +152,7 @@
         }
 
         .vote-btn {
-            background: var(--gradiente);
+            background: var(--dorado);
             color: white;
             border: none;
             padding: 0.7rem 1.2rem;
@@ -318,7 +318,7 @@
             border-radius: 8px;
         }
 
-        /* Banner */
+        /* Banner 
         .banner {
             background: var(--gradiente);
             border-radius: var(--border-radius);
@@ -378,6 +378,7 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+            */
 
 
         /* Responsive */
