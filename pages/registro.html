@@ -13,6 +13,73 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .fade-out {
+            animation: fadeOut 0.7s forwards;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+        }
+        
+        .username-available {
+            color: var(--verde);
+        }
+        
+        .username-taken {
+            color: var(--rojo);
+        }
+        
+        /* Estilos para el upload de foto */
+        .photo-upload {
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .photo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--dorado);
+            margin: 0 auto 10px;
+            display: block;
+            background: #333;
+        }
+        
+        .upload-btn {
+            background: var(--azul);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: var(--transicion);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .upload-btn:hover {
+            background: var(--turquesa);
+            transform: translateY(-2px);
+        }
+        
+        .photo-name {
+            font-size: 11px;
+            color: #888;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .upload-hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <!-- Componentes globales -->
@@ -47,6 +114,26 @@
                         <p>Comienza tu experiencia FIFA 2026.</p>
                     </div>
                     
+                    <!-- Foto de perfil -->
+                    <div class="photo-upload">
+                        <img :src="photoPreview || 'https://via.placeholder.com/80x80/333/ffffff?text=?'" 
+                             alt="Vista previa" 
+                             class="photo-preview"
+                             @click="triggerFileInput">
+                        <input type="file" 
+                               ref="fileInput"
+                               class="upload-hidden" 
+                               accept="image/*" 
+                               @change="handlePhotoUpload">
+                        <button type="button" class="upload-btn" @click="triggerFileInput">
+                            <i class="fas fa-camera"></i>
+                            {{ photoFile ? 'Cambiar foto' : 'Agregar foto' }}
+                        </button>
+                        <span class="photo-name" v-if="photoFile">
+                            {{ photoFile.name }}
+                        </span>
+                    </div>
+                    
                     <!-- Formulario de Registro -->
                     <form class="auth-form" @submit.prevent="handleRegister">
                         <!-- Campos de Nombre y Apellido -->
@@ -61,6 +148,9 @@
                                 >
                                 <i class="fas fa-user"></i>
                             </div>
+                            <small class="error-message" v-if="formSubmitted && errors.firstName">
+                                {{ errors.firstName }}
+                            </small>
                             
                             <div class="input-box">
                                 <input 
@@ -72,7 +162,31 @@
                                 >
                                 <i class="fas fa-user"></i>
                             </div>
+                            <small class="error-message" v-if="formSubmitted && errors.lastName">
+                                {{ errors.lastName }}
+                            </small>
                         </div>
+
+                        <!-- Campo Usuario -->
+                        <div class="input-box">
+                            <input 
+                                type="text" 
+                                placeholder="Nombre de usuario" 
+                                v-model="form.username"
+                                :class="{ 'error': formSubmitted && errors.username }"
+                                @input="checkUsernameAvailability"
+                                required
+                            >
+                            <i class="fas fa-at"></i>
+                        </div>
+                        <small class="error-message" v-if="formSubmitted && errors.username">
+                            {{ errors.username }}
+                        </small>
+                        <small v-if="form.username && !errors.username" 
+                               :class="usernameStatus.class" 
+                               style="font-size: 11px; margin-top: 3px; display: block;">
+                            {{ usernameStatus.message }}
+                        </small>
 
                         <!-- Campo Email -->
                         <div class="input-box">
@@ -135,6 +249,9 @@
                                 Acepto los <a href="#" class="link">términos y condiciones</a>
                             </label>
                         </div>
+                        <small class="error-message" v-if="formSubmitted && errors.acceptTerms">
+                            {{ errors.acceptTerms }}
+                        </small>
                         
                         <!-- Botón de Registro -->
                         <button type="submit" class="auth-btn" :disabled="loading">

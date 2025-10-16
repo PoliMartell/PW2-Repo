@@ -6,6 +6,7 @@ createApp({
         const form = reactive({
             firstName: '',
             lastName: '',
+            username: '',
             email: '',
             password: '',
             confirmPassword: '',
@@ -16,16 +17,82 @@ createApp({
         const loading = ref(false);
         const formSubmitted = ref(false);
         const passwordStrength = ref('');
+        const usernameStatus = reactive({
+            checking: false,
+            available: false,
+            message: ''
+        });
+        
+        // Nuevas variables para la foto
+        const photoFile = ref(null);
+        const photoPreview = ref('');
+        const fileInput = ref(null);
 
         // Obtener el componente global de auth
         const getAuthComponent = () => {
             return document.querySelector('auth-component');
         };
 
+        // Métodos para la foto
+        const triggerFileInput = () => {
+            fileInput.value?.click();
+        };
+
+        const handlePhotoUpload = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                // Validar tipo de archivo
+                if (!file.type.startsWith('image/')) {
+                    getAuthComponent().showNotification('❌ Por favor selecciona una imagen válida', true);
+                    return;
+                }
+                
+                // Validar tamaño (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    getAuthComponent().showNotification('❌ La imagen debe ser menor a 5MB', true);
+                    return;
+                }
+                
+                photoFile.value = file;
+                
+                // Crear preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    photoPreview.value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
         // Computed para validar contraseñas coincidentes
         const passwordsMatch = computed(() => {
             return form.password === form.confirmPassword && form.password !== '';
         });
+
+        // Verificar disponibilidad de usuario
+        const checkUsernameAvailability = () => {
+            if (!form.username || form.username.length < 3) {
+                usernameStatus.checking = false;
+                usernameStatus.available = false;
+                usernameStatus.message = '';
+                return;
+            }
+
+            usernameStatus.checking = true;
+            
+            // Simular verificación de disponibilidad
+            setTimeout(() => {
+                const takenUsernames = ['admin', 'user', 'test', 'fifa', 'fanscore'];
+                const isAvailable = !takenUsernames.includes(form.username.toLowerCase());
+                
+                usernameStatus.checking = false;
+                usernameStatus.available = isAvailable;
+                usernameStatus.message = isAvailable 
+                    ? '✅ Nombre de usuario disponible' 
+                    : '❌ Este usuario ya está en uso';
+                usernameStatus.class = isAvailable ? 'username-available' : 'username-taken';
+            }, 800);
+        };
 
         const updatePasswordStrength = () => {
             const password = form.password;
@@ -71,6 +138,18 @@ createApp({
                 isValid = false;
             } else if (form.lastName.trim().length < 2) {
                 errors.lastName = 'El apellido debe tener al menos 2 caracteres';
+                isValid = false;
+            }
+            
+            // Validar usuario
+            if (!form.username.trim()) {
+                errors.username = 'El nombre de usuario es obligatorio';
+                isValid = false;
+            } else if (form.username.trim().length < 3) {
+                errors.username = 'El usuario debe tener al menos 3 caracteres';
+                isValid = false;
+            } else if (!usernameStatus.available && form.username.length >= 3) {
+                errors.username = 'Este nombre de usuario no está disponible';
                 isValid = false;
             }
             
@@ -123,8 +202,23 @@ createApp({
             loading.value = true;
             
             try {
-                // Simular registro
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Simular subida de foto si existe
+                let photoUrl = '';
+                if (photoFile.value) {
+                    // Aquí iría la lógica real para subir la foto al servidor
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    photoUrl = 'uploaded/' + photoFile.value.name;
+                }
+                
+                // Simular registro completo
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const userData = {
+                    ...form,
+                    photo: photoUrl
+                };
+                
+                console.log('Usuario registrado:', userData);
                 
                 authComponent.showNotification('✅ ¡Cuenta creada exitosamente! Redirigiendo al login...', false);
                 
@@ -157,13 +251,13 @@ createApp({
             const container = document.getElementById('particles');
             if (!container) return;
             
-            const particleCount = 30;
+            const particleCount = 25;
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('particle');
                 
-                const size = Math.random() * 15 + 5;
+                const size = Math.random() * 12 + 3;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
                 
@@ -172,7 +266,7 @@ createApp({
                 particle.style.left = `${posX}%`;
                 particle.style.top = `${posY}%`;
                 
-                const opacity = Math.random() * 0.3 + 0.1;
+                const opacity = Math.random() * 0.2 + 0.05;
                 particle.style.background = `rgba(255, 255, 255, ${opacity})`;
                 
                 const delay = Math.random() * 5;
@@ -192,11 +286,18 @@ createApp({
             loading,
             formSubmitted,
             passwordStrength,
+            usernameStatus,
+            photoFile,
+            photoPreview,
+            fileInput,
             passwordsMatch,
             handleRegister,
             handleGoogleRegister,
             goToLogin,
-            updatePasswordStrength
+            updatePasswordStrength,
+            checkUsernameAvailability,
+            triggerFileInput,
+            handlePhotoUpload
         };
     }
 }).mount('#auth-app');
