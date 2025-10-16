@@ -353,42 +353,28 @@ const app = createApp({
       level: 15
     });
 
-    // Stats del perfil para enciclopedia
+    // Datos básicos para mostrar estadísticas tipo álbum (placeholders razonables)
+    const packsAvailable = ref(3);
+    const totalStickers = computed(() => playersData.length); // usar número de jugadores como contador genérico
+    const collectedStickers = computed(() => Math.round(playersData.length * 0.6)); // asumimos ~60% coleccionado como ejemplo
+    const duplicateStickers = computed(() => 0); // sin datos reales aquí, se deja 0 por defecto
+    const progressPercentage = computed(() => {
+      if (totalStickers.value === 0) return 0;
+      return Math.round((collectedStickers.value / totalStickers.value) * 100);
+    });
+
+    // Stats del perfil — ahora iguales a album/dashboard (Álbum, Cromos, Duplicadas, Sobres)
     const profileStats = computed(() => [
-      { 
-        label: 'Jugadores', 
-        value: `${playersData.length}`,
-        icon: 'fas fa-users'
-      },
-      { 
-        label: 'Equipos', 
-        value: '5',
-        icon: 'fas fa-tshirt'
-      },
-      { 
-        label: 'Países', 
-        value: '6',
-        icon: 'fas fa-globe-americas'
-      },
-      { 
-        label: 'Nivel', 
-        value: `${userProfile.value.level}`,
-        icon: 'fas fa-star'
-      }
+      { label: 'Álbum', value: `${progressPercentage.value}% completado`, icon: 'fas fa-chart-pie' },
+      { label: 'Cromos', value: `${collectedStickers.value}/${totalStickers.value}`, icon: 'fas fa-stamp' },
+      { label: 'Duplicados', value: `${duplicateStickers.value}`, icon: 'fas fa-copy' },
+      { label: 'Sobres', value: `${packsAvailable.value}`, icon: 'fas fa-gift' }
     ]);
 
-    // Acciones del perfil
+    // Acciones del perfil: iguales a album/dashboard
     const profileActions = ref([
-      { 
-        name: 'Mi Perfil', 
-        icon: 'fas fa-user',
-        description: 'Ver tu perfil completo'
-      },
-      { 
-        name: 'Favoritos', 
-        icon: 'fas fa-heart',
-        description: 'Jugadores favoritos'
-      }
+      { name: 'Mi Perfil', icon: 'fas fa-user', description: 'Ver tu perfil completo' },
+      { name: 'Intercambios', icon: 'fas fa-exchange-alt', description: 'Gestionar intercambios' }
     ]);
 
     // Topbar config para enciclopedia
