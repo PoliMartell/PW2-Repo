@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enciclopedia - Fanscore</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="../styles/enciclopedia.css">
+    <link rel="stylesheet" href="../styles/globals.css">
+    <link rel="stylesheet" href="../styles/layout.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div id="app">
+    <app-layout
+        :menu-items="sidebarMenu"
+        :user="userProfile"
+        :stats="profileStats"
+        :actions="profileActions"
+        :topbar="topbarConfig"
+        :search-value="searchQuery"
+        @logout="handleLogout"
+        @action-click="handleProfileAction"
+        @topbar-action="handleTopbarAction"
+        @search="handleSearch"
+    >
+        <!-- Contenido específico de enciclopedia -->
+        <div class="content-wrapper">
+            <header class="page-header">
+                <h1>Enciclopedia de Jugadores</h1>
+                <p>Explora y descubre las estadísticas de tus jugadores favoritos</p>
+            </header>
+
+            <!-- Filtros -->
+            <div class="filters-container">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="teamFilter">Equipo</label>
+                        <select id="teamFilter" v-model="filters.team" aria-label="Filtrar por equipo">
+                            <option value="">Todos los equipos</option>
+                            <option value="barcelona">Barcelona</option>
+                            <option value="real-madrid">Real Madrid</option>
+                            <option value="psg">PSG</option>
+                            <option value="manchester-city">Manchester City</option>
+                            <option value="liverpool">Liverpool</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="countryFilter">País</label>
+                        <select id="countryFilter" v-model="filters.country" aria-label="Filtrar por país">
+                            <option value="">Todos los países</option>
+                            <option value="argentina">Argentina</option>
+                            <option value="portugal">Portugal</option>
+                            <option value="francia">Francia</option>
+                            <option value="brasil">Brasil</option>
+                            <option value="españa">España</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="positionFilter">Posición</label>
+                        <select id="positionFilter" v-model="filters.position" aria-label="Filtrar por posición">
+                            <option value="">Todas las posiciones</option>
+                            <option value="portero">Portero</option>
+                            <option value="defensa">Defensa</option>
+                            <option value="medio">Mediocampista</option>
+                            <option value="delantero">Delantero</option>
+                        </select>
+                    </div>
+
+                    <button @click="resetFilters" class="reset-btn">
+                        <i class="fas fa-redo"></i> Restablecer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contador de resultados -->
+            <div class="results-counter" v-if="filteredPlayers.length > 0">
+                Mostrando <span>{{ filteredPlayers.length }}</span> de <span>{{ playersData.length }}</span> jugadores
+            </div>
+
+            <!-- Tarjetas de jugadores -->
+            <section class="cards-container">
+                <div 
+                    v-for="player in filteredPlayers" 
+                    :key="player.id"
+                    class="card"
+                    @click="openPlayerModal(player)"
+                >
+                    <div class="card-badge">{{ player.rating }}</div>
+                    <div class="card-image">
+                        <img :src="player.image" :alt="player.name" loading="lazy">
+                        <div class="card-overlay">
+                            <div class="card-team">{{ getTeamName(player.team) }}</div>
+                            <div class="card-country">{{ getCountryName(player.country) }}</div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>{{ player.name }}</h3>
+                        <p class="card-position">{{ getPositionName(player.position) }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mensaje cuando no hay resultados -->
+            <div v-if="filteredPlayers.length === 0" class="no-results">
+                <div class="no-results-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>No se encontraron jugadores</h3>
+                <p>Intenta ajustar los filtros o términos de búsqueda</p>
+                <button @click="resetFilters" class="reset-btn">Restablecer búsqueda</button>
+            </div>
+        </div>
+      
+    </app-layout>
+  </div>
+
+  <!-- Modal con estilo de ficha -->
+  <div id="playerModal" class="modal">
+      <div class="modal-content player-card">
+          <span class="close">&times;</span>
+          <div id="modal-body">
+              <!-- Aquí cargaremos la info del jugador -->
+          </div>
+      </div>
+  </div>
+
+  <!-- Incluir componentes -->
+  <script src="../components/sidebar-component.js"></script>
+  <script src="../components/profile-component.js"></script>
+  <script src="../components/layout-component.js"></script>
+  <script src="../components/topbar-component.js"></script>
+  
+<script>
+// SearchComponent para el topbar (igual que en dashboard)
+const SearchComponent = {
+  template: `
+    <div class="search-container">
+      <i class="fas fa-search"></i>
+      <input 
+        type="text" 
+        :placeholder="placeholder"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
+      >
+    </div>
+  `,
+  props: {
+    placeholder: {
+      type: String,
+      default: 'Buscar...'
+    },
+    modelValue: {
+      type: String,
+      default: ''
+    }
+  },
+  emits: ['update:modelValue']
+};
+
+const { createApp, ref, computed } = Vue;
+
+const app = createApp({
+  setup() {
+    // Datos de jugadores - MOVIDO DENTRO DEL SETUP
+    const playersData = [
+        {
+            id: "messi",
+            name: "Lionel Messi",
+            team: "psg",
+            country: "argentina",
+            position: "delantero",
+            rating: 93,
+            image: "https://i.pinimg.com/736x/f0/ee/49/f0ee4946471fcaef678fa207553920d7.jpg",
+            fullName: "Lionel Andrés Messi",
+            age: 36,
+            height: "170 cm",
+            weight: "72 kg",
+            preferredFoot: "Izquierdo",
+            description: "Considerado uno de los mejores futbolistas de todos los tiempos. Ganador de 8 Balones de Oro y múltiples títulos con el FC Barcelona y la selección argentina.",
+            stats: {
+                velocidad: 85,
+                regate: 95,
+                tiro: 92,
+                defensa: 38,
+                pase: 91,
+                fisico: 65
+            },
+            skills: ["Regate excepcional", "Visión de juego", "Tiro preciso", "Control del balón"],
+            achievements: ["8x Balón de Oro", "4x Champions League", "10x Liga Españala", "Copa del Mundo 2022"]
+        },
+        {
+            id: "cristiano",
+            name: "Cristiano Ronaldo",
+            team: "real-madrid", 
+            country: "portugal",
+            position: "delantero",
+            rating: 92,
+            image: "https://i.pinimg.com/736x/97/8d/fe/978dfe2eed24660a344f07c8784065c8.jpg",
+            fullName: "Cristiano Ronaldo dos Santos Aveiro",
+            age: 39,
+            height: "187 cm",
+            weight: "83 kg",
+            preferredFoot: "Derecho",
+            description: "Uno de los goleadores más prolíficos de la historia del fútbol. Conocido por su ética de trabajo, capacidad atlética y mentalidad ganadora.",
+            stats: {
+                velocidad: 89,
+                regate: 88,
+                tiro: 93,
+                defensa: 34,
+                pase: 82,
+                fisico: 78
+            },
+            skills: ["Salto y juego aéreo", "Tiro potente", "Velocidad", "Fuerza física"],
+            achievements: ["5x Balón de Oro", "5x Champions League", "7x Ligas de diferentes países", "Eurocopa 2016"]
+        },
+        {
+            id: "mbappe",
+            name: "Kylian Mbappé",
+            team: "psg",
+            country: "francia", 
+            position: "delantero",
+            rating: 91,
+            image: "https://i.pinimg.com/736x/12/6b/a1/126ba187a5ac47712556da6bea570429.jpg",
+            fullName: "Kylian Mbappé Lottin",
+            age: 25,
+            height: "178 cm",
+            weight: "73 kg",
+            preferredFoot: "Derecho",
+            description: "Joven prodigio del fútbol mundial conocido por su explosiva velocidad y capacidad goleadora. Campeón del mundo con Francia en 2018.",
+            stats: {
+                velocidad: 97,
+                regate: 92,
+                tiro: 88,
+                defensa: 36,
+                pase: 80,
+                fisico: 76
+            },
+            skills: ["Velocidad explosiva", "Definición", "Regate en velocidad", "Desmarques"],
+            achievements: ["Copa del Mundo 2018", "5x Ligue 1", "Máximo goleador del Mundial 2022"]
+        },
+        {
+            id: "neymar",
+            name: "Neymar Jr",
+            team: "psg",
+            country: "brasil",
+            position: "delantero", 
+            rating: 89,
+            image: "https://i.pinimg.com/736x/cd/b0/d7/cdb0d72d2a556da27688275141f01b5c.jpg",
+            fullName: "Neymar da Silva Santos Júnior",
+            age: 32,
+            height: "175 cm",
+            weight: "68 kg",
+            preferredFoot: "Derecho",
+            description: "Jugador técnico y creativo, conocido por su habilidad para el regate y la asistencia. Una de las mayores estrellas del fútbol brasileño.",
+            stats: {
+                velocidad: 90,
+                regate: 94,
+                tiro: 84,
+                defensa: 32,
+                pase: 86,
+                fisico: 62
+            },
+            skills: ["Regate creativo", "Asistencias", "Control de balón", "Faltas"],
+            achievements: ["Champions League 2015", "Copa Libertadores", "Medalla de Oro Olímpica 2016"]
+        },
+        {
+            id: "modric",
+            name: "Luka Modrić",
+            team: "real-madrid",
+            country: "croacia",
+            position: "medio",
+            rating: 88,
+            image: "https://i.pinimg.com/736x/c7/5b/63/c75b63a6b5d5bd3ccba540c723f37d6d.jpg",
+            fullName: "Luka Modrić",
+            age: 38,
+            height: "172 cm", 
+            weight: "66 kg",
+            preferredFoot: "Derecho",
+            description: "Mediocampista elegante y visionario, ganador del Balón de Oro 2018. Conocido por su control del juego y precisión en los pases.",
+            stats: {
+                velocidad: 74,
+                regate: 89,
+                tiro: 76,
+                defensa: 72,
+                pase: 91,
+                fisico: 68
+            },
+            skills: ["Visión de juego", "Pases largos", "Control del ritmo", "Técnica"],
+            achievements: ["Balón de Oro 2018", "5x Champions League", "Subcampeón del Mundo 2018"]
+        }
+    ];
+
+    // Datos reactivos
+    const searchQuery = ref('');
+    const toasts = ref([]);
+
+    // Filtros
+    const filters = ref({
+        team: '',
+        country: '',
+        position: '',
+        search: ''
+    });
+
+    // Computed properties
+    const filteredPlayers = computed(() => {
+        let filtered = playersData;
+        
+        // Filtro por equipo
+        if (filters.value.team) {
+            filtered = filtered.filter(player => player.team === filters.value.team);
+        }
+        
+        // Filtro por país
+        if (filters.value.country) {
+            filtered = filtered.filter(player => player.country === filters.value.country);
+        }
+        
+        // Filtro por posición
+        if (filters.value.position) {
+            filtered = filtered.filter(player => player.position === filters.value.position);
+        }
+        
+        // Filtro por búsqueda
+        if (filters.value.search) {
+            const searchTerm = filters.value.search.toLowerCase();
+            filtered = filtered.filter(player => 
+                player.name.toLowerCase().includes(searchTerm) ||
+                player.fullName.toLowerCase().includes(searchTerm) ||
+                getTeamName(player.team).toLowerCase().includes(searchTerm) ||
+                getCountryName(player.country).toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        return filtered;
+    });
+
+    // Menu del sidebar - Enciclopedia activa
+    const sidebarMenu = ref([
+      { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: false },
+      { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
+      { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: true },
+    ]);
+
+    // Perfil del usuario
+    const userProfile = ref({
+      avatar: 'https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg',
+      username: '@UsuarioFan',
+      level: 15
+    });
+
+    // Stats del perfil para enciclopedia
+    const profileStats = computed(() => [
+      { 
+        label: 'Jugadores', 
+        value: `${playersData.length}`,
+        icon: 'fas fa-users'
+      },
+      { 
+        label: 'Equipos', 
+        value: '5',
+        icon: 'fas fa-tshirt'
+      },
+      { 
+        label: 'Países', 
+        value: '6',
+        icon: 'fas fa-globe-americas'
+      },
+      { 
+        label: 'Nivel', 
+        value: `${userProfile.value.level}`,
+        icon: 'fas fa-star'
+      }
+    ]);
+
+    // Acciones del perfil
+    const profileActions = ref([
+      { 
+        name: 'Mi Perfil', 
+        icon: 'fas fa-user',
+        description: 'Ver tu perfil completo'
+      },
+      { 
+        name: 'Favoritos', 
+        icon: 'fas fa-heart',
+        description: 'Jugadores favoritos'
+      }
+    ]);
+
+    // Topbar config para enciclopedia
+    const topbarConfig = ref({
+      searchPlaceholder: 'Buscar jugadores, equipos...',
+      actions: [
+        { 
+          name: 'notifications', 
+          icon: 'fas fa-bell', 
+          title: 'Notificaciones',
+          badge: 2
+        },
+        { 
+          name: 'settings', 
+          icon: 'fas fa-cog', 
+          title: 'Configuración' 
+        }
+      ]
+    });
+
+    // Métodos de utilidad
+    const getTeamName = (teamId) => {
+        const teams = {
+            'psg': 'PSG',
+            'real-madrid': 'Real Madrid',
+            'barcelona': 'Barcelona',
+            'manchester-city': 'Manchester City',
+            'liverpool': 'Liverpool'
+        };
+        return teams[teamId] || teamId;
+    };
+
+    const getCountryName = (countryId) => {
+        const countries = {
+            'argentina': 'Argentina',
+            'portugal': 'Portugal',
+            'francia': 'Francia',
+            'brasil': 'Brasil',
+            'croacia': 'Croacia',
+            'españa': 'España'
+        };
+        return countries[countryId] || countryId;
+    };
+
+    const getPositionName = (positionId) => {
+        const positions = {
+            'portero': 'Portero',
+            'defensa': 'Defensa',
+            'medio': 'Mediocampista',
+            'delantero': 'Delantero'
+        };
+        return positions[positionId] || positionId;
+    };
+
+    const resetFilters = () => {
+        filters.value = {
+            team: '',
+            country: '',
+            position: '',
+            search: ''
+        };
+        searchQuery.value = '';
+    };
+
+    const openPlayerModal = (player) => {
+        if (window.enciclopedia) {
+            window.enciclopedia.openPlayerModal(player);
+        }
+    };
+
+    // Sistema de notificaciones toast (igual que en dashboard)
+    const showToast = (message, type = 'info') => {
+      const id = Date.now();
+      toasts.value.push({ id, message, type });
+      
+      setTimeout(() => {
+        removeToast(id);
+      }, 5000);
+    };
+
+    const removeToast = (id) => {
+      toasts.value = toasts.value.filter(toast => toast.id !== id);
+    };
+
+    const getToastIcon = (type) => {
+      const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+      };
+      return icons[type] || 'fas fa-info-circle';
+    };
+
+    // Métodos del layout
+    const handleLogout = () => {
+      console.log('Cerrando sesión...');
+      showToast('Cerrando sesión...', 'info');
+    };
+
+    const handleProfileAction = (action) => {
+      console.log('Acción perfil:', action);
+      switch(action.name) {
+        case 'Mi Perfil':
+          showToast('Redirigiendo a tu perfil...', 'info');
+          break;
+        case 'Favoritos':
+          showToast('Mostrando favoritos...', 'info');
+          break;
+      }
+    };
+
+    const handleTopbarAction = (action) => {
+      console.log('Acción topbar:', action);
+      switch(action.name) {
+        case 'notifications':
+          showToast('Mostrando notificaciones...', 'info');
+          break;
+        case 'settings':
+          showToast('Abriendo configuración...', 'info');
+          break;
+      }
+    };
+
+    const handleSearch = (value) => {
+      filters.value.search = value;
+      console.log('Buscando:', value);
+    };
+
+    return {
+      // Datos
+      searchQuery,
+      filters,
+      toasts,
+      playersData, // ← AÑADIDO AQUÍ
+      
+      // Computed
+      filteredPlayers,
+      
+      // Datos del layout
+      sidebarMenu,
+      userProfile,
+      profileStats,
+      profileActions,
+      topbarConfig,
+      
+      // Métodos
+      getTeamName,
+      getCountryName,
+      getPositionName,
+      resetFilters,
+      openPlayerModal,
+      showToast,
+      removeToast,
+      getToastIcon,
+      handleLogout,
+      handleProfileAction,
+      handleTopbarAction,
+      handleSearch
+    };
+  }
+});
+
+// ====================
+// REGISTRAR COMPONENTES (igual que en dashboard)
+// ====================
+
+// Componentes globales
+app.component('sidebar-main', SidebarComponent);
+app.component('profile-sidebar', ProfileComponent);
+app.component('app-layout', LayoutComponent);
+app.component('topbar-component', TopbarComponent);
+app.component('search-component', SearchComponent);
+
+app.mount('#app');
+  </script>
+
+  <!-- Script de funcionalidades del modal -->
+  <script src="../js/enciclopedia-modal.js"></script>
+</body>
+</html>
