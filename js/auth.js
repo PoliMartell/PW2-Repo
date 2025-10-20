@@ -1,67 +1,108 @@
-// Funcionalidades compartidas para autenticación
-document.addEventListener('DOMContentLoaded', function() {
-    // Asegurar que el componente auth esté disponible
-    if (!customElements.get('auth-component')) {
-        customElements.define('auth-component', class extends HTMLElement {
-            constructor() {
-                super();
-            }
+// js/auth.js - Versión simplificada sin Custom Elements
 
-            // Método para mostrar notificaciones
-            showNotification(message, isError = false) {
-                const notification = document.createElement('div');
-                notification.className = `notification ${isError ? 'error' : 'success'}`;
-                notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 20px;
-                    border-radius: 8px;
-                    background: ${isError ? '#E5253B' : '#009739'};
-                    color: white;
-                    font-weight: 500;
-                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-                    transform: translateX(100%);
-                    opacity: 0;
-                    transition: all 0.3s ease;
-                    z-index: 1000;
-                `;
-                notification.innerHTML = `
-                    <i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
-                    ${message}
-                `;
-                
-                document.body.appendChild(notification);
-                
+// Funciones globales para autenticación
+window.authUtils = {
+    // Validación de email
+    isValidEmail: (email) => {
+        if (!email) return false;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    },
+    
+    // Validación de contraseña
+    validatePassword: (password) => {
+        if (!password || password.length < 6) {
+            return { isValid: false, message: 'La contraseña debe tener al menos 6 caracteres' };
+        }
+        return { isValid: true, message: '' };
+    },
+    
+    // Sistema de Toast Messages
+    showToast: (message, type = 'info', duration = 5000) => {
+        try {
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'toast-container';
+                document.body.appendChild(toastContainer);
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const getToastIcon = (type) => {
+                const icons = {
+                    success: 'fa-check-circle',
+                    error: 'fa-exclamation-circle',
+                    warning: 'fa-exclamation-triangle',
+                    info: 'fa-info-circle'
+                };
+                return icons[type] || 'fa-info-circle';
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas ${getToastIcon(type)}"></i>
+                </div>
+                <div class="toast-content">${message}</div>
+                <button class="toast-close">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="toast-progress"></div>
+            `;
+            
+            // Agregar evento al botón de cerrar
+            const closeBtn = toast.querySelector('.toast-close');
+            closeBtn.addEventListener('click', function() {
+                toast.classList.remove('show');
+                toast.classList.add('hiding');
                 setTimeout(() => {
-                    notification.style.transform = 'translateX(0)';
-                    notification.style.opacity = '1';
-                }, 100);
-                
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 400);
+            });
+            
+            toastContainer.appendChild(toast);
+            
+            // Animación de entrada
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Auto-remover después del tiempo especificado
+            if (duration > 0) {
                 setTimeout(() => {
-                    notification.style.transform = 'translateX(100%)';
-                    notification.style.opacity = '0';
+                    toast.classList.remove('show');
+                    toast.classList.add('hiding');
                     setTimeout(() => {
-                        if (notification.parentNode) {
-                            notification.parentNode.removeChild(notification);
+                        if (toast.parentNode) {
+                            toast.parentNode.removeChild(toast);
                         }
-                    }, 300);
-                }, 3000);
+                    }, 400);
+                }, duration);
             }
+            
+            return toast;
+        } catch (error) {
+            console.error('Error showing toast:', error);
+            // Fallback simple
+            const fallbackTypes = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            alert(`${fallbackTypes[type] || ''} ${message}`);
+        }
+    }
+};
 
-            // Validación de email
-            isValidEmail(email) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(email);
-            }
-
-            // Validación de contraseña
-            validatePassword(password) {
-                if (password.length < 6) {
-                    return { isValid: false, message: 'La contraseña debe tener al menos 6 caracteres' };
-                }
-                return { isValid: true, message: '' };
-            }
-        });
+// Inicializar toast container cuando se carga la página
+document.addEventListener('DOMContentLoaded', function() {
+    if (!document.getElementById('toast-container')) {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
     }
 });

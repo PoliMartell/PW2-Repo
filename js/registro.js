@@ -3,6 +3,7 @@ const { createApp, ref, reactive, onMounted, computed } = Vue;
 
 createApp({
     setup() {
+        // ESTADO REACTIVO
         const form = reactive({
             firstName: '',
             lastName: '',
@@ -20,22 +21,38 @@ createApp({
         const usernameStatus = reactive({
             checking: false,
             available: false,
-            message: ''
+            message: '',
+            class: ''
         });
         
-        // Nuevas variables para la foto
+        // Estado para mostrar/ocultar contraseñas
+        const showPassword = ref(false);
+        const showConfirmPassword = ref(false);
+        
+        // Estado para la foto
         const photoFile = ref(null);
-        const photoPreview = ref('');
+        const photoPreview = ref('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiMzMzMiLz4KPHBhdGggZD0iTTQwIDQ0QzQ0LjQxODMgNDQgNDggNDAuNDE4MyA0OCAzNkM0OCAzMS41ODE3IDQ0LjQxODMgMjggNDAgMjhDMzUuNTgxNyAyOCAzMiAzMS41ODE3IDMyIDM2QzMyIDQwLjQxODMgMzUuNTgxNyA0NCA0MCA0NFoiIGZpbGw9IiNmZmZmZmYiLz4KPHBhdGggZD0iTTUyIDUyQzUyIDU3LjUyMjggNDcuNTIyOCA2MiA0MiA2MkMzNi40NzcyIDYyIDMyIDU3LjUyMjggMzIgNTJWMzJINTJWNjJaIiBmaWxsPSIjZmZmZmZmIi8+Cjwvc3ZnPgo=');
         const fileInput = ref(null);
 
-        // Obtener el componente global de auth
-        const getAuthComponent = () => {
-            return document.querySelector('auth-component');
+        // FUNCIONES DE VALIDACIÓN - Usar directamente
+        const isValidEmail = (email) => {
+            return window.authUtils.isValidEmail(email);
         };
 
-        // Métodos para la foto
+        const validatePassword = (password) => {
+            return window.authUtils.validatePassword(password);
+        };
+
+        const showToast = (message, type = 'info', duration = 5000) => {
+            window.authUtils.showToast(message, type, duration);
+        };
+
+        // ... (el resto del código se mantiene igual)
+        // MÉTODOS PARA LA FOTO
         const triggerFileInput = () => {
-            fileInput.value?.click();
+            if (fileInput.value) {
+                fileInput.value.click();
+            }
         };
 
         const handlePhotoUpload = (event) => {
@@ -43,13 +60,13 @@ createApp({
             if (file) {
                 // Validar tipo de archivo
                 if (!file.type.startsWith('image/')) {
-                    getAuthComponent().showNotification('❌ Por favor selecciona una imagen válida', true);
+                    showToast('Por favor selecciona una imagen válida', 'error');
                     return;
                 }
                 
                 // Validar tamaño (max 5MB)
                 if (file.size > 5 * 1024 * 1024) {
-                    getAuthComponent().showNotification('❌ La imagen debe ser menor a 5MB', true);
+                    showToast('La imagen debe ser menor a 5MB', 'error');
                     return;
                 }
                 
@@ -61,15 +78,21 @@ createApp({
                     photoPreview.value = e.target.result;
                 };
                 reader.readAsDataURL(file);
+
+                showToast('Foto cargada correctamente', 'success', 3000);
             }
         };
 
-        // Computed para validar contraseñas coincidentes
-        const passwordsMatch = computed(() => {
-            return form.password === form.confirmPassword && form.password !== '';
-        });
+        // TOGGLE PASSWORD VISIBILITY
+        const togglePasswordVisibility = (field) => {
+            if (field === 'password') {
+                showPassword.value = !showPassword.value;
+            } else if (field === 'confirmPassword') {
+                showConfirmPassword.value = !showConfirmPassword.value;
+            }
+        };
 
-        // Verificar disponibilidad de usuario
+        // VALIDACIÓN DE USUARIO
         const checkUsernameAvailability = () => {
             if (!form.username || form.username.length < 3) {
                 usernameStatus.checking = false;
@@ -80,7 +103,6 @@ createApp({
 
             usernameStatus.checking = true;
             
-            // Simular verificación de disponibilidad
             setTimeout(() => {
                 const takenUsernames = ['admin', 'user', 'test', 'fifa', 'fanscore'];
                 const isAvailable = !takenUsernames.includes(form.username.toLowerCase());
@@ -88,12 +110,17 @@ createApp({
                 usernameStatus.checking = false;
                 usernameStatus.available = isAvailable;
                 usernameStatus.message = isAvailable 
-                    ? '✅ Nombre de usuario disponible' 
-                    : '❌ Este usuario ya está en uso';
+                    ? 'Nombre de usuario disponible' 
+                    : 'Este usuario ya está en uso';
                 usernameStatus.class = isAvailable ? 'username-available' : 'username-taken';
+                
+                if (!isAvailable) {
+                    showToast('Este nombre de usuario no está disponible', 'error', 4000);
+                }
             }, 800);
         };
 
+        // FORTALEZA DE CONTRASEÑA
         const updatePasswordStrength = () => {
             const password = form.password;
             let strength = 0;
@@ -115,9 +142,13 @@ createApp({
             }
         };
 
+        // VALIDACIÓN DE CONTRASEÑAS COINCIDENTES
+        const passwordsMatch = computed(() => {
+            return form.password === form.confirmPassword && form.password !== '';
+        });
+
+        // VALIDACIÓN DEL FORMULARIO
         const validateForm = () => {
-            const authComponent = getAuthComponent();
-            
             // Limpiar errores
             Object.keys(errors).forEach(key => errors[key] = '');
             
@@ -157,13 +188,13 @@ createApp({
             if (!form.email.trim()) {
                 errors.email = 'El email es obligatorio';
                 isValid = false;
-            } else if (!authComponent.isValidEmail(form.email)) {
+            } else if (!isValidEmail(form.email)) {
                 errors.email = 'Por favor ingresa un email válido';
                 isValid = false;
             }
             
             // Validar contraseña
-            const passwordValidation = authComponent.validatePassword(form.password);
+            const passwordValidation = validatePassword(form.password);
             if (!form.password) {
                 errors.password = 'La contraseña es obligatoria';
                 isValid = false;
@@ -190,12 +221,12 @@ createApp({
             return isValid;
         };
 
+        // REGISTRO
         const handleRegister = async () => {
             formSubmitted.value = true;
-            const authComponent = getAuthComponent();
             
             if (!validateForm()) {
-                authComponent.showNotification('❌ Por favor completa todos los campos correctamente', true);
+                showToast('Por favor completa todos los campos correctamente', 'error');
                 return;
             }
             
@@ -205,13 +236,24 @@ createApp({
                 // Simular subida de foto si existe
                 let photoUrl = '';
                 if (photoFile.value) {
-                    // Aquí iría la lógica real para subir la foto al servidor
+                    showToast('Subiendo foto de perfil...', 'info', 2000);
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     photoUrl = 'uploaded/' + photoFile.value.name;
                 }
                 
                 // Simular registro completo
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Simular posibles errores
+                if (form.email === 'existente@test.com') {
+                    showToast('Este email ya está registrado', 'error');
+                    return;
+                }
+                
+                if (form.username === 'admin') {
+                    showToast('Este usuario no está disponible', 'error');
+                    return;
+                }
                 
                 const userData = {
                     ...form,
@@ -220,33 +262,35 @@ createApp({
                 
                 console.log('Usuario registrado:', userData);
                 
-                authComponent.showNotification('✅ ¡Cuenta creada exitosamente! Redirigiendo al login...', false);
+                showToast('¡Cuenta creada exitosamente! Revisa tu email para activarla.', 'success');
                 
                 // Redirección al login
                 setTimeout(() => {
-                    window.location.href = '../pages/login.html';
-                }, 2000);
+                    window.location.href = 'login.html';
+                }, 3000);
                 
             } catch (error) {
-                authComponent.showNotification('❌ Error al crear la cuenta. Intenta nuevamente.', true);
+                showToast('Error al crear la cuenta. Intenta nuevamente.', 'error');
             } finally {
                 loading.value = false;
             }
         };
 
+        // GOOGLE REGISTER
         const handleGoogleRegister = () => {
-            const authComponent = getAuthComponent();
-            authComponent.showNotification('Registro con Google en desarrollo', false);
+            showToast('Registro con Google en desarrollo', 'info');
         };
 
-        const goToLogin = () => {
+        // IR A LOGIN
+        const goToLogin = (event) => {
+            if (event) event.preventDefault();
             document.body.classList.add('fade-out');
             setTimeout(() => {
-                window.location.href = '../pages/login.html';
+                window.location.href = 'login.html';
             }, 650);
         };
 
-        // Inicializar partículas
+        // INICIALIZAR PARTÍCULAS
         const createParticles = () => {
             const container = document.getElementById('particles');
             if (!container) return;
@@ -276,10 +320,12 @@ createApp({
             }
         };
 
+        // INICIALIZAR
         onMounted(() => {
             createParticles();
         });
 
+        // EXPORTAR AL TEMPLATE
         return {
             form,
             errors,
@@ -287,6 +333,8 @@ createApp({
             formSubmitted,
             passwordStrength,
             usernameStatus,
+            showPassword,
+            showConfirmPassword,
             photoFile,
             photoPreview,
             fileInput,
@@ -297,7 +345,8 @@ createApp({
             updatePasswordStrength,
             checkUsernameAvailability,
             triggerFileInput,
-            handlePhotoUpload
+            handlePhotoUpload,
+            togglePasswordVisibility
         };
     }
 }).mount('#auth-app');

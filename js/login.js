@@ -3,6 +3,7 @@ const { createApp, ref, reactive, onMounted } = Vue;
 
 createApp({
     setup() {
+        // ESTADO REACTIVO
         const form = reactive({
             username: '',
             password: ''
@@ -11,14 +12,19 @@ createApp({
         const errors = reactive({});
         const loading = ref(false);
         const formSubmitted = ref(false);
+        const showPassword = ref(false);
         
-        // Obtener el componente global de auth
-        const getAuthComponent = () => {
-            return document.querySelector('auth-component');
+        // FUNCIONES DE VALIDACIÓN - Usar directamente
+        const isValidEmail = (email) => {
+            return window.authUtils.isValidEmail(email);
         };
 
+        const showToast = (message, type = 'info', duration = 5000) => {
+            window.authUtils.showToast(message, type, duration);
+        };
+
+        // VALIDACIÓN DEL FORMULARIO
         const validateForm = () => {
-            const authComponent = getAuthComponent();
             errors.username = '';
             errors.password = '';
             
@@ -27,7 +33,7 @@ createApp({
             if (!form.username.trim()) {
                 errors.username = 'Por favor ingresa tu email';
                 isValid = false;
-            } else if (!authComponent.isValidEmail(form.username)) {
+            } else if (!isValidEmail(form.username)) {
                 errors.username = 'Por favor ingresa un email válido';
                 isValid = false;
             }
@@ -43,12 +49,21 @@ createApp({
             return isValid;
         };
 
+        // TOGGLE PASSWORD VISIBILITY
+        const togglePasswordVisibility = () => {
+            showPassword.value = !showPassword.value;
+        };
+
+        // LOGIN
         const handleLogin = async () => {
             formSubmitted.value = true;
-            const authComponent = getAuthComponent();
             
             if (!validateForm()) {
-                authComponent.showNotification('❌ Por favor completa todos los campos correctamente', true);
+                if (errors.username) {
+                    showToast('Por favor ingresa un email válido', 'error');
+                } else {
+                    showToast('Por favor completa todos los campos correctamente', 'error');
+                }
                 return;
             }
             
@@ -58,38 +73,56 @@ createApp({
                 // Simular llamada a API
                 await new Promise(resolve => setTimeout(resolve, 1500));
                 
-                authComponent.showNotification('✅ ¡Inicio de sesión exitoso! Redirigiendo...', false);
+                // Simular diferentes escenarios de error
+                const errorScenarios = [
+                    { condition: form.password === 'incorrecta', message: 'Contraseña incorrecta', type: 'error' },
+                    { condition: form.username === 'noexiste@test.com', message: 'Usuario no encontrado', type: 'error' },
+                    { condition: form.username === 'bloqueado@test.com', message: 'Cuenta temporalmente bloqueada', type: 'warning' },
+                    { condition: form.username === 'sinverificar@test.com', message: 'Verifica tu email para activar la cuenta', type: 'warning' }
+                ];
                 
-                // Redirección real (descomentar cuando esté lista)
+                const errorScenario = errorScenarios.find(scenario => scenario.condition);
+                
+                if (errorScenario) {
+                    showToast(errorScenario.message, errorScenario.type);
+                    return;
+                }
+                
+                // Si no hay errores, éxito
+                showToast('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
+                
+                // Aquí iría la redirección real
                 // setTimeout(() => {
                 //     window.location.href = '../pages/dashboard.html';
                 // }, 2000);
                 
             } catch (error) {
-                authComponent.showNotification('❌ Error al iniciar sesión. Intenta nuevamente.', true);
+                showToast('Error de conexión. Intenta nuevamente.', 'error');
             } finally {
                 loading.value = false;
             }
         };
 
+        // GOOGLE LOGIN
         const handleGoogleLogin = () => {
-            const authComponent = getAuthComponent();
-            authComponent.showNotification('Inicio con Google en desarrollo', false);
+            showToast('Inicio con Google en desarrollo', 'info');
         };
 
+        // OLVIDÉ CONTRASEÑA
         const handleForgotPassword = () => {
-            const authComponent = getAuthComponent();
-            authComponent.showNotification('Función de recuperación de contraseña en desarrollo', false);
+            showToast('Función de recuperación de contraseña en desarrollo', 'info');
         };
 
-        const goToRegister = () => {
+        // IR A REGISTRO
+        const goToRegister = (event) => {
+            if (event) event.preventDefault();
             document.body.classList.add('fade-out');
             setTimeout(() => {
-                window.location.href = '../pages/registro.html';
+                window.location.href = 'registro.html';
             }, 650);
         };
 
-        // Inicializar partículas (código de tu ejemplo)
+        // INICIALIZAR PARTÍCULAS
         const createParticles = () => {
             const container = document.getElementById('particles');
             if (!container) return;
@@ -119,19 +152,23 @@ createApp({
             }
         };
 
+        // INICIALIZAR
         onMounted(() => {
             createParticles();
         });
 
+        // EXPORTAR AL TEMPLATE
         return {
             form,
             errors,
             loading,
             formSubmitted,
+            showPassword,
             handleLogin,
             handleGoogleLogin,
             handleForgotPassword,
-            goToRegister
+            goToRegister,
+            togglePasswordVisibility
         };
     }
 }).mount('#auth-app');

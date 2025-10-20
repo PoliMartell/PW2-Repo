@@ -189,53 +189,42 @@
                         </small>
 
                         <!-- Campo Email -->
-                        <div class="input-box">
-                            <input 
-                                type="email" 
-                                placeholder="Email" 
-                                v-model="form.email"
-                                :class="{ 'error': formSubmitted && errors.email }"
-                                required
-                            >
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <small class="error-message" v-if="formSubmitted && errors.email">
-                            {{ errors.email }}
-                        </small>
+                        <!-- Campos de contraseña -->
+<div class="input-box">
+    <input 
+        type="password" 
+        placeholder="Contraseña" 
+        v-model="form.password"
+        :type="showPassword ? 'text' : 'password'"
+        :class="{ 'error': formSubmitted && errors.password }"
+        @input="updatePasswordStrength"
+        autocomplete="new-password"
+        required
+    >
+    <i class="fas" 
+       :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+       @click="togglePasswordVisibility('password')"
+       style="cursor: pointer;"></i>
+    <div class="password-strength">
+        <div class="strength-bar" :class="passwordStrength"></div>
+    </div>
+</div>
 
-                        <!-- Campo Contraseña -->
-                        <div class="input-box">
-                            <input 
-                                type="password" 
-                                placeholder="Contraseña" 
-                                v-model="form.password"
-                                :class="{ 'error': formSubmitted && errors.password }"
-                                @input="updatePasswordStrength"
-                                required
-                            >
-                            <i class="fas fa-lock"></i>
-                            <div class="password-strength">
-                                <div class="strength-bar" :class="passwordStrength"></div>
-                            </div>
-                        </div>
-                        <small class="error-message" v-if="formSubmitted && errors.password">
-                            {{ errors.password }}
-                        </small>
-
-                        <!-- Confirmar Contraseña -->
-                        <div class="input-box">
-                            <input 
-                                type="password" 
-                                placeholder="Confirmar Contraseña" 
-                                v-model="form.confirmPassword"
-                                :class="{ 'error': formSubmitted && errors.confirmPassword }"
-                                required
-                            >
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <small class="error-message" v-if="formSubmitted && errors.confirmPassword">
-                            {{ errors.confirmPassword }}
-                        </small>
+<div class="input-box">
+    <input 
+        type="password" 
+        placeholder="Confirmar Contraseña" 
+        v-model="form.confirmPassword"
+        :type="showConfirmPassword ? 'text' : 'password'"
+        :class="{ 'error': formSubmitted && errors.confirmPassword }"
+        autocomplete="new-password"
+        required
+    >
+    <i class="fas" 
+       :class="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
+       @click="togglePasswordVisibility('confirmPassword')"
+       style="cursor: pointer;"></i>
+</div>
                         
                         <!-- Términos y condiciones -->
                         <div class="auth-options">
