@@ -11,10 +11,54 @@
   <link rel="stylesheet" href="../styles/layout.css">
   <link rel="stylesheet" href="../styles/components.css">
   <link rel="stylesheet" href="../styles/perfil.css">
+  
+  <style>
+    /* Estilos adicionales para el formulario completo */
+    .edit-form {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    
+    .edit-form::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .edit-form::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+    }
+    
+    .edit-form::-webkit-scrollbar-thumb {
+      background: var(--dorado);
+      border-radius: 3px;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    .profile-actions {
+      position: relative;
+      z-index: 100;
+    }
+    
+    .edit-profile-btn {
+      position: relative;
+      z-index: 100;
+    }
+    
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <div id="app">
-    <!-- Layout principal -->
     <app-layout
         :menu-items="sidebarMenu"
         :user="userProfile"
@@ -35,7 +79,7 @@
             <div class="profile-avatar-section">
               <div class="avatar-container">
                 <img :src="userProfile.avatar" :alt="userProfile.username" class="profile-avatar">
-                <button class="edit-avatar-btn" @click="editAvatar">
+                <button class="edit-avatar-btn" @click="openAvatarModal">
                   <i class="fas fa-camera"></i>
                 </button>
               </div>
@@ -43,16 +87,15 @@
                 <h1 class="profile-name">{{ userProfile.fullName }}</h1>
                 <p class="profile-username">{{ userProfile.username }}</p>
                 <p class="profile-bio">{{ userProfile.bio }}</p>
-                <div class="profile-badges">
-                  <span class="badge" v-for="badge in userBadges" :key="badge.id">
-                    <i :class="badge.icon"></i> {{ badge.name }}
-                  </span>
+                <div class="level-badge">
+                  <i class="fas fa-trophy"></i>
+                  Nivel {{ userProfile.level }}
                 </div>
               </div>
             </div>
             
             <div class="profile-actions">
-              <button class="edit-profile-btn" @click="editProfile">
+              <button class="edit-profile-btn" @click="openEditModal">
                 <i class="fas fa-edit"></i> Editar Perfil
               </button>
             </div>
@@ -79,7 +122,7 @@
                   <i class="fas fa-calendar"></i>
                   <div class="info-content">
                     <span class="info-label">Fecha de Nacimiento</span>
-                    <span class="info-value">{{ userProfile.birthDate }}</span>
+                    <span class="info-value">{{ formatDate(userProfile.birthDate) }}</span>
                   </div>
                 </div>
                 <div class="info-item">
@@ -90,10 +133,10 @@
                   </div>
                 </div>
                 <div class="info-item">
-                  <i class="fas fa-trophy"></i>
+                  <i class="fas fa-star"></i>
                   <div class="info-content">
-                    <span class="info-label">Nivel</span>
-                    <span class="info-value">Nivel {{ userProfile.level }}</span>
+                    <span class="info-label">Miembro desde</span>
+                    <span class="info-value">{{ userProfile.joinDate }}</span>
                   </div>
                 </div>
               </div>
@@ -134,111 +177,123 @@
                   <div class="progress-bar">
                     <div class="progress-fill" :style="{ width: albumProgress + '%' }"></div>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Logros -->
-            <div class="profile-card">
-              <div class="card-header">
-                <i class="fas fa-trophy"></i>
-                <h2>Logros</h2>
-              </div>
-              <div class="card-content">
-                <div class="achievements-grid">
-                  <div class="achievement" v-for="achievement in achievements" :key="achievement.id"
-                       :class="{ locked: !achievement.unlocked }">
-                    <div class="achievement-icon">
-                      <i :class="achievement.icon"></i>
-                    </div>
-                    <div class="achievement-info">
-                      <h4>{{ achievement.name }}</h4>
-                      <p>{{ achievement.description }}</p>
-                    </div>
+                  <div class="progress-text">
+                    {{ collectedStickers }} de {{ totalStickers }} cromos coleccionados
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Actividad Reciente -->
-            <div class="profile-card">
+            <!-- Colección Destacada -->
+             <!--
+            <div class="profile-card full-width">
               <div class="card-header">
-                <i class="fas fa-history"></i>
-                <h2>Actividad Reciente</h2>
+                <i class="fas fa-crown"></i>
+                <h2>Colección Destacada</h2>
               </div>
               <div class="card-content">
-                <div class="activity-list">
-                  <div class="activity-item" v-for="activity in recentActivity" :key="activity.id">
-                    <div class="activity-icon" :class="activity.type">
-                      <i :class="activity.icon"></i>
-                    </div>
-                    <div class="activity-content">
-                      <p>{{ activity.message }}</p>
-                      <span class="activity-time">{{ activity.time }}</span>
+                <div class="featured-stickers">
+                  <div class="sticker-preview" v-for="sticker in featuredStickers" :key="sticker.id">
+                    <img :src="sticker.image" :alt="sticker.name" class="sticker-img">
+                    <div class="sticker-info">
+                      <span class="sticker-number">#{{ sticker.number }}</span>
+                      <span class="sticker-name">{{ sticker.name }}</span>
                     </div>
                   </div>
                 </div>
+                <button class="view-album-btn" @click="goToAlbum">
+                  <i class="fas fa-book"></i> Ver Álbum Completo
+                </button>
               </div>
             </div>
+        -->
 
           </div>
         </div>
       
     </app-layout>
 
-    <!-- Modal de edición de perfil -->
+    <!-- Modal de edición de perfil COMPLETO -->
     <div class="modal-overlay" :class="{ active: showEditModal }" @click="closeEditModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>Editar Perfil</h3>
+          <h3>Editar Información Personal</h3>
           <button class="modal-close" @click="closeEditModal">
             <i class="fas fa-times"></i>
           </button>
         </div>
         <div class="modal-body">
-          <form @submit.prevent="saveProfile">
-            <div class="form-group">
-              <label>Nombre completo</label>
-              <input type="text" v-model="editForm.fullName">
+          <form @submit.prevent="saveProfile" class="edit-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nombre completo *</label>
+                <input type="text" v-model="editForm.fullName" required>
+              </div>
+              <div class="form-group">
+                <label>Nombre de usuario *</label>
+                <input type="text" v-model="editForm.username" required>
+              </div>
             </div>
+
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" v-model="editForm.email" required>
+            </div>
+
             <div class="form-group">
               <label>Biografía</label>
-              <textarea v-model="editForm.bio" rows="3"></textarea>
+              <textarea v-model="editForm.bio" rows="3" placeholder="Cuéntanos sobre ti..."></textarea>
             </div>
-            <div class="form-group">
-              <label>Equipo favorito</label>
-              <select v-model="editForm.favoriteTeam">
-                <option value="Club de Fútbol Monterrey">Club de Fútbol Monterrey</option>
-                <option value="América">América</option>
-                <option value="Chivas">Chivas</option>
-                <option value="Cruz Azul">Cruz Azul</option>
-                <option value="Pumas">Pumas</option>
-              </select>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Fecha de nacimiento</label>
+                <input type="date" v-model="editForm.birthDate">
+              </div>
+              
+              <div class="form-group">
+                <label>Equipo favorito</label>
+                <select v-model="editForm.favoriteTeam">
+                  <option value="Club de Fútbol Monterrey">Club de Fútbol Monterrey</option>
+                  <option value="América">América</option>
+                  <option value="Chivas">Chivas</option>
+                  <option value="Cruz Azul">Cruz Azul</option>
+                  <option value="Pumas">Pumas</option>
+                  <option value="Tigres">Tigres</option>
+                  <option value="Rayados">Rayados</option>
+                </select>
+              </div>
             </div>
+
             <div class="form-actions">
               <button type="button" class="btn-cancel" @click="closeEditModal">Cancelar</button>
-              <button type="submit" class="btn-save">Guardar Cambios</button>
+              <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> Guardar Cambios
+              </button>
             </div>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- Sistema de notificaciones -->
-    <div class="toast-container">
-      <div 
-        v-for="toast in toasts" 
-        :key="toast.id" 
-        class="toast"
-        :class="toast.type"
-      >
-        <i :class="getToastIcon(toast.type)"></i>
-        <span>{{ toast.message }}</span>
-        <button @click="removeToast(toast.id)">
-          <i class="fas fa-times"></i>
-        </button>
+    <!-- Modal para avatar -->
+    <div class="modal-overlay" :class="{ active: showAvatarModal }" @click="closeAvatarModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Cambiar Avatar</h3>
+          <button class="modal-close" @click="closeAvatarModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Funcionalidad de cambiar avatar en desarrollo.</p>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" @click="closeAvatarModal">Cerrar</button>
+          </div>
+        </div>
       </div>
     </div>
+
   </div>
 
   <!-- Incluir componentes -->
@@ -250,6 +305,31 @@
   <script>
     const { createApp, ref, computed } = Vue;
 
+    const SearchComponent = {
+      template: `
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            :placeholder="placeholder"
+            :value="modelValue"
+            @input="$emit('update:modelValue', $event.target.value)"
+          >
+        </div>
+      `,
+      props: {
+        placeholder: {
+          type: String,
+          default: 'Buscar...'
+        },
+        modelValue: {
+          type: String,
+          default: ''
+        }
+      },
+      emits: ['update:modelValue']
+    };
+
     const app = createApp({
       setup() {
         // Datos del usuario
@@ -259,8 +339,9 @@
           fullName: 'Arile Martell',
           email: 'arileraptor@gmail.com',
           bio: 'Ubers besto equipo',
-          birthDate: '06/04/2004',
+          birthDate: '2004-04-06', // Formato YYYY-MM-DD para input date
           favoriteTeam: 'Club de Fútbol Monterrey',
+          joinDate: 'Enero 2024',
           level: 15
         });
 
@@ -269,46 +350,34 @@
         const collectedStickers = ref(142);
         const duplicateStickers = ref(28);
         const tradesCompleted = ref(15);
+        const totalStickers = ref(164);
 
-        // Logros
-        const achievements = ref([
-          { id: 1, name: 'Coleccionista Novato', description: 'Obtén 50 cromos', icon: 'fas fa-star', unlocked: true },
-          { id: 2, name: 'Intercambiador', description: 'Realiza 10 intercambios', icon: 'fas fa-exchange-alt', unlocked: true },
-          { id: 3, name: 'Completista', description: 'Completa el álbum al 100%', icon: 'fas fa-trophy', unlocked: false },
-          { id: 4, name: 'Fanático', description: 'Llega al nivel 20', icon: 'fas fa-fire', unlocked: false },
-          { id: 5, name: 'Coleccionista Avanzado', description: 'Obtén 100 cromos', icon: 'fas fa-medal', unlocked: true },
-          { id: 6, name: 'Sobres Maestro', description: 'Abre 50 sobres', icon: 'fas fa-gift', unlocked: false }
+        // Cromos destacados
+        const featuredStickers = ref([
+          {
+            id: 1,
+            number: 10,
+            name: 'Lionel Messi',
+            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=150&h=200&fit=crop'
+          },
+          {
+            id: 2,
+            number: 7,
+            name: 'Cristiano Ronaldo',
+            image: 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=150&h=200&fit=crop'
+          }
         ]);
 
-        // Actividad reciente
-        const recentActivity = ref([
-          { id: 1, type: 'pack', icon: 'fas fa-gift', message: 'Abriste un sobre premium', time: 'Hace 2 horas' },
-          { id: 2, type: 'trade', icon: 'fas fa-exchange-alt', message: 'Intercambiaste el cromo #45', time: 'Hace 1 día' },
-          { id: 3, type: 'sticker', icon: 'fas fa-sticky-note', message: 'Obtuviste el cromo #78 - Lionel Messi', time: 'Hace 2 días' },
-          { id: 4, type: 'achievement', icon: 'fas fa-trophy', message: 'Desbloqueaste: Coleccionista Avanzado', time: 'Hace 3 días' },
-          { id: 5, type: 'pack', icon: 'fas fa-gift', message: 'Abriste 3 sobres básicos', time: 'Hace 4 días' }
-        ]);
-
-        // Badges del usuario
-        const userBadges = ref([
-          { id: 1, name: 'Coleccionista', icon: 'fas fa-book' },
-          { id: 2, name: 'Fanático', icon: 'fas fa-fire' },
-          { id: 3, name: 'Intercambiador', icon: 'fas fa-exchange-alt' }
-        ]);
-
-        // Estado del modal
+        // Estado de modales
         const showEditModal = ref(false);
+        const showAvatarModal = ref(false);
         const editForm = ref({});
-        const toasts = ref([]);
-
-        // Inicializar formulario de edición
-        const initEditForm = () => {
-          editForm.value = { ...userProfile.value };
-        };
+        const searchQuery = ref('');
 
         // Métodos
-        const editProfile = () => {
-          initEditForm();
+        const openEditModal = () => {
+          console.log('Abriendo modal de edición...');
+          editForm.value = { ...userProfile.value };
           showEditModal.value = true;
         };
 
@@ -317,42 +386,35 @@
         };
 
         const saveProfile = () => {
-          // Actualizar perfil
-          userProfile.value = { ...editForm.value };
+          console.log('Guardando perfil...', editForm.value);
+          userProfile.value = { ...userProfile.value, ...editForm.value };
           showEditModal.value = false;
-          showToast('Perfil actualizado correctamente', 'success');
+          alert('¡Perfil actualizado correctamente!');
         };
 
-        const editAvatar = () => {
-          // Lógica simplificada para cambiar avatar
-          showToast('Función de cambiar avatar en desarrollo', 'info');
+        const openAvatarModal = () => {
+          showAvatarModal.value = true;
         };
 
-        const showToast = (message, type = 'info') => {
-          const id = Date.now();
-          toasts.value.push({ id, message, type });
-          
-          setTimeout(() => {
-            removeToast(id);
-          }, 5000);
+        const closeAvatarModal = () => {
+          showAvatarModal.value = false;
         };
 
-        const removeToast = (id) => {
-          toasts.value = toasts.value.filter(toast => toast.id !== id);
+        const goToAlbum = () => {
+          window.location.href = 'album.html';
         };
 
-        const getToastIcon = (type) => {
-          const icons = {
-            success: 'fas fa-check-circle',
-            error: 'fas fa-exclamation-circle',
-            warning: 'fas fa-exclamation-triangle',
-            info: 'fas fa-info-circle'
-          };
-          return icons[type] || 'fas fa-info-circle';
+        // Formatear fecha para mostrar
+        const formatDate = (dateString) => {
+          if (!dateString) return 'No especificada';
+          if (dateString.includes('-')) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+          }
+          return dateString;
         };
 
         // Configuración del layout
-        const searchQuery = ref('');
         const sidebarMenu = ref([
           { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: false },
           { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
@@ -382,19 +444,14 @@
 
         const handleLogout = () => {
           console.log('Cerrando sesión...');
-          showToast('Sesión cerrada correctamente', 'success');
         };
 
         const handleProfileAction = (action) => {
           console.log('Acción perfil:', action);
-          if (action.name === 'Mi Perfil') {
-            editProfile();
-          }
         };
 
         const handleTopbarAction = (action) => {
           console.log('Acción topbar:', action);
-          showToast(`Acción: ${action.title}`, 'info');
         };
 
         const handleSearch = (value) => {
@@ -408,24 +465,23 @@
           collectedStickers,
           duplicateStickers,
           tradesCompleted,
-          achievements,
-          recentActivity,
-          userBadges,
+          totalStickers,
+          featuredStickers,
           showEditModal,
+          showAvatarModal,
           editForm,
-          toasts,
           searchQuery,
           sidebarMenu,
           profileStats,
           profileActions,
           topbarConfig,
-          editProfile,
+          openEditModal,
           closeEditModal,
           saveProfile,
-          editAvatar,
-          showToast,
-          removeToast,
-          getToastIcon,
+          openAvatarModal,
+          closeAvatarModal,
+          goToAlbum,
+          formatDate,
           handleLogout,
           handleProfileAction,
           handleTopbarAction,
@@ -439,6 +495,7 @@
     app.component('profile-sidebar', ProfileComponent);
     app.component('app-layout', LayoutComponent);
     app.component('topbar-component', TopbarComponent);
+    app.component('search-component', SearchComponent);
 
     app.mount('#app');
   </script>
