@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanscore - Perfil</title>
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="../styles/globals.css">
+    <link rel="stylesheet" href="../styles/layout.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="../styles/perfil.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <layout-component 
+            :menu-items="menuItems"
+            :user="layoutUser"
+            :stats="layoutStats"
+            :actions="layoutActions"
+            :topbar="topbarConfig"
+            @logout="handleLogout"
+            @action-click="handleAction"
+            @topbar-action="handleTopbarAction"
+            @search="handleSearch"
+        >
+            <!-- Slot para el contenido principal -->
+            <user-profile-component 
+                :user="profileUser"
+                @edit-avatar="handleEditAvatar"
+                @edit-profile="handleEditProfile"
+            />
+        </layout-component>
+    </div>
+
+    <!-- Scripts de componentes -->
+    <script src="../components/layout-component.js"></script>
+    <script src="../components/sidebar-component.js"></script>
+    <script src="../components/topbar-component.js"></script>
+    <script src="../components/profile-component.js"></script>
+    <script src="../components/user-profile-component.js"></script>
+    
+    <!-- App Vue -->
+    <script>
+        const { createApp } = Vue;
+        
+        const app = createApp({
+            data() {
+                return {
+                    // Configuración del layout
+                    menuItems: [
+                        { name: 'Dashboard', icon: 'fas fa-home', link: 'dashboard.html', active: false },
+                        { name: 'Álbum', icon: 'fas fa-book', link: 'album.html', active: false },
+                        { name: 'Enciclopedia', icon: 'fas fa-globe', link: 'enciclopedia.html', active: false },
+                        { name: 'Sobres', icon: 'fas fa-gift', link: 'sobres.html', active: false },
+                        { name: 'Perfil', icon: 'fas fa-user', link: 'perfil.html', active: true }
+                    ],
+                    layoutUser: {
+                        name: 'Carlos Rodríguez',
+                        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&h=200&q=80',
+                        role: 'Coleccionista Oro'
+                    },
+                    layoutStats: [
+                        { label: 'Cromos', value: '328' },
+                        { label: 'Completado', value: '94%' },
+                        { label: 'Intercambios', value: '156' }
+                    ],
+                    layoutActions: [
+                        { name: 'settings', label: 'Configuración', icon: 'fas fa-cog' },
+                        { name: 'help', label: 'Ayuda', icon: 'fas fa-question-circle' }
+                    ],
+                    topbarConfig: {
+                        searchPlaceholder: 'Buscar cromos, jugadores...',
+                        actions: [
+                            { name: 'notifications', icon: 'fas fa-bell', title: 'Notificaciones' },
+                            { name: 'settings', icon: 'fas fa-cog', title: 'Configuración' }
+                        ]
+                    },
+                    
+                    // Datos del perfil
+                    profileUser: {
+                        name: 'Carlos Rodríguez',
+                        username: '@carlos_futbolero',
+                        bio: '🔥 Coleccionista apasionado | Liga MX ⚽',
+                        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&h=200&q=80',
+                        currentAlbum: 'Liga MX 2024',
+                        progress: 94,
+                        miniStats: [
+                            { value: '328', label: 'Cromos' },
+                            { value: '94%', label: 'Completado' },
+                            { value: '156', label: 'Intercambios' }
+                        ],
+                        details: [
+                            { icon: 'fas fa-user', label: 'Nombre completo', value: 'Carlos Rodríguez Martínez' },
+                            { icon: 'fas fa-envelope', label: 'Email', value: 'carlos.futbol@email.com' },
+                            { icon: 'fas fa-calendar', label: 'Fecha de nacimiento', value: '15/08/1995' },
+                            { icon: 'fas fa-map-marker-alt', label: 'Ubicación', value: 'Guadalajara, México' },
+                            { icon: 'fas fa-futbol', label: 'Equipo favorito', value: 'Chivas Rayadas del Guadalajara' }
+                        ],
+                        stats: [
+                            { value: '94%', label: 'Álbum completado' },
+                            { value: '328', label: 'Cromos únicos' },
+                            { value: '47', label: 'Cromos repetidos' },
+                            { value: '156', label: 'Intercambios' }
+                        ],
+                        badges: [
+                            { name: 'Coleccionista Oro', icon: 'fas fa-crown', type: 'gold' },
+                            { name: 'Top 50 Mundial', icon: 'fas fa-medal', type: 'silver' },
+                            { name: 'Intercambiador Activo', icon: 'fas fa-bolt', type: 'bronze' },
+                            { name: 'Primer Álbum', icon: 'fas fa-star', type: '' }
+                        ],
+                        activities: [
+                            { 
+                                id: 1,
+                                icon: 'fas fa-exchange-alt',
+                                content: 'Intercambiaste <strong>Julián Quiñones</strong> por <strong>Rodolfo Pizarro</strong>',
+                                time: 'Hace 2 horas'
+                            },
+                            { 
+                                id: 2,
+                                icon: 'fas fa-gem',
+                                content: '¡Nuevo cromo raro! <strong>André-Pierre Gignac</strong>',
+                                time: 'Hace 5 horas'
+                            },
+                            { 
+                                id: 3,
+                                icon: 'fas fa-award',
+                                content: 'Logro desbloqueado: <strong>Coleccionista Oro</strong>',
+                                time: 'Ayer'
+                            }
+                        ]
+                    }
+                }
+            },
+            methods: {
+                handleLogout() {
+                    console.log('Cerrando sesión...');
+                    // Lógica de logout
+                },
+                handleAction(action) {
+                    console.log('Acción:', action);
+                },
+                handleTopbarAction(action) {
+                    console.log('Topbar acción:', action);
+                },
+                handleSearch(value) {
+                    console.log('Búsqueda:', value);
+                },
+                handleEditAvatar(user) {
+                    console.log('Editar avatar de:', user.name);
+                    alert('Función de cambiar avatar en desarrollo 📸');
+                },
+                handleEditProfile(user) {
+                    console.log('Editar perfil de:', user.name);
+                    alert('Editor de perfil en desarrollo ✏️');
+                }
+            }
+        });
+
+        // Registrar componentes
+        app.component('layout-component', LayoutComponent);
+        app.component('sidebar-main', SidebarComponent); // Asumiendo que sidebar-component se registra como sidebar-main
+        app.component('topbar-component', TopbarComponent); // Necesitarías este componente
+    
+        app.component('user-profile-component', UserProfileComponent);
+
+        app.mount('#app');
+    </script>
+</body>
+</html>
