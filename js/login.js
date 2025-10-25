@@ -1,3 +1,6 @@
+// Define la URL base de tu API de Backend corriendo en el puerto 3001
+const API_BASE_URL = 'http://localhost:3001/api/auth'; 
+
 // Lógica específica para login
 const { createApp, ref, reactive, onMounted } = Vue;
 
@@ -5,7 +8,7 @@ createApp({
     setup() {
         // ESTADO REACTIVO
         const form = reactive({
-            username: '',
+            username: '', // En el backend este campo es el 'email'
             password: ''
         });
         
@@ -54,7 +57,9 @@ createApp({
             showPassword.value = !showPassword.value;
         };
 
-        // LOGIN
+        // ===============================================
+        // FUNCIÓN handleLogin MODIFICADA PARA USAR LA API
+        // ===============================================
         const handleLogin = async () => {
             formSubmitted.value = true;
             
@@ -70,34 +75,51 @@ createApp({
             loading.value = true;
             
             try {
-                // Simular llamada a API
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // 1. Preparar los datos que el backend espera
+                const loginData = {
+                    // El backend espera 'email', pero el frontend usa 'username' para el campo
+                    email: form.username, 
+                    password: form.password
+                };
+
+                // 2. PETICIÓN REAL A LA API
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(loginData)
+                });
                 
-                // Simular diferentes escenarios de error
-                const errorScenarios = [
-                    { condition: form.password === 'incorrecta', message: 'Contraseña incorrecta', type: 'error' },
-                    { condition: form.username === 'noexiste@test.com', message: 'Usuario no encontrado', type: 'error' },
-                    { condition: form.username === 'bloqueado@test.com', message: 'Cuenta temporalmente bloqueada', type: 'warning' },
-                    { condition: form.username === 'sinverificar@test.com', message: 'Verifica tu email para activar la cuenta', type: 'warning' }
-                ];
-                
-                const errorScenario = errorScenarios.find(scenario => scenario.condition);
-                
-                if (errorScenario) {
-                    showToast(errorScenario.message, errorScenario.type);
-                    return;
+                const data = await response.json();
+
+                // 3. Manejo de Errores (400 Bad Request)
+                if (!response.ok) {
+                    // El Backend debe devolver un JSON con un campo 'msg' para el error
+                    const errorMessage = data.msg || 'Error al iniciar sesión. Verifica tus credenciales.';
+                    showToast(errorMessage, 'error');
+                    
+                    // Si el error es de credenciales, lo mostramos en el campo
+                    errors.username = errorMessage;
+                    
+                    return; // Detiene la función aquí si hay error
                 }
                 
-                // Si no hay errores, éxito
+                // 4. ÉXITO (200 OK)
+                console.log('Login exitoso. Datos del usuario:', data);
+                // Aquí deberías guardar el token JWT si tu backend lo devuelve (tarea futura)
+
                 showToast('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
                 
-                // Aquí iría la redirección real
-                // setTimeout(() => {
-                //     window.location.href = '../pages/dashboard.html';
-                // }, 2000);
+                // Redirección al dashboard (o la página principal)
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
                 
             } catch (error) {
-                showToast('Error de conexión. Intenta nuevamente.', 'error');
+                console.error("Error de red/conexión:", error);
+                // Este catch atrapa errores de red (ej: API apagada)
+                showToast('Error de conexión. Asegúrate que la API (puerto 3001) esté activa.', 'error');
             } finally {
                 loading.value = false;
             }

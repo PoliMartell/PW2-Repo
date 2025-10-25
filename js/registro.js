@@ -1,3 +1,6 @@
+// Define la URL base de tu API de Backend corriendo en el puerto 3001
+const API_BASE_URL = 'http://localhost:3001/api/auth'; 
+
 // Lógica específica para registro
 const { createApp, ref, reactive, onMounted, computed } = Vue;
 
@@ -34,7 +37,7 @@ createApp({
         const photoPreview = ref('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiMzMzMiLz4KPHBhdGggZD0iTTQwIDQ0QzQ0LjQxODMgNDQgNDggNDAuNDE4MyA0OCAzNkM0OCAzMS41ODE3IDQ0LjQxODMgMjggNDAgMjhDMzUuNTgxNyAyOCAzMiAzMS41ODE3IDMyIDM2QzMyIDQwLjQxODMgMzUuNTgxNyA0NCA0MCA0NFoiIGZpbGw9IiNmZmZmZmYiLz4KPHBhdGggZD0iTTUyIDUyQzUyIDU3LjUyMjggNDcuNTIyOCA2MiA0MiA2MkMzNi40NzcyIDYyIDMyIDU3LjUyMjggMzIgNTJWMzJINTJWNjJaIiBmaWxsPSIjZmZmZmZmIi8+Cjwvc3ZnPgo=');
         const fileInput = ref(null);
 
-        // FUNCIONES DE VALIDACIÓN
+        // FUNCIONES DE VALIDACIÓN (Asumiendo que window.authUtils existe)
         const isValidEmail = (email) => {
             return window.authUtils.isValidEmail(email);
         };
@@ -44,7 +47,7 @@ createApp({
         };
 
         const showToast = (message, type = 'info', duration = 5000) => {
-            window.authUtils.showToast(message, type, duration);
+            return window.authUtils.showToast(message, type, duration);
         };
 
         // MÉTODOS PARA LA FOTO
@@ -146,7 +149,7 @@ createApp({
             return form.password === form.confirmPassword && form.password !== '';
         });
 
-        // VALIDACIÓN DEL FORMULARIO - CORREGIDO
+        // VALIDACIÓN DEL FORMULARIO
         const validateForm = () => {
             // Limpiar errores
             Object.keys(errors).forEach(key => errors[key] = '');
@@ -202,11 +205,11 @@ createApp({
                 isValid = false;
             }
             
-            // Validar confirmación de contraseña - CORREGIDO
+            // Validar confirmación de contraseña
             if (!form.confirmPassword) {
                 errors.confirmPassword = 'Confirma tu contraseña';
                 isValid = false;
-            } else if (!passwordsMatch.value) { // ✅ Usar .value
+            } else if (!passwordsMatch.value) { 
                 errors.confirmPassword = 'Las contraseñas no coinciden';
                 isValid = false;
             }
@@ -220,7 +223,9 @@ createApp({
             return isValid;
         };
 
-        // REGISTRO
+        // ===============================================
+        // FUNCIÓN handleRegister MODIFICADA PARA USAR LA API
+        // ===============================================
         const handleRegister = async () => {
             formSubmitted.value = true;
             
@@ -232,36 +237,48 @@ createApp({
             loading.value = true;
             
             try {
-                // Simular subida de foto si existe
-                let photoUrl = '';
-                if (photoFile.value) {
-                    showToast('Subiendo foto de perfil...', 'info', 2000);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    photoUrl = 'uploaded/' + photoFile.value.name;
-                }
-                
-                // Simular registro completo
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Simular posibles errores
-                if (form.email === 'existente@test.com') {
-                    showToast('Este email ya está registrado', 'error');
-                    return;
-                }
-                
-                if (form.username === 'admin') {
-                    showToast('Este usuario no está disponible', 'error');
-                    return;
-                }
-                
-                const userData = {
-                    ...form,
-                    photo: photoUrl
+                // 1. Preparar los datos que el backend espera
+                const registerData = {
+                    email: form.email,
+                    password: form.password,
+                    // Concatenamos nombre y apellido si tu backend solo espera un campo 'nombre'
+                    nombre: `${form.firstName} ${form.lastName}`, 
+                    username: form.username 
                 };
                 
-                console.log('Usuario registrado:', userData);
+                // Simular subida de foto si existe (ESTA LÓGICA DE FOTO NO USA LA API)
+                if (photoFile.value) {
+                    showToast('Subiendo foto de perfil...', 'info', 2000);
+                    // Aquí iría el código de subida real a la API, pero lo omitimos por ahora para centrarnos en el registro de usuario.
+                    await new Promise(resolve => setTimeout(resolve, 1000)); 
+                }
+
+                // 2. PETICIÓN REAL A LA API
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(registerData)
+                });
                 
-                showToast('¡Cuenta creada exitosamente! Bienvenid@ a FanScore.', 'success');
+                const data = await response.json();
+
+                // 3. Manejo de Errores (400 Bad Request, 500 Server Error)
+                if (!response.ok) {
+                    // El Backend debe devolver un JSON con un campo 'msg'
+                    const errorMessage = data.msg || 'Error desconocido al registrarse.';
+                    showToast(errorMessage, 'error');
+                    
+                    // Manejar error de email ya registrado
+                    if (errorMessage.toLowerCase().includes('email') || errorMessage.toLowerCase().includes('registrado')) {
+                         errors.email = errorMessage;
+                    }
+                    return; // Detiene la función aquí si hay error
+                }
+                
+                // 4. ÉXITO (201 Created)
+                showToast('¡Cuenta creada exitosamente! Redirigiendo...', 'success');
                 
                 // Redirección al login
                 setTimeout(() => {
@@ -269,7 +286,8 @@ createApp({
                 }, 3000);
                 
             } catch (error) {
-                showToast('Error al crear la cuenta. Intenta nuevamente.', 'error');
+                console.error("Error de red/conexión:", error);
+                showToast('Error de conexión. Asegúrate que la API (puerto 3001) esté activa.', 'error');
             } finally {
                 loading.value = false;
             }
@@ -325,26 +343,8 @@ createApp({
         });
 
         return {
-            form,
-            errors,
-            loading,
-            formSubmitted,
-            passwordStrength,
-            usernameStatus,
-            showPassword,
-            showConfirmPassword,
-            photoFile,
-            photoPreview,
-            fileInput,
-            passwordsMatch, 
-            handleRegister,
-            handleGoogleRegister,
-            goToLogin,
-            updatePasswordStrength,
-            checkUsernameAvailability,
-            triggerFileInput,
-            handlePhotoUpload,
-            togglePasswordVisibility
+            form, errors, loading, formSubmitted, passwordStrength, usernameStatus, showPassword, showConfirmPassword, photoFile, photoPreview, fileInput, passwordsMatch, 
+            handleRegister, handleGoogleRegister, goToLogin, updatePasswordStrength, checkUsernameAvailability, triggerFileInput, handlePhotoUpload, togglePasswordVisibility
         };
     }
 }).mount('#auth-app');
