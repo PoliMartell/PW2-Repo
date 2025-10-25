@@ -34,7 +34,7 @@ createApp({
         const photoPreview = ref('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiMzMzMiLz4KPHBhdGggZD0iTTQwIDQ0QzQ0LjQxODMgNDQgNDggNDAuNDE4MyA0OCAzNkM0OCAzMS41ODE3IDQ0LjQxODMgMjggNDAgMjhDMzUuNTgxNyAyOCAzMiAzMS41ODE3IDMyIDM2QzMyIDQwLjQxODMgMzUuNTgxNyA0NCA0MCA0NFoiIGZpbGw9IiNmZmZmZmYiLz4KPHBhdGggZD0iTTUyIDUyQzUyIDU3LjUyMjggNDcuNTIyOCA2MiA0MiA2MkMzNi40NzcyIDYyIDMyIDU3LjUyMjggMzIgNTJWMzJINTJWNjJaIiBmaWxsPSIjZmZmZmZmIi8+Cjwvc3ZnPgo=');
         const fileInput = ref(null);
 
-        // FUNCIONES DE VALIDACIÓN - Usar directamente
+        // FUNCIONES DE VALIDACIÓN
         const isValidEmail = (email) => {
             return window.authUtils.isValidEmail(email);
         };
@@ -47,7 +47,6 @@ createApp({
             window.authUtils.showToast(message, type, duration);
         };
 
-        // ... (el resto del código se mantiene igual)
         // MÉTODOS PARA LA FOTO
         const triggerFileInput = () => {
             if (fileInput.value) {
@@ -147,7 +146,7 @@ createApp({
             return form.password === form.confirmPassword && form.password !== '';
         });
 
-        // VALIDACIÓN DEL FORMULARIO
+        // VALIDACIÓN DEL FORMULARIO - CORREGIDO
         const validateForm = () => {
             // Limpiar errores
             Object.keys(errors).forEach(key => errors[key] = '');
@@ -203,11 +202,11 @@ createApp({
                 isValid = false;
             }
             
-            // Validar confirmación de contraseña
+            // Validar confirmación de contraseña - CORREGIDO
             if (!form.confirmPassword) {
                 errors.confirmPassword = 'Confirma tu contraseña';
                 isValid = false;
-            } else if (!passwordsMatch.value) {
+            } else if (!passwordsMatch.value) { // ✅ Usar .value
                 errors.confirmPassword = 'Las contraseñas no coinciden';
                 isValid = false;
             }
@@ -262,7 +261,7 @@ createApp({
                 
                 console.log('Usuario registrado:', userData);
                 
-                showToast('¡Cuenta creada exitosamente! Revisa tu email para activarla.', 'success');
+                showToast('¡Cuenta creada exitosamente! Bienvenid@ a FanScore.', 'success');
                 
                 // Redirección al login
                 setTimeout(() => {
@@ -325,7 +324,6 @@ createApp({
             createParticles();
         });
 
-        // EXPORTAR AL TEMPLATE
         return {
             form,
             errors,
@@ -338,7 +336,7 @@ createApp({
             photoFile,
             photoPreview,
             fileInput,
-            passwordsMatch,
+            passwordsMatch, 
             handleRegister,
             handleGoogleRegister,
             goToLogin,

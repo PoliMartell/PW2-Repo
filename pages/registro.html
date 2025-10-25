@@ -13,79 +13,11 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        .fade-out {
-            animation: fadeOut 0.7s forwards;
-        }
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                transform: scale(0.98);
-            }
-        }
-        
-        .username-available {
-            color: var(--verde);
-        }
-        
-        .username-taken {
-            color: var(--rojo);
-        }
-        
-        /* Estilos para el upload de foto */
-        .photo-upload {
-            text-align: center;
-            margin: 10px 0;
-        }
-        
-        .photo-preview {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--dorado);
-            margin: 0 auto 10px;
-            display: block;
-            background: #333;
-        }
-        
-        .upload-btn {
-            background: var(--azul);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: var(--transicion);
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .upload-btn:hover {
-            background: var(--turquesa);
-            transform: translateY(-2px);
-        }
-        
-        .photo-name {
-            font-size: 11px;
-            color: #888;
-            margin-top: 5px;
-            display: block;
-        }
-        
-        .upload-hidden {
-            display: none;
-        }
-    </style>
 </head>
 <body>
     <!-- Componentes globales -->
     <script src="../components/topbar-component.js"></script>
     <script src="../components/layout-component.js"></script>
-    <script src="../components/auth-component.js"></script>
 
     <div id="auth-app">
         <!-- Efecto de partículas en el fondo -->
@@ -116,7 +48,7 @@
                     
                     <!-- Foto de perfil -->
                     <div class="photo-upload">
-                        <img :src="photoPreview || 'https://via.placeholder.com/80x80/333/ffffff?text=?'" 
+                        <img :src="photoPreview" 
                              alt="Vista previa" 
                              class="photo-preview"
                              @click="triggerFileInput">
@@ -144,6 +76,7 @@
                                     placeholder="Nombre" 
                                     v-model="form.firstName"
                                     :class="{ 'error': formSubmitted && errors.firstName }"
+                                    autocomplete="given-name"
                                     required
                                 >
                                 <i class="fas fa-user"></i>
@@ -158,6 +91,7 @@
                                     placeholder="Apellido" 
                                     v-model="form.lastName"
                                     :class="{ 'error': formSubmitted && errors.lastName }"
+                                    autocomplete="family-name"
                                     required
                                 >
                                 <i class="fas fa-user"></i>
@@ -175,6 +109,7 @@
                                 v-model="form.username"
                                 :class="{ 'error': formSubmitted && errors.username }"
                                 @input="checkUsernameAvailability"
+                                autocomplete="username"
                                 required
                             >
                             <i class="fas fa-at"></i>
@@ -189,42 +124,64 @@
                         </small>
 
                         <!-- Campo Email -->
-                        <!-- Campos de contraseña -->
-<div class="input-box">
-    <input 
-        type="password" 
-        placeholder="Contraseña" 
-        v-model="form.password"
-        :type="showPassword ? 'text' : 'password'"
-        :class="{ 'error': formSubmitted && errors.password }"
-        @input="updatePasswordStrength"
-        autocomplete="new-password"
-        required
-    >
-    <i class="fas" 
-       :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"
-       @click="togglePasswordVisibility('password')"
-       style="cursor: pointer;"></i>
-    <div class="password-strength">
-        <div class="strength-bar" :class="passwordStrength"></div>
-    </div>
-</div>
+                        <div class="input-box">
+                            <input 
+                                type="email" 
+                                placeholder="Correo electrónico" 
+                                v-model="form.email"
+                                :class="{ 'error': formSubmitted && errors.email }"
+                                autocomplete="email"
+                                required
+                            >
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <small class="error-message" v-if="formSubmitted && errors.email">
+                            {{ errors.email }}
+                        </small>
 
-<div class="input-box">
-    <input 
-        type="password" 
-        placeholder="Confirmar Contraseña" 
-        v-model="form.confirmPassword"
-        :type="showConfirmPassword ? 'text' : 'password'"
-        :class="{ 'error': formSubmitted && errors.confirmPassword }"
-        autocomplete="new-password"
-        required
-    >
-    <i class="fas" 
-       :class="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
-       @click="togglePasswordVisibility('confirmPassword')"
-       style="cursor: pointer;"></i>
-</div>
+                        <!-- Campo Contraseña -->
+                        <div class="input-box">
+                            <input 
+                                type="password" 
+                                placeholder="Contraseña" 
+                                v-model="form.password"
+                                :type="showPassword ? 'text' : 'password'"
+                                :class="{ 'error': formSubmitted && errors.password }"
+                                @input="updatePasswordStrength"
+                                autocomplete="new-password"
+                                required
+                            >
+                            <i class="fas" 
+                               :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+                               @click="togglePasswordVisibility('password')"
+                               style="cursor: pointer;"></i>
+                            <div class="password-strength">
+                                <div class="strength-bar" :class="passwordStrength"></div>
+                            </div>
+                        </div>
+                        <small class="error-message" v-if="formSubmitted && errors.password">
+                            {{ errors.password }}
+                        </small>
+
+                        <!-- Confirmar Contraseña -->
+                        <div class="input-box">
+                            <input 
+                                type="password" 
+                                placeholder="Confirmar Contraseña" 
+                                v-model="form.confirmPassword"
+                                :type="showConfirmPassword ? 'text' : 'password'"
+                                :class="{ 'error': formSubmitted && errors.confirmPassword }"
+                                autocomplete="new-password"
+                                required
+                            >
+                            <i class="fas" 
+                               :class="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
+                               @click="togglePasswordVisibility('confirmPassword')"
+                               style="cursor: pointer;"></i>
+                        </div>
+                        <small class="error-message" v-if="formSubmitted && errors.confirmPassword">
+                            {{ errors.confirmPassword }}
+                        </small>
                         
                         <!-- Términos y condiciones -->
                         <div class="auth-options">

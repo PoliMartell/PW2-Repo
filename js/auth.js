@@ -1,5 +1,3 @@
-// js/auth.js - Versión simplificada sin Custom Elements
-
 // Funciones globales para autenticación
 window.authUtils = {
     // Validación de email
