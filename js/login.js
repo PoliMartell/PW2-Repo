@@ -106,8 +106,11 @@ createApp({
                 }
                 
                 // 4. ÉXITO (200 OK)
-                console.log('Login exitoso. Datos del usuario:', data);
+                
                 // Aquí deberías guardar el token JWT si tu backend lo devuelve (tarea futura)
+                //  <<<<< 🛑 INSERTA ESTA LÍNEA AQUÍ 🛑 >>>>>
+                //  Guardar el ID del usuario para que el Dashboard lo use:
+                localStorage.setItem('currentUserId', data.user.id);
 
                 showToast('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
                 
