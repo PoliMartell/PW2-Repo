@@ -419,7 +419,7 @@
           { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: false },
           { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
           { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
-          { name: 'Perfil', link: 'perfil.html', icon: 'fas fa-user', active: true }
+          //{ name: 'Perfil', link: 'perfil.html', icon: 'fas fa-user', active: true }
         ]);
 
         const profileStats = computed(() => [
@@ -430,8 +430,8 @@
         ]);
 
         const profileActions = ref([
-          { name: 'Mi Perfil', icon: 'fas fa-user' },
-          { name: 'Configuración', icon: 'fas fa-cog' }
+          { name: 'Mi Perfil', icon: 'fas fa-user', link: 'perfil.html' },
+          { name: 'Intercambios', icon: 'fas fa-exchange-alt' }
         ]);
 
         const topbarConfig = ref({
