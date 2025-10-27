@@ -1,4 +1,4 @@
-// Componente de perfil de usuario
+// 
 const UserProfileComponent = {
   template: `
     <div class="profile-container">
