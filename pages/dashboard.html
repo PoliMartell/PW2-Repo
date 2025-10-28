@@ -193,8 +193,10 @@ const SearchComponent = {
 const { createApp, ref, computed } = Vue;
 
 const app = createApp({
+
   setup() {
 // Estado para guardar el ID del usuario (necesario para el fetch)
+
     const currentUserId = getUserIdFromStorage(); 
     const loading = ref(true);
    
@@ -249,7 +251,9 @@ const app = createApp({
         } finally {
             loading.value = false;
         }
+        
     };
+    
     // ------------------------------------
 
     // Datos reactivos del dashboard
@@ -425,7 +429,7 @@ const app = createApp({
         value: `${packsAvailable.value}`,
         icon: 'fas fa-gift'
       },
-     /* { 
+      { 
         label: 'Intercambios', 
         value: `${exchanges.value}`,
         icon: 'fas fa-exchange-alt'
@@ -434,7 +438,7 @@ const app = createApp({
         label: 'Nivel', 
         value: `${userProfile.value.level}`,
         icon: 'fas fa-star'
-      }*/
+      }
     ]);
 
     // Acciones del perfil mejoradas
