@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanscore - La Plataforma Definitiva para Fans del Fútbol</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="../styles/landing.css">
+    <link rel="stylesheet" href="../styles/globals.css">
+    <link rel="stylesheet" href="../styles/layout.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="landing-header">
+            <nav class="landing-nav">
+                <div class="nav-brand">
+                    <div class="nav-logo">
+                        <img src="../Images/fanscore.png" alt="FanScore Logo">
+                    </div>
+                    <span>Fanscore</span>
+                </div>
+                <div class="nav-actions">
+                    <button @click="goToLogin" class="btn btn-outline">Iniciar Sesión</button>
+                    <button @click="goToRegister" class="btn btn-primary">Registrarse</button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Vive la emoción del 
+                        <span class="hero-accent">fútbol como nunca</span>
+                    </h1>
+                    <p class="hero-description">
+                        Únete a la comunidad futbolera más apasionada. Colecciona cromos digitales, 
+                        participa en votaciones y compite por ser el mejor coleccionista.
+                    </p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="stat-number">+10K</div>
+                            <div class="stat-label">Fans registrados</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Jugadores</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="stat-number">50+</div>
+                            <div class="stat-label">Equipos</div>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <button @click="goToRegister" class="btn btn-primary btn-large">
+                            <i class="fas fa-rocket"></i>
+                            Comenzar Ahora
+                        </button>
+                        <button @click="goToLogin" class="btn btn-secondary btn-large">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Iniciar Sesión
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="dashboard-preview">
+                        <div class="preview-header">
+                            <div class="preview-nav">
+                                <i class="fas fa-bars"></i>
+                                <span>Dashboard</span>
+                                <div class="preview-actions">
+                                    <i class="fas fa-bell"></i>
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-content">
+                            <div class="preview-stats">
+                                <div class="preview-stat" v-for="stat in previewStats" :key="stat.id">
+                                    <i :class="stat.icon"></i>
+                                    <span>{{ stat.value }}</span>
+                                    <small>{{ stat.label }}</small>
+                                </div>
+                            </div>
+                            <div class="preview-player">
+                                <div class="preview-player-card">
+                                    <div class="player-avatar">
+                                        <i class="fas fa-crown"></i>
+                                    </div>
+                                    <h4>Jugador Destacado</h4>
+                                    <p>Kylian Mbappé</p>
+                                    <button @click="goToRegister" class="btn btn-primary btn-small">
+                                        Ver Más
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="section-title">Características Principales</h2>
+                <div class="features-grid">
+                    <div class="feature-card" v-for="feature in features" :key="feature.id" @click="goToRegister">
+                        <div class="feature-icon">
+                            <i :class="feature.icon"></i>
+                        </div>
+                        <h3>{{ feature.title }}</h3>
+                        <p>{{ feature.description }}</p>
+                        <button class="btn btn-outline btn-small feature-btn">
+                            Probar Ahora
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works" class="how-it-works">
+            <div class="container">
+                <h2 class="section-title">Cómo Funciona</h2>
+                <div class="steps-grid">
+                    <div class="step-card" v-for="step in steps" :key="step.number" @click="goToRegister">
+                        <div class="step-number">{{ step.number }}</div>
+                        <h3>{{ step.title }}</h3>
+                        <p>{{ step.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-landing">
+            <div class="container">
+                <h2>¿Listo para Comenzar?</h2>
+                <p>Únete a miles de fans y comienza tu aventura futbolera hoy mismo.</p>
+                <div class="cta-actions">
+                    <button @click="goToRegister" class="btn btn-primary btn-large">
+                        <i class="fas fa-user-plus"></i>
+                        Crear Cuenta Gratis
+                    </button>
+                    <button @click="goToLogin" class="btn btn-outline btn-large">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Ya Tengo Cuenta
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="landing-footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <i class="fas fa-futbol"></i>
+                        <span>Fanscore</span>
+                        <p>La plataforma definitiva para fans del fútbol</p>
+                    </div>
+                    <div class="footer-links">
+                        <a href="#features">Características</a>
+                        <a href="#how-it-works">Cómo Funciona</a>
+                        <a href="#" @click="goToLogin">Acceder</a>
+                        <a href="#" @click="goToRegister">Registrarse</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2024 Fanscore. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                const previewStats = ref([
+                    { id: 1, icon: 'fas fa-stamp', value: '45/100', label: 'Cromos' },
+                    { id: 2, icon: 'fas fa-chart-pie', value: '45%', label: 'Progreso' },
+                    { id: 3, icon: 'fas fa-gift', value: '3', label: 'Sobres' }
+                ]);
+
+                const features = ref([
+                    {
+                        id: 1,
+                        icon: 'fas fa-book',
+                        title: 'Álbum Digital',
+                        description: 'Colecciona cromos digitales de tus jugadores favoritos y completa tu álbum virtual del Mundial 2026.'
+                    },
+                    {
+                        id: 2,
+                        icon: 'fas fa-vote-yea',
+                        title: 'Sistema de Votaciones',
+                        description: 'Vota por los mejores jugadores y participa en encuestas exclusivas de la comunidad.'
+                    },
+                    {
+                        id: 3,
+                        icon: 'fas fa-exchange-alt',
+                        title: 'Intercambios',
+                        description: 'Intercambia cromos duplicados con otros fans y completa tu colección más rápido.'
+                    }
+                ]);
+
+                const steps = ref([
+                    {
+                        number: 1,
+                        title: 'Regístrate',
+                        description: 'Crea tu cuenta en menos de 1 minuto y comienza tu aventura.'
+                    },
+                    {
+                        number: 2,
+                        title: 'Colecciona',
+                        description: 'Recibe sobres virtuales con cromos aleatorios de jugadores.'
+                    },
+                    {
+                        number: 3,
+                        title: 'Intercambia',
+                        description: 'Completa tu álbum intercambiando cromos con otros fans.'
+                    },
+                    {
+                        number: 4,
+                        title: 'Descubre',
+                        description: 'Conoce todo sobre tus jugadores favoritos en nuestra enciclopedia.'
+                    }
+                ]);
+
+                const goToLogin = () => {
+                    // Usar ruta relativa correcta desde la raíz
+                    window.location.href = '../pages/login.html';
+                };
+
+                const goToRegister = () => {
+                    // Usar ruta relativa correcta desde la raíz
+                    window.location.href = '../pages/registro.html';
+                };
+
+                const scrollToFeatures = () => {
+                    document.getElementById('features').scrollIntoView({ 
+                        behavior: 'smooth' 
+                    });
+                };
+
+                return {
+                    previewStats,
+                    features,
+                    steps,
+                    goToLogin,
+                    goToRegister,
+                    scrollToFeatures
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
