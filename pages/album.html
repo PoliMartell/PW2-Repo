@@ -136,108 +136,116 @@
       
     </app-layout>
 
-    <!-- MODALES FUERA DEL LAYOUT (para que funcionen correctamente) -->
-    
-    <!-- Modal para abrir sobres -->
-    <div class="pack-modal" :class="{ active: showPackModal }">
-      <div class="pack-modal-content">
-        <div class="pack-modal-close" @click="closePackModal">
-          <i class="fas fa-times"></i>
-        </div>
+    <!-- MODALES MEJORADAS -->
+
+<!-- Modal para abrir sobres MEJORADO -->
+<div class="pack-modal" :class="{ active: showPackModal }">
+    <div class="pack-modal-content">
+        <button class="pack-modal-close" @click="closePackModal">
+            <i class="fas fa-times"></i>
+        </button>
         
         <div class="pack-modal-header">
-          <h2>Abrir Sobre</h2>
-          <p>¡Obtén 5 estampitas aleatorias!</p>
+            <h2>🎁 Abrir Sobre Premium</h2>
+            <p>¡Descubre 5 estampitas exclusivas!</p>
         </div>
         
         <div class="pack-modal-body">
-          <div class="pack-container" @click="openPack" v-if="packResult.length === 0">
-            <div class="pack">
-              <div class="pack-front">
-                <i class="fas fa-gift"></i>
-                <span>Sobre Premium</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="sticker-cards" v-if="packResult.length > 0">
-            <div 
-              v-for="(sticker, index) in packResult" 
-              :key="index" 
-              class="card"
-              :class="{ flipped: sticker.revealed }"
-              @click="revealSticker(index)"
-            >
-              <div class="card-inner">
-                <div class="card-front">
-                  <div class="card-shine"></div>
-                  <div class="card-back-pattern">
-                    <i class="fas fa-question"></i>
-                  </div>
+            <div class="pack-container" @click="openPack" v-if="packResult.length === 0">
+                <div class="pack">
+                    <div class="pack-front">
+                        <i class="fas fa-gift"></i>
+                        <span>Sobre Épico</span>
+                    </div>
                 </div>
-                <div class="card-back">
-                  <div class="sticker-revealed">
-                    <img :src="sticker.image" :alt="sticker.name" class="sticker-image">
-                    <div class="sticker-name">{{ sticker.name }}</div>
-                    <div class="sticker-team">{{ sticker.team }} • {{ sticker.position }}</div>
-                    <div class="new-badge" v-if="sticker.isNew">NUEVA</div>
-                  </div>
+            </div>
+            
+            <div class="sticker-cards" v-if="packResult.length > 0">
+                <div 
+                    v-for="(sticker, index) in packResult" 
+                    :key="index" 
+                    class="card"
+                    :class="{ flipped: sticker.revealed }"
+                    @click="revealSticker(index)"
+                >
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-shine"></div>
+                            <div class="card-back-pattern">
+                                <i class="fas fa-question"></i>
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <div class="sticker-revealed">
+                                <img :src="sticker.image" :alt="sticker.name" class="sticker-image">
+                                <div class="sticker-name">{{ sticker.name }}</div>
+                                <div class="sticker-team">{{ sticker.team }} • {{ sticker.position }}</div>
+                                <div class="new-badge" v-if="sticker.isNew">✨ NUEVA</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
-          
-          <div class="pack-results" v-if="packResult.length > 0 && allStickersRevealed">
-            <div class="results-summary">
-              <h3>Resultados del Sobre</h3>
-              <div class="results-stats">
-                <span>Nuevas: {{ newStickersCount }}</span>
-                <span>Repetidas: {{ repeatedStickersCount }}</span>
-              </div>
+            
+            <div class="pack-results" v-if="packResult.length > 0 && allStickersRevealed">
+                <div class="results-summary">
+                    <h3>🎉 ¡Sobre Completado!</h3>
+                    <div class="results-stats">
+                        <span>🆕 Nuevas: {{ newStickersCount }}</span>
+                        <span>🔄 Repetidas: {{ repeatedStickersCount }}</span>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
         
-        <div class="pack-modal-footer">
-          <button class="banner-button" @click="closePackModal" v-if="allStickersRevealed">
-            <i class="fas fa-check"></i> Aceptar
-          </button>
-        </div>
-      </div>
+        <!-- En la sección del pack-modal-footer -->
+        <div class="pack-modal-footer" v-if="allStickersRevealed">
+    <button class="continue-btn gold" @click="closePackModal">
+        <i class="fas fa-trophy"></i> ¡Continuar!
+    </button>
+</div>
     </div>
+</div>
 
-    <!-- Modal para ver estampita en grande -->
-    <div class="sticker-zoom-modal" :class="{ active: selectedSticker }">
-      <div class="sticker-zoom-content">
-        <div class="sticker-zoom-close" @click="selectedSticker = null">
-          <i class="fas fa-times"></i>
+<!-- Modal para ver estampita en grande MEJORADO -->
+<div class="sticker-zoom-modal" :class="{ active: selectedSticker }">
+    <div class="sticker-zoom-content">
+        <button class="sticker-zoom-close" @click="selectedSticker = null">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="sticker-zoom-header">
+            <h2>📸 Vista Detallada</h2>
+            <p>Información completa de la estampita</p>
         </div>
         
-        <div class="sticker-zoom-duplicates" v-if="selectedSticker && selectedSticker.duplicates > 0">
-          <i class="fas fa-copy"></i> Tienes {{ selectedSticker.duplicates }} repetidas
+        <div class="sticker-zoom-body">
+            <div class="sticker-zoom-duplicates" v-if="selectedSticker && selectedSticker.duplicates > 0">
+                <i class="fas fa-copy"></i> Tienes {{ selectedSticker.duplicates }} repetidas
+            </div>
+            
+            <div class="sticker-zoom-image-container">
+                <img 
+                    v-if="selectedSticker" 
+                    :src="selectedSticker.image" 
+                    :alt="selectedSticker.name" 
+                    class="sticker-zoom-image"
+                >
+            </div>
+            
+            <div class="sticker-zoom-info" v-if="selectedSticker">
+                <div class="sticker-zoom-number">#{{ selectedSticker.number }}</div>
+                <div class="sticker-zoom-name">{{ selectedSticker.name }}</div>
+                <div class="sticker-zoom-position">{{ selectedSticker.position }}</div>
+                <div class="sticker-zoom-team">{{ selectedSticker.team }}</div>
+                
+                <div class="sticker-zoom-status" :class="selectedSticker.obtained ? 'obtained' : 'missing'">
+                    {{ selectedSticker.obtained ? '✅ OBTENIDA' : '❌ FALTANTE' }}
+                </div>
+            </div>
         </div>
-        
-        <div class="sticker-zoom-image-container">
-          <img 
-            v-if="selectedSticker" 
-            :src="selectedSticker.image" 
-            :alt="selectedSticker.name" 
-            class="sticker-zoom-image"
-          >
-        </div>
-        
-        <div class="sticker-zoom-info" v-if="selectedSticker">
-          <div class="sticker-zoom-number">#{{ selectedSticker.number }}</div>
-          <div class="sticker-zoom-name">{{ selectedSticker.name }}</div>
-          <div class="sticker-zoom-position">{{ selectedSticker.position }}</div>
-          <div class="sticker-zoom-team">{{ selectedSticker.team }}</div>
-          
-          <div class="sticker-zoom-status" :class="selectedSticker.obtained ? 'obtained' : 'missing'">
-            {{ selectedSticker.obtained ? 'OBTENIDA' : 'FALTANTE' }}
-          </div>
-        </div>
-      </div>
     </div>
+</div>
 
     <!-- Sistema de notificaciones -->
     <div class="toast-container">
@@ -551,6 +559,7 @@
           });
         });
         
+        
         // Métodos
         const openPackModal = () => {
           if (canOpenPack.value) {
@@ -609,6 +618,10 @@
         };
         
         const openStickerZoom = (sticker) => {
+          if (!sticker.obtained) {
+              showToast('Esta estampita aún no está disponible', 'warning');
+              return;
+          }
           selectedSticker.value = sticker;
         };
         
@@ -720,6 +733,8 @@
           handleSearch
         };
       }
+
+      
     });
 
     // ====================
