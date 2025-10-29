@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intercambios - Fanscore</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="../styles/globals.css">
+    <link rel="stylesheet" href="../styles/layout.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="../styles/intercambios.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <app-layout
+            :menu-items="sidebarMenu"
+            :user="userProfile"
+            :stats="profileStats"
+            :actions="profileActions"
+            :topbar="topbarConfig"
+            :search-value="searchQuery"
+            @logout="handleLogout"
+            @action-click="handleProfileAction"
+            @topbar-action="handleTopbarAction"
+            @search="handleSearch"
+        >
+            <!-- Header simple -->
+            <div class="page-header">
+                <h1><i class="fas fa-exchange-alt"></i> Intercambios</h1>
+                <p>Intercambia tus estampitas duplicadas</p>
+            </div>
+
+            <!-- Stats básicos -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-copy"></i>
+                    <div class="stat-info">
+                        <h3>{{ myDuplicates.length }}</h3>
+                        <p>Duplicados</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <div class="stat-info">
+                        <h3>{{ activeTrades.length }}</h3>
+                        <p>Intercambios Activos</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dos secciones simples -->
+            <div class="intercambios-sections">
+                <!-- Mis Duplicados -->
+                <section class="section">
+                    <h2>Mis Duplicados para Intercambiar</h2>
+                    <div class="stickers-grid">
+                        <div 
+                            v-for="sticker in myDuplicates" 
+                            :key="sticker.id"
+                            class="sticker-card"
+                            @click="selectSticker(sticker)"
+                        >
+                            <img :src="sticker.image" :alt="sticker.name">
+                            <div class="sticker-info">
+                                <h4>{{ sticker.name }}</h4>
+                                <p>#{{ sticker.number }}</p>
+                                <span class="duplicate-badge">+{{ sticker.duplicates }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Intercambios Disponibles -->
+                <section class="section">
+                    <h2>Intercambios Disponibles</h2>
+                    
+                    <!-- Barra de búsqueda y filtros -->
+                    <div class="search-section">
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input 
+                                type="text" 
+                                placeholder="Buscar jugadores, equipos..."
+                                v-model="searchTerm"
+                            >
+                        </div>
+                        <div class="search-filters">
+                            <select v-model="filterTeam">
+                                <option value="">Todos los equipos</option>
+                                <option v-for="team in uniqueTeams" :value="team">{{ team }}</option>
+                            </select>
+                            <select v-model="filterPosition">
+                                <option value="">Todas las posiciones</option>
+                                <option v-for="position in uniquePositions" :value="position">{{ position }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Contador de resultados -->
+                    <div class="results-count" v-if="searchTerm || filterTeam || filterPosition">
+                        Mostrando {{ filteredTrades.length }} de {{ availableTrades.length }} intercambios
+                        <button @click="clearFilters" class="clear-filters">
+                            <i class="fas fa-times"></i> Limpiar filtros
+                        </button>
+                    </div>
+
+                    <div class="trades-list">
+                        <div 
+                            v-for="trade in filteredTrades" 
+                            :key="trade.id"
+                            class="trade-item"
+                        >
+                            <div class="trade-user">
+                                <img :src="trade.user.avatar" :alt="trade.user.name">
+                                <span>{{ trade.user.name }}</span>
+                            </div>
+                            
+                            <div class="trade-details">
+                                <div class="trade-offer">
+                                    <strong>Ofrece:</strong> {{ trade.offers.map(s => s.name).join(', ') }}
+                                </div>
+                                <div class="trade-wants">
+                                    <strong>Busca:</strong> {{ trade.wants.map(s => s.name).join(', ') }}
+                                </div>
+                            </div>
+
+                            <button 
+                                class="trade-btn"
+                                @click="proposeTrade(trade)"
+                                :disabled="!hasWantedStickers(trade)"
+                            >
+                                <i class="fas fa-handshake"></i> Intercambiar
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </app-layout>
+
+        <!-- Modal para proponer intercambio - MEJORADO -->
+        <div class="modal" :class="{ active: showTradeModal }">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Proponer Intercambio con {{ selectedTrade?.user.name }}</h3>
+                    <button @click="showTradeModal = false" class="close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div v-if="selectedTrade">
+                        <!-- SECCIÓN: LO QUE EL USUARIO QUIERE -->
+                        <div class="trade-section">
+                            <h4><i class="fas fa-heart"></i> {{ selectedTrade.user.name }} quiere:</h4>
+                            <div class="wanted-stickers">
+                                <div 
+                                    v-for="sticker in selectedTrade.wants" 
+                                    :key="sticker.id"
+                                    class="sticker-detail"
+                                >
+                                    <img :src="sticker.image" :alt="sticker.name">
+                                    <div class="sticker-info">
+                                        <strong>{{ sticker.name }}</strong>
+                                        <p>#{{ sticker.number }} • {{ sticker.team }}</p>
+                                        <span class="position-badge">{{ sticker.position }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN: LO QUE YO OFREZCO -->
+                        <div class="trade-section">
+                            <h4><i class="fas fa-gift"></i> Tú ofreces:</h4>
+                            <div class="my-offer-stickers">
+                                <div 
+                                    v-for="stickerId in selectedStickers" 
+                                    :key="stickerId"
+                                    class="offered-sticker"
+                                >
+                                    <img :src="getStickerById(stickerId).image" :alt="getStickerById(stickerId).name">
+                                    <div class="sticker-info">
+                                        <strong>{{ getStickerById(stickerId).name }}</strong>
+                                        <p>#{{ getStickerById(stickerId).number }} • {{ getStickerById(stickerId).team }}</p>
+                                        <span class="position-badge">{{ getStickerById(stickerId).position }}</span>
+                                    </div>
+                                    <button @click="removeFromSelection(stickerId)" class="remove-offer">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- SELECTOR DE ESTAMPITAS -->
+                            <div class="sticker-selector">
+                                <h5>Selecciona tus estampitas para intercambiar:</h5>
+                                <div class="available-stickers">
+                                    <div 
+                                        v-for="sticker in myDuplicates" 
+                                        :key="sticker.id"
+                                        class="sticker-option"
+                                        :class="{ 
+                                            selected: selectedStickers.includes(sticker.id),
+                                            disabled: !canSelectSticker(sticker.id)
+                                        }"
+                                        @click="toggleStickerSelection(sticker.id)"
+                                    >
+                                        <img :src="sticker.image" :alt="sticker.name">
+                                        <div class="sticker-overlay">
+                                            <i class="fas fa-plus"></i>
+                                        </div>
+                                        <div class="sticker-quick-info">
+                                            <span>{{ sticker.name }}</span>
+                                            <small>+{{ sticker.duplicates }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RESUMEN DEL INTERCAMBIO -->
+                        <div class="trade-summary" v-if="selectedStickers.length > 0">
+                            <h4><i class="fas fa-handshake"></i> Resumen del Intercambio:</h4>
+                            <div class="summary-content">
+                                <div class="summary-item">
+                                    <strong>Tú das:</strong>
+                                    <span>{{ selectedStickers.map(id => getStickerById(id).name).join(', ') }}</span>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>Recibes:</strong>
+                                    <span>{{ selectedTrade.wants.map(s => s.name).join(', ') }}</span>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>De:</strong>
+                                    <span>{{ selectedTrade.user.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button @click="showTradeModal = false" class="btn-cancel">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </button>
+                    <button 
+                        @click="confirmTrade" 
+                        class="btn-confirm"
+                        :disabled="selectedStickers.length === 0"
+                    >
+                        <i class="fas fa-paper-plane"></i> 
+                        {{ selectedStickers.length > 0 ? `Enviar oferta por ${selectedStickers.length} estampita${selectedStickers.length > 1 ? 's' : ''}` : 'Selecciona estampitas' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notificaciones simples -->
+        <div class="toast-container">
+            <div 
+                v-for="toast in toasts" 
+                :key="toast.id" 
+                class="toast"
+                :class="toast.type"
+            >
+                <span>{{ toast.message }}</span>
+                <button @click="removeToast(toast.id)">×</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Componentes -->
+    <script src="../components/sidebar-component.js"></script>
+    <script src="../components/profile-component.js"></script>
+    <script src="../components/layout-component.js"></script>
+    <script src="../components/topbar-component.js"></script>
+    
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        const app = createApp({
+            setup() {
+                // Estado simple
+                const searchQuery = ref('');
+                const showTradeModal = ref(false);
+                const selectedTrade = ref(null);
+                const selectedStickers = ref([]);
+                const toasts = ref([]);
+                const searchTerm = ref('');
+                const filterTeam = ref('');
+                const filterPosition = ref('');
+
+                // Datos de ejemplo
+                const myDuplicates = ref([
+                    {
+                        id: 1,
+                        number: 1,
+                        name: 'Lionel Messi',
+                        team: 'Argentina',
+                        position: 'Delantero',
+                        image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=150&h=200&fit=crop',
+                        duplicates: 2
+                    },
+                    {
+                        id: 2, 
+                        number: 7,
+                        name: 'Cristiano Ronaldo',
+                        team: 'Portugal',
+                        position: 'Delantero',
+                        image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=150&h=200&fit=crop',
+                        duplicates: 1
+                    },
+                    {
+                        id: 3,
+                        number: 10,
+                        name: 'Luka Modrić',
+                        team: 'Croacia',
+                        position: 'Mediocampista',
+                        image: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=150&h=200&fit=crop',
+                        duplicates: 1
+                    }
+                ]);
+
+                const availableTrades = ref([
+                    {
+                        id: 1,
+                        user: {
+                            name: 'Coleccionista123',
+                            avatar: 'https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg'
+                        },
+                        offers: [
+                            { 
+                                id: 10, 
+                                name: 'Kylian Mbappé', 
+                                team: 'Francia',
+                                position: 'Delantero',
+                                number: 10,
+                                image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=150&h=200&fit=crop' 
+                            }
+                        ],
+                        wants: [
+                            { 
+                                id: 1, 
+                                name: 'Lionel Messi', 
+                                team: 'Argentina',
+                                position: 'Delantero',
+                                number: 1,
+                                image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=150&h=200&fit=crop' 
+                            }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        user: {
+                            name: 'FanFutbol',
+                            avatar: 'https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg'
+                        },
+                        offers: [
+                            { 
+                                id: 13, 
+                                name: 'Cristian Romero', 
+                                team: 'Argentina',
+                                position: 'Defensa',
+                                number: 13,
+                                image: 'https://images.unsplash.com/photo-1595155776349-40364df5c2c1?w=150&h=200&fit=crop' 
+                            }
+                        ],
+                        wants: [
+                            { 
+                                id: 3, 
+                                name: 'Luka Modrić', 
+                                team: 'Croacia',
+                                position: 'Mediocampista',
+                                number: 10,
+                                image: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=150&h=200&fit=crop' 
+                            }
+                        ]
+                    }
+                ]);
+
+                const activeTrades = ref([]);
+
+                // Computed properties
+                const uniqueTeams = computed(() => {
+                    const teams = new Set();
+                    availableTrades.value.forEach(trade => {
+                        trade.offers.forEach(sticker => teams.add(sticker.team));
+                        trade.wants.forEach(sticker => teams.add(sticker.team));
+                    });
+                    return Array.from(teams);
+                });
+
+                const uniquePositions = computed(() => {
+                    const positions = new Set();
+                    availableTrades.value.forEach(trade => {
+                        trade.offers.forEach(sticker => positions.add(sticker.position));
+                        trade.wants.forEach(sticker => positions.add(sticker.position));
+                    });
+                    return Array.from(positions);
+                });
+
+                const filteredTrades = computed(() => {
+                    let filtered = availableTrades.value;
+                    
+                    // Filtro por búsqueda de texto
+                    if (searchTerm.value) {
+                        const term = searchTerm.value.toLowerCase();
+                        filtered = filtered.filter(trade => 
+                            trade.offers.some(sticker => 
+                                sticker.name.toLowerCase().includes(term) ||
+                                sticker.team.toLowerCase().includes(term)
+                            ) ||
+                            trade.wants.some(sticker => 
+                                sticker.name.toLowerCase().includes(term) ||
+                                sticker.team.toLowerCase().includes(term)
+                            ) ||
+                            trade.user.name.toLowerCase().includes(term)
+                        );
+                    }
+                    
+                    // Filtro por equipo
+                    if (filterTeam.value) {
+                        filtered = filtered.filter(trade => 
+                            trade.offers.some(sticker => sticker.team === filterTeam.value) ||
+                            trade.wants.some(sticker => sticker.team === filterTeam.value)
+                        );
+                    }
+                    
+                    // Filtro por posición
+                    if (filterPosition.value) {
+                        filtered = filtered.filter(trade => 
+                            trade.offers.some(sticker => sticker.position === filterPosition.value) ||
+                            trade.wants.some(sticker => sticker.position === filterPosition.value)
+                        );
+                    }
+                    
+                    return filtered;
+                });
+
+                // Métodos
+                const proposeTrade = (trade) => {
+                    selectedTrade.value = trade;
+                    selectedStickers.value = [];
+                    showTradeModal.value = true;
+                };
+
+                const toggleStickerSelection = (stickerId) => {
+                    if (!canSelectSticker(stickerId)) return;
+                    
+                    const index = selectedStickers.value.indexOf(stickerId);
+                    if (index > -1) {
+                        selectedStickers.value.splice(index, 1);
+                    } else {
+                        selectedStickers.value.push(stickerId);
+                    }
+                };
+
+                const canSelectSticker = (stickerId) => {
+                    return !selectedStickers.value.includes(stickerId) && selectedStickers.value.length < 5;
+                };
+
+                const removeFromSelection = (stickerId) => {
+                    selectedStickers.value = selectedStickers.value.filter(id => id !== stickerId);
+                };
+
+                const getStickerById = (id) => {
+                    return myDuplicates.value.find(sticker => sticker.id === id);
+                };
+
+                const confirmTrade = () => {
+                    if (selectedStickers.value.length === 0) {
+                        showToast('Selecciona al menos una estampita para intercambiar', 'warning');
+                        return;
+                    }
+
+                    // Aquí se conectaría con el backend
+                    const offeredNames = selectedStickers.value.map(id => getStickerById(id).name).join(', ');
+                    const wantedNames = selectedTrade.value.wants.map(s => s.name).join(', ');
+                    
+                    showToast(`¡Propuesta enviada a ${selectedTrade.value.user.name}! Ofreces: ${offeredNames} por: ${wantedNames}`, 'success');
+                    showTradeModal.value = false;
+                    selectedStickers.value = [];
+                };
+
+                const hasWantedStickers = (trade) => {
+                    return trade.wants.some(wanted => 
+                        myDuplicates.value.some(mine => mine.id === wanted.id)
+                    );
+                };
+
+                const selectSticker = (sticker) => {
+                    showToast(`Seleccionaste ${sticker.name} - #${sticker.number}`, 'info');
+                };
+
+                const clearFilters = () => {
+                    searchTerm.value = '';
+                    filterTeam.value = '';
+                    filterPosition.value = '';
+                };
+
+                // Sistema de notificaciones
+                const showToast = (message, type = 'info') => {
+                    const id = Date.now();
+                    toasts.value.push({ id, message, type });
+                    setTimeout(() => removeToast(id), 4000);
+                };
+
+                const removeToast = (id) => {
+                    toasts.value = toasts.value.filter(toast => toast.id !== id);
+                };
+
+                // Layout
+                const sidebarMenu = ref([
+                    { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: false },
+                    { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
+                    { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
+                    //{ name: 'Intercambios', link: 'intercambios.html', icon: 'fas fa-exchange-alt', active: true },
+                ]);
+
+                const userProfile = ref({
+                    avatar: 'https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg',
+                    username: '@UsuarioFan',
+                    level: 15
+                });
+
+                const profileStats = ref([
+                    { label: 'Álbum', value: '65% completado' },
+                    { label: 'Cromos', value: '32/50' },
+                    { label: 'Duplicados', value: myDuplicates.value.length },
+                    { label: 'Sobres', value: '3' }
+                ]);
+
+                const profileActions = ref([
+                    { name: 'Mi Perfil', icon: 'fas fa-user', link: 'perfil.html' },
+                    { name: 'Intercambios', icon: 'fas fa-exchange-alt', link: 'intercambios.html' }
+                ]);
+
+                const topbarConfig = ref({
+                    searchPlaceholder: 'Buscar intercambios...',
+                    actions: [
+                        { name: 'notifications', icon: 'fas fa-bell', title: 'Notificaciones' },
+                        { name: 'settings', icon: 'fas fa-cog', title: 'Configuración' }
+                    ]
+                });
+
+                const handleLogout = () => showToast('Cerrando sesión...', 'info');
+                const handleProfileAction = (action) => showToast(`Abriendo ${action.name}...`, 'info');
+                const handleTopbarAction = (action) => showToast(`Abriendo ${action.title}...`, 'info');
+                const handleSearch = (value) => console.log('Buscando:', value);
+
+                return {
+                    searchQuery,
+                    showTradeModal,
+                    selectedTrade,
+                    selectedStickers,
+                    toasts,
+                    searchTerm,
+                    filterTeam,
+                    filterPosition,
+                    myDuplicates,
+                    availableTrades,
+                    activeTrades,
+                    uniqueTeams,
+                    uniquePositions,
+                    filteredTrades,
+                    proposeTrade,
+                    toggleStickerSelection,
+                    canSelectSticker,
+                    removeFromSelection,
+                    getStickerById,
+                    confirmTrade,
+                    hasWantedStickers,
+                    selectSticker,
+                    clearFilters,
+                    showToast,
+                    removeToast,
+                    sidebarMenu,
+                    userProfile,
+                    profileStats,
+                    profileActions,
+                    topbarConfig,
+                    handleLogout,
+                    handleProfileAction,
+                    handleTopbarAction,
+                    handleSearch
+                };
+            }
+        });
+
+        // Registrar componentes
+        app.component('sidebar-main', SidebarComponent);
+        app.component('profile-sidebar', ProfileComponent);
+        app.component('app-layout', LayoutComponent);
+        app.component('topbar-component', TopbarComponent);
+
+        app.mount('#app');
+    </script>
+</body>
+</html>
