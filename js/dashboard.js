@@ -1,72 +1,101 @@
-// js/dashboard.js
 
 const API_BASE_URL = 'http://localhost:3001/api';
+const TOTAL_CROMOS = 20; // <-- ajusta si tu álbum tiene otro total
 
 const { createApp, ref, reactive, onMounted } = Vue;
 
 createApp({
-    setup() {
-        // 1. Estado para almacenar los datos
-        const userData = reactive({
-            nombre: '@UsuarioFan',
-            nivel: 0,
-            cromosObtenidos: 0,
-            progresoAlbum: 0,
-            sobresDisponibles: 0,
-            intercambios: 0
-        });
-        const loading = ref(true);
+  setup() {
+    const userData = reactive({
+      nombre: '@UsuarioFan',
+      nivel: 0,
+      cromosObtenidos: 0,
+      progresoAlbum: 0,
+      sobresDisponibles: 0,
+      intercambios: 0
+    });
+    const loading = ref(true);
 
-        // 2. Función para obtener el ID del usuario
-        // Asumo que guardaste el ID en localStorage durante el login
-        const getUserId = () => {
-            // Aquí deberías obtener el ID guardado. Ejemplo:
-            return localStorage.getItem('currentUserId') || '60c72b1234567890abcdef01'; 
-            // Usaremos un ID de ejemplo por ahora
-        };
+    // Claves de storage unificadas
+    const STORAGE_KEYS = {
+      userId: 'currentUserId',
+      token: 'jwt'
+    };
 
-        // 3. Función para hacer la llamada a la API
-        const fetchUserData = async () => {
-            const userId = getUserId();
-            if (!userId) {
-                console.error("ID de usuario no encontrado. Redirigiendo a login.");
-                window.location.href = 'login.html'; // Redirigir si no hay ID
-                return;
-            }
+    const readStorage = () => {
+      const id = localStorage.getItem(STORAGE_KEYS.userId);   // debe ser el _id (24 hex)
+      const token = localStorage.getItem(STORAGE_KEYS.token); // opcional
+      return { id, token };
+    };
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-                    headers: {
-                        // Si usas JWT, aquí iría el 'Authorization: Bearer <token>'
-                    }
-                });
+    // Valida ObjectId
+    const isValidObjectId = (s) => typeof s === 'string' && /^[0-9a-fA-F]{24}$/.test(s);
 
-                if (!response.ok) {
-                    throw new Error('Error al cargar los datos del usuario: ' + response.status);
-                }
+    const fetchUserData = async () => {
+      const { id: userId, token } = readStorage();
 
-                const data = await response.json();
+      if (!isValidObjectId(userId)) {
+        console.warn('[Dashboard] ID ausente o inválido en localStorage:', userId);
+        // Evita loop si ya estás en login
+        if (!location.pathname.includes('login')) {
+          window.location.href = 'login.html';
+        }
+        return;
+      }
 
-                // 4. Actualizar el estado con los datos reales de la API
-                userData.nombre = data.nombre || '@UsuarioFan';
-                userData.nivel = data.nivel || 1;
-                userData.cromosObtenidos = data.cromosObtenidos;
-                userData.progresoAlbum = data.progresoAlbum;
-                userData.sobresDisponibles = data.sobresDisponibles || 3;
-                userData.intercambios = data.intercambios || 12;
-
-            } catch (error) {
-                console.error("Fallo al obtener el perfil:", error);
-            } finally {
-                loading.value = false;
-            }
-        };
-
-        // 5. Llamar a la función al cargar el componente
-        onMounted(() => {
-            fetchUserData();
+      try {
+        const response = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
         });
 
-        return { userData, loading };
-    }
-}).mount('#dashboard-app'); // Asumo que el contenedor principal es #dashboard-app
+        // Manejo explícito de estados
+        if (response.status === 401) {
+          console.warn('[Dashboard] 401 no autorizado. Redirigiendo a login…');
+          window.location.href = 'login.html';
+          return;
+        }
+        if (response.status === 404) {
+          console.warn('[Dashboard] 404 usuario no encontrado:', userId);
+          // Mantén en la página pero muestra defaults
+        }
+        if (!response.ok) {
+          throw new Error(`Fallo API (${response.status})`);
+        }
+
+        const data = await response.json();
+
+        // Nombre (según tu API puede venir como nombre o username)
+        userData.nombre = (data?.nombre || data?.username || '@UsuarioFan');
+
+        // Números con coerción para evitar undefined/NaN
+        const cromos = Number(data?.cromosObtenidos ?? data?.cromos ?? 0);
+        const nivel = Number(data?.nivel ?? 0);
+        const sobres = Number(data?.sobresDisponibles ?? data?.sobres ?? 0);
+        const interc = Number(data?.intercambios ?? data?.trades ?? 0);
+
+        userData.cromosObtenidos = cromos;
+        userData.nivel = nivel;
+        userData.sobresDisponibles = sobres;
+        userData.intercambios = interc;
+
+        // Si tu API no manda porcentaje, calcúlalo aquí
+        const total = Number(data?.totalCromos ?? TOTAL_CROMOS);
+        userData.progresoAlbum = total > 0 ? Math.round((cromos / total) * 100) : 0;
+
+        // Si tu HTML muestra "Álbum: NaN%", con esto se corrige.
+      } catch (err) {
+        console.error('[Dashboard] Error al obtener perfil:', err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    onMounted(fetchUserData);
+
+    return { userData, loading };
+  }
+}).mount('#dashboard-app');
+

@@ -1,13 +1,4 @@
 import { Router } from "express";
-
-/**
- * Crea un router CRUD genérico para un Modelo de Mongoose.
- * - GET /        -> lista (filtros por querystring, paginado)
- * - GET /:id     -> leer por id
- * - POST /       -> crear
- * - PUT /:id     -> actualizar
- * - DELETE /:id  -> borrar
- */
 export function crudRouter(Model) {
   const r = Router();
 

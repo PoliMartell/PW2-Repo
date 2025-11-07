@@ -190,7 +190,8 @@ const SearchComponent = {
   emits: ['update:modelValue']
 };
 
-const { createApp, ref, computed } = Vue;
+const { createApp, ref, computed, onMounted } = Vue;
+
 
 const app = createApp({
 
@@ -201,50 +202,71 @@ const app = createApp({
     const loading = ref(true);
    
     // --- FUNCIÓN DE CARGA DE DATOS REALES ---
-    const loadUserData = async () => {
-        const currentUserId = getUserIdFromStorage(); // Obtenido del localStorage
-        loading.value = true;
-        
-        if (!currentUserId) {
-            // 🛑 REDIRECCIÓN 1: Si no hay ID en localStorage
-            console.error("ID de usuario no encontrado. Redirigiendo a login.");
-            showToast('Sesión no válida. Inicia sesión de nuevo.', 'error');
-            setTimeout(() => window.location.href = 'login.html', 100); // Redirigir rápido
-            return;
-        }
+    const USERS_PATH = 'usuarios';
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/users/${currentUserId}`); // Llama a la ruta /api/users/:userId
-            
-            if (response.status === 404 || response.status === 400) {
-                // 🛑 REDIRECCIÓN 2: Si el ID existe pero el Backend dice que no es válido
-                console.error("Usuario no encontrado en la DB.");
-                showToast('Error de perfil. Inicia sesión de nuevo.', 'error');
-                localStorage.removeItem('currentUserId'); // Limpiamos la sesión mala
-                setTimeout(() => window.location.href = 'login.html', 100);
-                return;
-            }
+const loadUserData = async () => {
+  loading.value = true;
 
-            if (!response.ok) {
-                throw new Error('Fallo al cargar perfil: ' + response.statusText);
-            }
+  const currentUserId = getUserIdFromStorage();
+  const token = localStorage.getItem('jwt');
 
-            const data = await response.json();
-            
-            // 4. Actualizar el estado con los datos reales de la API (¡USA LOS NOMBRES QUE VIENEN DEL BACKEND!)
-            userProfile.value.username = data.username; // @UsuarioFan (generado en el backend)
-            userProfile.value.level = data.nivel;
-            
-            // Actualizar estadísticas del dashboard
-            collectedStickers.value = data.cromosObtenidos; 
-            packsAvailable.value = data.sobresDisponibles;
-            exchanges.value = data.intercambios;
+  if (!currentUserId) {
+    showToast('Sesión no válida. Inicia sesión de nuevo.', 'error');
+    setTimeout(() => (window.location.href = 'login.html'), 200);
+    return;
+  }
 
-            // Datos para el profileStats computed
-            // Debes asegurarte de que profileStats se actualice con estas variables
-            
-            // showToast('Datos de usuario cargados.', 'success', 2000); // Ya no es necesario
+  try {
+    const response = await fetch(`${API_BASE_URL}/${USERS_PATH}/${currentUserId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }
+    });
 
+    if (!response.ok) {
+      if (response.status === 404 || response.status === 400) {
+        localStorage.removeItem('currentUserId');
+        setTimeout(() => (window.location.href = 'login.html'), 300);
+        return;
+      }
+      throw new Error(`Fallo API (${response.status})`);
+    }
+
+    const data = await response.json();
+    console.log('🔍 Datos usuario:', data);
+
+    // ---> SOLO LO QUE EXISTE EN TU API
+    userProfile.value.username = data.nombre || '@UsuarioFan';
+    userProfile.value.level = Number(data.nivel ?? 1);   // si no hay 'nivel', deja 1
+
+    // ---> ESTOS CAMPOS NO EXISTEN EN TU JSON, PON DEFAULTS
+    collectedStickers.value = Number(data.cromosObtenidos ?? data.cromos ?? 0);
+    packsAvailable.value     = Number(data.sobresDisponibles ?? 0);
+    exchanges.value          = Number(data.intercambios ?? 0);
+
+    // (si más adelante agregas esos campos en la API, esto los tomará)
+  } catch (e) {
+    console.error(e);
+    showToast('Error de conexión con el servidor.', 'error');
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Evita NaN%
+// const progressPercentage = computed(() => {
+//   const total = Number(totalStickers.value) || 0;
+//   const collected = Number(collectedStickers.value) || 0;
+//   return total > 0 ? Math.round((collected / total) * 100) : 0;
+// });
+
+// Y monta bien:
+onMounted(() => {
+  loadUserData();
+});
+
+<<<<<<< Updated upstream
         } catch (error) {
             console.error("Error grave al obtener perfil:", error);
             showToast('Error de conexión con el servidor. Revisar terminal API.', 'error');
@@ -254,6 +276,8 @@ const app = createApp({
         
     };
     
+=======
+>>>>>>> Stashed changes
     // ------------------------------------
 
     // Datos reactivos del dashboard
