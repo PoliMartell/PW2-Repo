@@ -6,6 +6,7 @@
   <title>Perfil - Fanscore</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="../js/auth.js"></script>
   
   <link rel="stylesheet" href="../styles/globals.css">
   <link rel="stylesheet" href="../styles/layout.css">
@@ -302,9 +303,11 @@
   <script src="../components/layout-component.js"></script>
   <script src="../components/topbar-component.js"></script>
   
-  <script>
-    const { createApp, ref, computed } = Vue;
+ <script>
+    // 🛑 1. IMPORTACIÓN CORREGIDA: Incluye onMounted y reactive
+    const { createApp, ref, computed, onMounted, reactive } = Vue; 
 
+    // Componente de búsqueda (DEBE ESTAR FUERA DEL createApp)
     const SearchComponent = {
       template: `
         <div class="search-container">
@@ -318,108 +321,225 @@
         </div>
       `,
       props: {
-        placeholder: {
-          type: String,
-          default: 'Buscar...'
-        },
-        modelValue: {
-          type: String,
-          default: ''
-        }
+        placeholder: { type: String, default: 'Buscar...' },
+        modelValue: { type: String, default: '' }
       },
       emits: ['update:modelValue']
     };
 
+    // Constantes de la API
+    const API_BASE_URL = 'http://localhost:3001/api';
+
     const app = createApp({
       setup() {
-        // Datos del usuario
-        const userProfile = ref({
-          avatar: 'https://i.pinimg.com/736x/d7/b9/f8/d7b9f8cf530d179d952e890140fa60a1.jpg',
-          username: '@Arileraptor',
-          fullName: 'Arile Martell',
-          email: 'arileraptor@gmail.com',
-          bio: 'Ubers besto equipo',
-          birthDate: '2004-04-06', // Formato YYYY-MM-DD para input date
-          favoriteTeam: 'Club de Fútbol Monterrey',
-          joinDate: 'Enero 2024',
-          level: 15
+        // 🛑 LECTURA CRÍTICA DE LA SESIÓN
+        window.AuthService.checkSession(); // Refresca el estado desde localStorage
+        const userSession = window.AuthService.session;
+        
+        // --- UTILIDADES DE FORMATO (DEFINIDAS AL INICIO PARA ACCESO GLOBAL) ---
+        const formatToISO = (dateString) => {
+             if (!dateString || dateString.includes('No especificada')) return null; 
+             if (dateString.includes('-') && dateString.length >= 10) return dateString; 
+             const parts = dateString.split('/');
+             if (parts.length === 3) {
+                 return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+             }
+             return null;
+        };
+
+        const formatDate = (dateString) => {
+             if (!dateString || dateString.includes('No especificada')) return 'No especificada';
+             if (dateString.includes('-')) {
+                 const [year, month, day] = dateString.split('-');
+                 return `${day}/${month}/${year}`;
+             }
+             return dateString;
+        };
+        // ---------------------------------------------------------------------
+
+        // 🛑 1. INICIALIZACIÓN DE DATOS DEL PERFIL
+        const userIdToUse = userSession.userId; 
+        
+        const userProfile = reactive({
+            id: userIdToUse, 
+            username: userSession.username || 'Invitado',
+            level: userSession.level || 1,
+            avatar: userSession.avatar, 
+            fullName: userSession.nombre || userSession.username,
+            email: userSession.email || 'Cargando...', 
+            bio: userSession.bio || 'Coleccionista de cromos.',
+            favoriteTeam: userSession.favoriteTeam || 'No especificado',
+            birthDate: userSession.birthDate || 'No especificada',
+            joinDate: 'Cargando...' // Se cargará en fetchProfileDetails
         });
 
-        // Estadísticas
-        const albumProgress = ref(87);
-        const collectedStickers = ref(142);
-        const duplicateStickers = ref(28);
-        const tradesCompleted = ref(15);
-        const totalStickers = ref(164);
+        // 🛑 2. INICIALIZACIÓN DE ESTADÍSTICAS
+        const albumProgress = ref(userSession.progresoAlbum || 0);
+        const collectedStickers = ref(userSession.cromosObtenidos || 0);
+        const duplicateStickers = ref(userSession.duplicados || 0);
+        const tradesCompleted = ref(userSession.intercambios || 0);
+        const totalStickers = ref(164); 
 
-        // Cromos destacados
+        // Cromos destacados (Hardcodeado)
         const featuredStickers = ref([
-          {
-            id: 1,
-            number: 10,
-            name: 'Lionel Messi',
-            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=150&h=200&fit=crop'
-          },
-          {
-            id: 2,
-            number: 7,
-            name: 'Cristiano Ronaldo',
-            image: 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=150&h=200&fit=crop'
-          }
+          { id: 1, number: 10, name: 'Lionel Messi', image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=150&h=200&fit=crop' },
+          { id: 2, number: 7, name: 'Cristiano Ronaldo', image: 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=150&h=200&fit=crop' }
         ]);
 
-        // Estado de modales
         const showEditModal = ref(false);
         const showAvatarModal = ref(false);
         const editForm = ref({});
         const searchQuery = ref('');
 
+        // --- FUNCIÓN DE CARGA DE DETALLES ESPECÍFICOS ---
+        const fetchProfileDetails = async () => {
+            const userId = userProfile.id; 
+            
+            if (!userId) { return; }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/${userId}`); 
+                
+                if (response.status === 404) {
+                    window.authUtils.showToast("Usuario no encontrado. Sesión inválida.", 'error');
+                    window.AuthService.loadSession(null); 
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                if (!response.ok) { throw new Error(`Fallo la carga del perfil: ${response.status}`); }
+
+                const data = await response.json();
+                
+                // 🛑 ACTUALIZAR PERFIL Y ESTADÍSTICAS LOCALES
+                userProfile.email = data.email || 'No disponible';
+                userProfile.fullName = data.nombre || userProfile.fullName;
+                userProfile.joinDate = data.memberSince || 'Hoy'; 
+                userProfile.bio = data.bio || userProfile.bio;
+                userProfile.favoriteTeam = data.favoriteTeam || userProfile.favoriteTeam;
+                
+                // La fecha de nacimiento viene en formato ISO de la BD, la cortamos para el display
+                userProfile.birthDate = data.birthDate ? data.birthDate.split('T')[0] : userProfile.birthDate; 
+                
+                // Actualizar estadísticas locales
+                albumProgress.value = data.progresoAlbum || albumProgress.value;
+                collectedStickers.value = data.cromosObtenidos || collectedStickers.value;
+                tradesCompleted.value = data.intercambios || tradesCompleted.value;
+                
+                window.authUtils.showToast('Datos de perfil cargados.', 'success', 1000);
+
+            } catch (e) {
+                console.error("Error al cargar detalles del perfil o de la red.", e);
+            }
+        };
+
         // Métodos
-        const openEditModal = () => {
-          console.log('Abriendo modal de edición...');
-          editForm.value = { ...userProfile.value };
-          showEditModal.value = true;
+        const openEditModal = () => { 
+             editForm.value = { 
+               ...userProfile,
+               // Convertir a formato YYYY-MM-DD para el input type="date"
+               birthDate: userProfile.birthDate === 'No especificada' ? null : userProfile.birthDate.split('T')[0] 
+             };
+             showEditModal.value = true; 
+        };
+        const closeEditModal = () => { showEditModal.value = false; };
+        
+       const saveProfile = async () => {
+             // 🛑 1. OBTENER EL ID DIRECTAMENTE DE LA FUENTE REACTIVA 🛑
+             const userId = userProfile.id;
+             
+             if (!userId) {
+                 window.authUtils.showToast('Error: No se encontró ID de usuario para guardar.', 'error');
+                 return;
+             }
+
+             // Función auxiliar para convertir DD/MM/YYYY a YYYY-MM-DD
+             const formatToISO = (dateString) => {
+                 if (!dateString || dateString.includes('No especificada')) return null; 
+                 if (dateString.includes('-') && dateString.length >= 10) return dateString; // Ya es ISO
+                 
+                 const parts = dateString.split('/');
+                 if (parts.length === 3) {
+                     // Convierte DD/MM/YYYY a YYYY-MM-DD
+                     return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                 }
+                 return null;
+             };
+
+             // Preparar los datos a enviar
+             const dataToSend = { 
+                 nombre: editForm.value.fullName, 
+                 username: editForm.value.username,
+                 email: editForm.value.email,
+                 bio: editForm.value.bio,
+                 
+                 // 🛑 APLICAR EL FORMATO Y ASIGNAR A birthDate 🛑
+                 // El backend espera ISO (YYYY-MM-DD)
+                 birthDate: formatToISO(editForm.value.birthDate), 
+                 
+                 favoriteTeam: editForm.value.favoriteTeam
+             };
+             
+             try {
+                 const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                     method: 'PATCH',
+                     headers: {
+                         'Content-Type': 'application/json',
+                     },
+                     body: JSON.stringify(dataToSend)
+                 });
+
+                 const result = await response.json();
+
+                 if (!response.ok) {
+                     const errorMsg = result.msg || 'Fallo al guardar. Revisa si el email o usuario ya existe.';
+                     window.authUtils.showToast(errorMsg, 'error');
+                     return;
+                 }
+
+                 // =======================================================
+                 // 🛑 PASO CRÍTICO: ACTUALIZAR ESTADO GLOBAL (AUTHSERVICE) 🛑
+                 // Esto asegura que la barra lateral (Dashboard) vea la nueva bio y fecha.
+                 // =======================================================
+                 const updatedGlobalData = {
+                     // Campos de identidad
+                     nombre: editForm.value.fullName,
+                     username: editForm.value.username,
+                     email: editForm.value.email,
+                     
+                     // 🛑 CAMPOS DE PERSISTENCIA (BIO Y FECHA) 🛑
+                     bio: editForm.value.bio,
+                     birthDate: editForm.value.birthDate,
+                     favoriteTeam: editForm.value.favoriteTeam,
+                     
+                     // Mantenemos los datos de estadísticas existentes
+                     // La función loadSession mezcla esto con lo que ya tiene
+                 };
+                 window.AuthService.loadSession(updatedGlobalData);
+
+                 // 🛑 4. ÉXITO: Actualizar estado local y mostrar mensaje
+                 Object.assign(userProfile, editForm.value); 
+                 
+                 window.authUtils.showToast('¡Perfil actualizado permanentemente!', 'success');
+                 
+                 closeEditModal(); 
+                 
+             } catch (error) {
+                 console.error("Error de red al guardar:", error);
+                 window.authUtils.showToast('Error de conexión con la API o error de sintaxis.', 'error');
+             }
         };
 
-        const closeEditModal = () => {
-          showEditModal.value = false;
-        };
+        const openAvatarModal = () => { showAvatarModal.value = true; };
+        const closeAvatarModal = () => { showAvatarModal.value = false; };
+        const goToAlbum = () => { window.location.href = 'album.html'; };
 
-        const saveProfile = () => {
-          console.log('Guardando perfil...', editForm.value);
-          userProfile.value = { ...userProfile.value, ...editForm.value };
-          showEditModal.value = false;
-          alert('¡Perfil actualizado correctamente!');
-        };
+        // ... (resto de métodos y configuración de layout)
 
-        const openAvatarModal = () => {
-          showAvatarModal.value = true;
-        };
-
-        const closeAvatarModal = () => {
-          showAvatarModal.value = false;
-        };
-
-        const goToAlbum = () => {
-          window.location.href = 'album.html';
-        };
-
-        // Formatear fecha para mostrar
-        const formatDate = (dateString) => {
-          if (!dateString) return 'No especificada';
-          if (dateString.includes('-')) {
-            const [year, month, day] = dateString.split('-');
-            return `${day}/${month}/${year}`;
-          }
-          return dateString;
-        };
-
-        // Configuración del layout
         const sidebarMenu = ref([
           { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: false },
           { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
           { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
-          //{ name: 'Perfil', link: 'perfil.html', icon: 'fas fa-user', active: true }
         ]);
 
         const profileStats = computed(() => [
@@ -428,7 +548,7 @@
           { label: 'Duplicados', value: duplicateStickers.value },
           { label: 'Intercambios', value: tradesCompleted.value }
         ]);
-
+        
         const profileActions = ref([
           { name: 'Mi Perfil', icon: 'fas fa-user', link: 'perfil.html' },
           { name: 'Intercambios', icon: 'fas fa-exchange-alt', link: 'intercambios.html' }
@@ -442,53 +562,38 @@
           ]
         });
 
-        const handleLogout = () => {
-          console.log('Cerrando sesión...');
-        };
+        const handleLogout = () => { window.authUtils.showToast('Cerrando sesión...', 'info'); window.AuthService.loadSession(null); window.location.href = 'login.html'; };
+        const handleProfileAction = (action) => { console.log('Acción perfil:', action); };
+        const handleTopbarAction = (action) => { console.log('Acción topbar:', action); };
+        const handleSearch = (value) => { console.log('Buscando:', value); searchQuery.value = value; };
+        
+        // 🛑 3. PROTECCIÓN DE SESIÓN Y LLAMADA A DATOS AL MONTAR
+        onMounted(() => {
+             const storedUserId = localStorage.getItem('currentUserId');
+             
+             if (!storedUserId) {
+                 window.location.href = 'login.html';
+                 return;
+             }
+             fetchProfileDetails();
+        });
 
-        const handleProfileAction = (action) => {
-          console.log('Acción perfil:', action);
-        };
-
-        const handleTopbarAction = (action) => {
-          console.log('Acción topbar:', action);
-        };
-
-        const handleSearch = (value) => {
-          console.log('Buscando:', value);
-          searchQuery.value = value;
-        };
 
         return {
-          userProfile,
-          albumProgress,
-          collectedStickers,
-          duplicateStickers,
-          tradesCompleted,
-          totalStickers,
-          featuredStickers,
-          showEditModal,
-          showAvatarModal,
-          editForm,
-          searchQuery,
-          sidebarMenu,
-          profileStats,
-          profileActions,
-          topbarConfig,
-          openEditModal,
-          closeEditModal,
-          saveProfile,
-          openAvatarModal,
-          closeAvatarModal,
-          goToAlbum,
-          formatDate,
-          handleLogout,
-          handleProfileAction,
-          handleTopbarAction,
-          handleSearch
+          userProfile, albumProgress, collectedStickers, duplicateStickers, tradesCompleted, totalStickers, featuredStickers, showEditModal, showAvatarModal, editForm, searchQuery, sidebarMenu, profileStats, profileActions, topbarConfig, openEditModal, closeEditModal, saveProfile, openAvatarModal, closeAvatarModal, goToAlbum, formatDate, handleLogout, handleProfileAction, handleTopbarAction, handleSearch
         };
       }
     });
+
+    // REGISTRAR COMPONENTES Y MONTAR APP
+    app.component('search-component', SearchComponent);
+    app.component('sidebar-main', SidebarComponent); 
+    app.component('profile-sidebar', ProfileComponent); 
+    app.component('app-layout', LayoutComponent);
+    app.component('topbar-component', TopbarComponent);
+
+    app.mount('#app');
+</script>
 
     // Registrar componentes
     app.component('sidebar-main', SidebarComponent);

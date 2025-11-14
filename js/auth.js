@@ -95,6 +95,73 @@ window.authUtils = {
     }
 };
 
+// ========================================================
+// >>> MÓDULO DE SERVICIO DE AUTENTICACIÓN GLOBAL (AUTHSERVICE) <<<
+// Esto almacena la sesión para toda la aplicación.
+// ========================================================
+const userSession = {
+    isAuthenticated: false,
+    userId: null,
+    username: 'Invitado',
+    level: 0,
+    avatar: 'https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg', // URL de avatar por defecto
+    cromosObtenidos: 0,
+    progresoAlbum: 0,
+    sobresDisponibles: 0
+};
+
+const loadSession = (userData) => {
+    if (userData) {
+        // Asignar los datos del usuario después de un login exitoso o carga de datos
+        userSession.isAuthenticated = true;
+        userSession.userId = userData.id || userData.userId || localStorage.getItem('currentUserId');
+        userSession.username = userData.username || userData.nombre; 
+        userSession.level = userData.level || userData.nivel || 1;
+        userSession.avatar = userData.avatarURL || userData.avatar || userSession.avatar; // Usa la URL real
+        
+        // Cargar estadísticas si vienen en la data
+        userSession.cromosObtenidos = userData.cromosObtenidos || 0;
+        userSession.progresoAlbum = userData.progresoAlbum || 0;
+        userSession.sobresDisponibles = userData.sobresDisponibles || 0;
+
+        // Almacenar el ID en localStorage para persistencia
+        if (userSession.userId) {
+            localStorage.setItem('currentUserId', userSession.userId);
+        }
+    } else {
+        // Limpiar la sesión (usado al cerrar sesión)
+        userSession.isAuthenticated = false;
+        userSession.userId = null;
+        localStorage.removeItem('currentUserId');
+        // Redireccionar al login si es necesario
+    }
+};
+
+const checkSession = () => {
+    // Si la sesión no está activa en memoria, intenta cargarla desde localStorage
+    if (!userSession.isAuthenticated) {
+        const userId = localStorage.getItem('currentUserId');
+        if (userId) {
+            userSession.userId = userId;
+            userSession.isAuthenticated = true; // Al menos sabemos que hay un ID
+            return true;
+        }
+    }
+    return userSession.isAuthenticated;
+};
+
+// Exportar las funciones y el estado al objeto window
+window.AuthService = {
+    session: userSession,
+    loadSession,
+    checkSession
+};
+// ========================================================
+// >>> FIN MÓDULO DE SERVICIO DE AUTENTICACIÓN GLOBAL <<<
+// ========================================================
+
+
+
 // Inicializar toast container cuando se carga la página
 document.addEventListener('DOMContentLoaded', function() {
     if (!document.getElementById('toast-container')) {

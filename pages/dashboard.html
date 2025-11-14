@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Fanscore</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script src="../js/auth.js"></script>
     <link rel="stylesheet" href="../styles/dashboard.css">
     <link rel="stylesheet" href="../styles/globals.css">
     <link rel="stylesheet" href="../styles/layout.css">
@@ -237,19 +239,38 @@ const loadUserData = async () => {
     const data = await response.json();
     console.log('🔍 Datos usuario:', data);
 
-    // ---> SOLO LO QUE EXISTE EN TU API
-    userProfile.value.username = data.nombre || '@UsuarioFan';
-    userProfile.value.level = Number(data.nivel ?? 1);   // si no hay 'nivel', deja 1
+   // 🛑 1. ACTUALIZAR EL SERVICIO GLOBAL (AUTHSERVICE)
+    // Esto asegura que todas las páginas (Album, Enciclopedia) tengan los datos frescos
+    window.AuthService.loadSession({
+        userId: currentUserId,
+        nombre: data.nombre,
+        username: data.username || `@${data.nombre.split(' ')[0]}Fan`, // Usar el campo que prefieras
+        level: data.nivel ?? 1,
+        avatarURL: data.avatarURL,
+        // Cargar estadísticas
+        cromosObtenidos: data.cromosObtenidos ?? 0,
+        progresoAlbum: data.progresoAlbum ?? 0,
+        sobresDisponibles: data.sobresDisponibles ?? 0,
+        intercambios: data.intercambios ?? 0,
+        duplicados: data.duplicados ?? 0
+    });
 
-    // ---> ESTOS CAMPOS NO EXISTEN EN TU JSON, PON DEFAULTS
-    collectedStickers.value = Number(data.cromosObtenidos ?? data.cromos ?? 0);
-    packsAvailable.value     = Number(data.sobresDisponibles ?? 0);
-    exchanges.value          = Number(data.intercambios ?? 0);
+    // 🛑 2. ACTUALIZAR VARIABLES REACTIVAS LOCALES (Para refrescar el Template)
+    // Usamos los datos de la API para actualizar los refs() locales:
+    userProfile.value.username = window.AuthService.session.username;
+    userProfile.value.level = window.AuthService.session.level;
+    userProfile.value.avatar = window.AuthService.session.avatar;
 
-    // (si más adelante agregas esos campos en la API, esto los tomará)
+    collectedStickers.value = window.AuthService.session.cromosObtenidos;
+    packsAvailable.value = window.AuthService.session.sobresDisponibles;
+    exchanges.value = window.AuthService.session.intercambios;
+    // Las propiedades 'computed' se actualizarán automáticamente.
+
+    showToast('Datos de dashboard actualizados.', 'success', 2000);
+
   } catch (e) {
-    console.error(e);
-    showToast('Error de conexión con el servidor.', 'error');
+    console.error('Error en loadUserData:', e);
+    showToast('Error al conectar o cargar datos.', 'error');
   } finally {
     loading.value = false;
   }
