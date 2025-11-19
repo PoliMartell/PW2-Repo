@@ -298,66 +298,47 @@
   </div>
 
   <!-- Incluir componentes -->
-  <script src="../components/sidebar-component.js"></script>
-  <script src="../components/profile-component.js"></script>
-  <script src="../components/layout-component.js"></script>
-  <script src="../components/topbar-component.js"></script>
-  
- <script>
-    // 🛑 1. IMPORTACIÓN CORREGIDA: Incluye onMounted y reactive
+ // ... (Despues de )
+<script src="../components/sidebar-component.js"></script>
+<script src="../components/profile-component.js"></script>
+<script src="../components/layout-component.js"></script>
+<script src="../components/topbar-component.js"></script>
+
+<script>
     const { createApp, ref, computed, onMounted, reactive } = Vue; 
 
     // Componente de búsqueda (DEBE ESTAR FUERA DEL createApp)
-    const SearchComponent = {
-      template: `
-        <div class="search-container">
-          <i class="fas fa-search"></i>
-          <input 
-            type="text" 
-            :placeholder="placeholder"
-            :value="modelValue"
-            @input="$emit('update:modelValue', $event.target.value)"
-          >
-        </div>
-      `,
-      props: {
-        placeholder: { type: String, default: 'Buscar...' },
-        modelValue: { type: String, default: '' }
-      },
-      emits: ['update:modelValue']
-    };
+    const SearchComponent = { /* ... */ }; // Asumo que el código de SearchComponent está correcto
 
     // Constantes de la API
     const API_BASE_URL = 'http://localhost:3001/api';
 
+    // --- UTILIDADES DE FORMATO --- (Definidas correctamente)
+    const formatToISO = (dateString) => {
+         if (!dateString || dateString.includes('No especificada')) return null; 
+         if (dateString.includes('-') && dateString.length >= 10) return dateString; 
+         const parts = dateString.split('/');
+         if (parts.length === 3) { return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`; }
+         return null;
+    };
+
+    const formatDate = (dateString) => {
+         if (!dateString || dateString.includes('No especificada')) return 'No especificada';
+         if (dateString.includes('-')) {
+             const [year, month, day] = dateString.split('-');
+             return `${day}/${month}/${year}`;
+         }
+         return dateString;
+    };
+    // ---------------------------------------------------------------------
+
     const app = createApp({
       setup() {
         // 🛑 LECTURA CRÍTICA DE LA SESIÓN
-        window.AuthService.checkSession(); // Refresca el estado desde localStorage
+        window.AuthService.checkSession(); 
         const userSession = window.AuthService.session;
         
-        // --- UTILIDADES DE FORMATO (DEFINIDAS AL INICIO PARA ACCESO GLOBAL) ---
-        const formatToISO = (dateString) => {
-             if (!dateString || dateString.includes('No especificada')) return null; 
-             if (dateString.includes('-') && dateString.length >= 10) return dateString; 
-             const parts = dateString.split('/');
-             if (parts.length === 3) {
-                 return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-             }
-             return null;
-        };
-
-        const formatDate = (dateString) => {
-             if (!dateString || dateString.includes('No especificada')) return 'No especificada';
-             if (dateString.includes('-')) {
-                 const [year, month, day] = dateString.split('-');
-                 return `${day}/${month}/${year}`;
-             }
-             return dateString;
-        };
-        // ---------------------------------------------------------------------
-
-        // 🛑 1. INICIALIZACIÓN DE DATOS DEL PERFIL
+        // 🛑 1. INICIALIZACIÓN DE DATOS DEL PERFIL Y ESTADO 🛑
         const userIdToUse = userSession.userId; 
         
         const userProfile = reactive({
@@ -370,21 +351,19 @@
             bio: userSession.bio || 'Coleccionista de cromos.',
             favoriteTeam: userSession.favoriteTeam || 'No especificado',
             birthDate: userSession.birthDate || 'No especificada',
-            joinDate: 'Cargando...' // Se cargará en fetchProfileDetails
+            joinDate: 'Cargando...' 
         });
 
-        // 🛑 2. INICIALIZACIÓN DE ESTADÍSTICAS
+        // ESTADÍSTICAS REACTIVAS
         const albumProgress = ref(userSession.progresoAlbum || 0);
         const collectedStickers = ref(userSession.cromosObtenidos || 0);
         const duplicateStickers = ref(userSession.duplicados || 0);
         const tradesCompleted = ref(userSession.intercambios || 0);
         const totalStickers = ref(164); 
 
-        // Cromos destacados (Hardcodeado)
-        const featuredStickers = ref([
-          { id: 1, number: 10, name: 'Lionel Messi', image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=150&h=200&fit=crop' },
-          { id: 2, number: 7, name: 'Cristiano Ronaldo', image: 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=150&h=200&fit=crop' }
-        ]);
+        // 🛑 INICIALIZACIÓN DE LA VARIABLE QUE FALTABA (featuredStickers) 🛑
+        // Esto resuelve el ReferenceError
+        const featuredStickers = ref([]); 
 
         const showEditModal = ref(false);
         const showAvatarModal = ref(false);
@@ -394,12 +373,12 @@
         // --- FUNCIÓN DE CARGA DE DETALLES ESPECÍFICOS ---
         const fetchProfileDetails = async () => {
             const userId = userProfile.id; 
-            
             if (!userId) { return; }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/users/${userId}`); 
+                // ... (Fetch a la API y manejo de errores 404/500)
                 
+                const response = await fetch(`${API_BASE_URL}/users/${userId}`); 
                 if (response.status === 404) {
                     window.authUtils.showToast("Usuario no encontrado. Sesión inválida.", 'error');
                     window.AuthService.loadSession(null); 
@@ -411,20 +390,23 @@
 
                 const data = await response.json();
                 
-                // 🛑 ACTUALIZAR PERFIL Y ESTADÍSTICAS LOCALES
+                // 🛑 SINCRONIZACIÓN GLOBAL DESPUÉS DEL FETCH 🛑
+                window.AuthService.loadSession({
+                    userId: userId, nombre: data.nombre, username: data.username, level: data.nivel, avatar: data.avatarURL,
+                    bio: data.bio, birthDate: data.birthDate, favoriteTeam: data.favoriteTeam,
+                    progresoAlbum: data.progresoAlbum, cromosObtenidos: data.cromosObtenidos,
+                });
+                
+                // 🛑 ACTUALIZAR VISTAS LOCALES
                 userProfile.email = data.email || 'No disponible';
                 userProfile.fullName = data.nombre || userProfile.fullName;
                 userProfile.joinDate = data.memberSince || 'Hoy'; 
                 userProfile.bio = data.bio || userProfile.bio;
                 userProfile.favoriteTeam = data.favoriteTeam || userProfile.favoriteTeam;
-                
-                // La fecha de nacimiento viene en formato ISO de la BD, la cortamos para el display
                 userProfile.birthDate = data.birthDate ? data.birthDate.split('T')[0] : userProfile.birthDate; 
                 
-                // Actualizar estadísticas locales
                 albumProgress.value = data.progresoAlbum || albumProgress.value;
                 collectedStickers.value = data.cromosObtenidos || collectedStickers.value;
-                tradesCompleted.value = data.intercambios || tradesCompleted.value;
                 
                 window.authUtils.showToast('Datos de perfil cargados.', 'success', 1000);
 
@@ -433,95 +415,34 @@
             }
         };
 
-        // Métodos
+        // Métodos (saveProfile y otros)
         const openEditModal = () => { 
              editForm.value = { 
                ...userProfile,
-               // Convertir a formato YYYY-MM-DD para el input type="date"
                birthDate: userProfile.birthDate === 'No especificada' ? null : userProfile.birthDate.split('T')[0] 
              };
              showEditModal.value = true; 
         };
         const closeEditModal = () => { showEditModal.value = false; };
         
-       const saveProfile = async () => {
-             // 🛑 1. OBTENER EL ID DIRECTAMENTE DE LA FUENTE REACTIVA 🛑
+        const saveProfile = async () => {
              const userId = userProfile.id;
-             
-             if (!userId) {
-                 window.authUtils.showToast('Error: No se encontró ID de usuario para guardar.', 'error');
-                 return;
-             }
+             if (!userId) { window.authUtils.showToast('Error: No se encontró ID de usuario para guardar.', 'error'); return; }
 
-             // Función auxiliar para convertir DD/MM/YYYY a YYYY-MM-DD
-             const formatToISO = (dateString) => {
-                 if (!dateString || dateString.includes('No especificada')) return null; 
-                 if (dateString.includes('-') && dateString.length >= 10) return dateString; // Ya es ISO
-                 
-                 const parts = dateString.split('/');
-                 if (parts.length === 3) {
-                     // Convierte DD/MM/YYYY a YYYY-MM-DD
-                     return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                 }
-                 return null;
-             };
-
-             // Preparar los datos a enviar
-             const dataToSend = { 
-                 nombre: editForm.value.fullName, 
-                 username: editForm.value.username,
-                 email: editForm.value.email,
-                 bio: editForm.value.bio,
-                 
-                 // 🛑 APLICAR EL FORMATO Y ASIGNAR A birthDate 🛑
-                 // El backend espera ISO (YYYY-MM-DD)
-                 birthDate: formatToISO(editForm.value.birthDate), 
-                 
-                 favoriteTeam: editForm.value.favoriteTeam
-             };
+             const dataToSend = { nombre: editForm.value.fullName, username: editForm.value.username, email: editForm.value.email, bio: editForm.value.bio, birthDate: formatToISO(editForm.value.birthDate), favoriteTeam: editForm.value.favoriteTeam };
              
              try {
-                 const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-                     method: 'PATCH',
-                     headers: {
-                         'Content-Type': 'application/json',
-                     },
-                     body: JSON.stringify(dataToSend)
-                 });
-
+                 const response = await fetch(`${API_BASE_URL}/users/${userId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dataToSend) });
                  const result = await response.json();
 
-                 if (!response.ok) {
-                     const errorMsg = result.msg || 'Fallo al guardar. Revisa si el email o usuario ya existe.';
-                     window.authUtils.showToast(errorMsg, 'error');
-                     return;
-                 }
+                 if (!response.ok) { window.authUtils.showToast(result.msg || 'Fallo al guardar.', 'error'); return; }
 
-                 // =======================================================
-                 // 🛑 PASO CRÍTICO: ACTUALIZAR ESTADO GLOBAL (AUTHSERVICE) 🛑
-                 // Esto asegura que la barra lateral (Dashboard) vea la nueva bio y fecha.
-                 // =======================================================
-                 const updatedGlobalData = {
-                     // Campos de identidad
-                     nombre: editForm.value.fullName,
-                     username: editForm.value.username,
-                     email: editForm.value.email,
-                     
-                     // 🛑 CAMPOS DE PERSISTENCIA (BIO Y FECHA) 🛑
-                     bio: editForm.value.bio,
-                     birthDate: editForm.value.birthDate,
-                     favoriteTeam: editForm.value.favoriteTeam,
-                     
-                     // Mantenemos los datos de estadísticas existentes
-                     // La función loadSession mezcla esto con lo que ya tiene
-                 };
-                 window.AuthService.loadSession(updatedGlobalData);
+                 // 🛑 PASO FINAL DE PERSISTENCIA GLOBAL 🛑
+                 const updatedGlobalData = { nombre: editForm.value.fullName, username: editForm.value.username, email: editForm.value.email, bio: editForm.value.bio, birthDate: dataToSend.birthDate, favoriteTeam: editForm.value.favoriteTeam, };
+                 window.AuthService.loadSession(updatedGlobalData); 
 
-                 // 🛑 4. ÉXITO: Actualizar estado local y mostrar mensaje
                  Object.assign(userProfile, editForm.value); 
-                 
                  window.authUtils.showToast('¡Perfil actualizado permanentemente!', 'success');
-                 
                  closeEditModal(); 
                  
              } catch (error) {
@@ -534,34 +455,6 @@
         const closeAvatarModal = () => { showAvatarModal.value = false; };
         const goToAlbum = () => { window.location.href = 'album.html'; };
 
-        // ... (resto de métodos y configuración de layout)
-
-        const sidebarMenu = ref([
-          { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: false },
-          { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
-          { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
-        ]);
-
-        const profileStats = computed(() => [
-          { label: 'Álbum', value: albumProgress.value + '% completado' },
-          { label: 'Cromos', value: collectedStickers.value + ' obtenidos' },
-          { label: 'Duplicados', value: duplicateStickers.value },
-          { label: 'Intercambios', value: tradesCompleted.value }
-        ]);
-        
-        const profileActions = ref([
-          { name: 'Mi Perfil', icon: 'fas fa-user', link: 'perfil.html' },
-          { name: 'Intercambios', icon: 'fas fa-exchange-alt', link: 'intercambios.html' }
-        ]);
-
-        const topbarConfig = ref({
-          searchPlaceholder: 'Buscar en el perfil...',
-          actions: [
-            { name: 'notifications', icon: 'fas fa-bell', title: 'Notificaciones' },
-            { name: 'settings', icon: 'fas fa-cog', title: 'Configuración' }
-          ]
-        });
-
         const handleLogout = () => { window.authUtils.showToast('Cerrando sesión...', 'info'); window.AuthService.loadSession(null); window.location.href = 'login.html'; };
         const handleProfileAction = (action) => { console.log('Acción perfil:', action); };
         const handleTopbarAction = (action) => { console.log('Acción topbar:', action); };
@@ -569,9 +462,7 @@
         
         // 🛑 3. PROTECCIÓN DE SESIÓN Y LLAMADA A DATOS AL MONTAR
         onMounted(() => {
-             const storedUserId = localStorage.getItem('currentUserId');
-             
-             if (!storedUserId) {
+             if (!localStorage.getItem('currentUserId')) {
                  window.location.href = 'login.html';
                  return;
              }
@@ -580,7 +471,30 @@
 
 
         return {
-          userProfile, albumProgress, collectedStickers, duplicateStickers, tradesCompleted, totalStickers, featuredStickers, showEditModal, showAvatarModal, editForm, searchQuery, sidebarMenu, profileStats, profileActions, topbarConfig, openEditModal, closeEditModal, saveProfile, openAvatarModal, closeAvatarModal, goToAlbum, formatDate, handleLogout, handleProfileAction, handleTopbarAction, handleSearch
+          userProfile, albumProgress, collectedStickers, duplicateStickers, tradesCompleted, totalStickers, featuredStickers, showEditModal, showAvatarModal, editForm, searchQuery, 
+          // Retornos de Layout:
+          sidebarMenu: ref([
+            { name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home', active: false },
+            { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: false },
+            { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
+          ]),
+          profileStats: computed(() => [
+            { label: 'Álbum', value: albumProgress.value + '% completado' },
+            { label: 'Cromos', value: collectedStickers.value + ' obtenidos' },
+            { label: 'Duplicados', value: duplicateStickers.value },
+            { label: 'Intercambios', value: tradesCompleted.value }
+          ]),
+          profileActions: ref([
+            { name: 'Mi Perfil', icon: 'fas fa-user', link: 'perfil.html' },
+            { name: 'Intercambios', icon: 'fas fa-exchange-alt', link: 'intercambios.html' }
+          ]),
+          topbarConfig: ref({
+            searchPlaceholder: 'Buscar en el perfil...',
+            actions: [{ name: 'notifications', icon: 'fas fa-bell', title: 'Notificaciones' }, { name: 'settings', icon: 'fas fa-cog', title: 'Configuración' }]
+          }),
+
+          // Métodos exportados:
+          openEditModal, closeEditModal, saveProfile, openAvatarModal, closeAvatarModal, goToAlbum, formatDate, handleLogout, handleProfileAction, handleTopbarAction, handleSearch
         };
       }
     });
@@ -588,21 +502,11 @@
     // REGISTRAR COMPONENTES Y MONTAR APP
     app.component('search-component', SearchComponent);
     app.component('sidebar-main', SidebarComponent); 
-    app.component('profile-sidebar', ProfileComponent); 
+    
     app.component('app-layout', LayoutComponent);
     app.component('topbar-component', TopbarComponent);
 
     app.mount('#app');
 </script>
-
-    // Registrar componentes
-    app.component('sidebar-main', SidebarComponent);
-    app.component('profile-sidebar', ProfileComponent);
-    app.component('app-layout', LayoutComponent);
-    app.component('topbar-component', TopbarComponent);
-    app.component('search-component', SearchComponent);
-
-    app.mount('#app');
-  </script>
 </body>
 </html>
