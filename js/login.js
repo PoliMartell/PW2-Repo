@@ -110,14 +110,20 @@ createApp({
                 // Aquí deberías guardar el token JWT si tu backend lo devuelve (tarea futura)
                 //  <<<<< 🛑 INSERTA ESTA LÍNEA AQUÍ 🛑 >>>>>
                 //  Guardar el ID del usuario para que el Dashboard lo use:
-                localStorage.setItem('currentUserId', data.user.id);
+               window.AuthService.loadSession({
+                 id: data.user.id,
+                 nombre: data.user.nombre,
+                         // Puedes incluir más datos aquí si tu Backend los devuelve en el login:
+                    // avatarURL: data.user.avatar || 'URL_DE_FALLBACK',
+                          // level: data.user.level || 1, 
+                   });
 
-                showToast('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
-                
-                // Redirección al dashboard (o la página principal)
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1000);
+                       showToast('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
+
+                    // Redirección al dashboard...
+                          setTimeout(() => {
+                           window.location.href = 'dashboard.html';
+                            }, 1000);
                 
             } catch (error) {
                 console.error("Error de red/conexión:", error);
@@ -134,9 +140,20 @@ createApp({
         };
 
         // OLVIDÉ CONTRASEÑA
-        const handleForgotPassword = () => {
-            showToast('Función de recuperación de contraseña en desarrollo', 'info');
-        };
+      const handleForgotPassword = () => {
+    // 1. Mostrar un mensaje de progreso
+    showToast('Enviando solicitud de recuperación...', 'info', 2000);
+    
+    // 2. 🛑 Redirigir a una nueva página para el formulario 🛑
+    // Asumimos que crearás una página llamada 'olvide-contrasena.html'
+    
+    // Usamos el efecto de fade out que ya tienes
+    document.body.classList.add('fade-out');
+    setTimeout(() => {
+        // Debes crear este archivo HTML en tu carpeta pages/
+        window.location.href = 'olvide-contraseña.html'; 
+    }, 650);
+};
 
         // IR A REGISTRO
         const goToRegister = (event) => {

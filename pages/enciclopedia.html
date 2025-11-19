@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enciclopedia - Fanscore</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="../js/auth.js"></script>
+  
     <link rel="stylesheet" href="../styles/enciclopedia.css">
     <link rel="stylesheet" href="../styles/globals.css">
     <link rel="stylesheet" href="../styles/layout.css">
@@ -166,6 +168,19 @@ const { createApp, ref, computed } = Vue;
 const app = createApp({
   setup() {
     // Datos de jugadores - MOVIDO DENTRO DEL SETUP
+const userId = window.AuthService.session.userId; // <-- Accede al ID global
+        const userName = window.AuthService.session.username; // <-- Accede al nombre
+        
+        onMounted(() => {
+             if (!window.AuthService.checkSession()) {
+                 // Si no hay sesión, redirigir al login
+                 window.location.href = 'login.html';
+             }
+             // Si hay sesión, cargar los datos específicos del álbum
+             // fetchAlbum(userId); 
+        });
+
+
     const playersData = [
         {
             id: "messi",
