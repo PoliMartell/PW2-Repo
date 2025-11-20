@@ -16,6 +16,28 @@
 </head>
 <body>
   <div id="app">
+    <div id="app">
+    <div class="modal-overlay" v-if="isPackModalOpen" @click.self="closePackModal">
+      <div class="modal-content">
+        <button class="modal-close" @click="closePackModal">&times;</button>
+        <h2>¡Sobre Abierto!</h2>
+        <p>Has conseguido los siguientes stickers:</p>
+        
+        <div class="pack-results-container">
+          <div 
+            v-for="(stickerId, index) in openedPack" 
+            :key="index" 
+            class="card-animation"
+            :style="{ animationDelay: `${index * 0.2}s` }"
+          >
+            <img :src="getCardImageUrl(stickerId)" alt="Sticker">
+            <small style="margin-top:5px; font-size:10px; color:#555">{{ stickerId.slice(-4) }}</small>
+          </div>
+        </div>
+        
+        <button class="banner-button" @click="closePackModal">Aceptar</button>
+      </div>
+    </div>
     <app-layout
         :menu-items="sidebarMenu"
         :user="userProfile"
@@ -28,13 +50,16 @@
         @topbar-action="handleTopbarAction"
         @search="handleSearch"
     >
+
+
         <!-- 🎉 Banner -->
         <div class="banner">
           <div class="banner-text">
             <h2>¡Completa tu Álbum!</h2>
             <p>Colecciona todas las estampitas y participa por premios exclusivos. Cada sobre contiene 5 estampitas aleatorias.</p>
-            <button @click="openPackModal" :disabled="!canOpenPack" class="banner-button">
-              <i class="fas fa-gift"></i> Abrir Sobre ({{ packsAvailable }} disponibles)
+            <button @click="openPackModal" :disabled="!canOpenPack || isOpeningPack" class="banner-button">
+            <i :class="isOpeningPack ? 'fas fa-spinner fa-spin' : 'fas fa-gift'"></i>
+            {{ isOpeningPack ? 'Abriendo...' : `Abrir Sobre (${packsAvailable} disponibles)` }}
             </button>
           </div>
         </div>
@@ -203,6 +228,11 @@ const app = createApp({
 
     const currentUserId = getUserIdFromStorage(); 
     const loading = ref(true);
+
+    const isPackModalOpen = ref(false);
+    const isOpeningPack = ref(false);
+    const openedPack = ref([]);
+    const currentUserName = ref('');
    
     // --- FUNCIÓN DE CARGA DE DATOS REALES ---
     const USERS_PATH = 'usuarios';
@@ -255,6 +285,9 @@ const loadUserData = async () => {
         intercambios: data.intercambios ?? 0,
         duplicados: data.duplicados ?? 0
     });
+
+
+    currentUserName.value = data.nombre;
 
     // 🛑 2. ACTUALIZAR VARIABLES REACTIVAS LOCALES (Para refrescar el Template)
     // Usamos los datos de la API para actualizar los refs() locales:
@@ -381,14 +414,64 @@ onMounted(() => {
     ]);
 
     // Métodos del dashboard
-    const openPackModal = () => {
-      if (canOpenPack.value) {
-        console.log('🎁 Abriendo modal de sobres...');
-        showToast('Redirigiendo a la página de sobres...', 'info');
-        // Aquí iría la lógica para abrir el modal o redirigir
-      } else {
-        showToast('No tienes sobres disponibles', 'error');
-      }
+    const openPackModal = async () => {
+        if (!canOpenPack.value || isOpeningPack.value) return;
+        
+        isOpeningPack.value = true;
+        openedPack.value = [];
+        showToast('Abriendo sobre...', 'info');
+
+        const token = localStorage.getItem('jwt');
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/packs/open-normal`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    nombreUsuario: currentUserName.value, // Usamos el nombre guardado
+                    precioOro: 100,
+                    edicion: "WC-2026",
+                    packSize: 5
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.msg || 'Error al abrir');
+
+            // Éxito
+            openedPack.value = data.stickersObtenidos;
+            
+            // Actualizar UI
+            packsAvailable.value--; // Restamos un sobre visualmente
+            if(data.usuario) {
+                 // Opcional: actualizar oro si lo muestras
+                 // userProfile.value.oro = data.usuario.oro; 
+                 collectedStickers.value = (data.usuario.jugadoresPegados || 0) + (data.usuario.escudosPegados || 0);
+            }
+
+            isPackModalOpen.value = true;
+            showToast('¡Sobre abierto con éxito!', 'success');
+
+        } catch (error) {
+            console.error(error);
+            showToast(error.message, 'error');
+        } finally {
+            isOpeningPack.value = false;
+        }
+    };
+
+    const closePackModal = () => {
+        isPackModalOpen.value = false;
+        openedPack.value = [];
+    };
+
+    const getCardImageUrl = (id) => {
+        // Devuelve una imagen placeholder por ahora
+        return 'https://via.placeholder.com/120x170.png?text=Sticker';
     };
 
     const voteForPlayer = (playerId) => {
@@ -602,8 +685,16 @@ onMounted(() => {
       handleProfileAction,
       handleTopbarAction,
       handleSearch,
-     loading
+     loading,
       
+     //PackOpening
+     isPackModalOpen,
+        isOpeningPack,
+        openedPack,
+        openPackModal,
+        closePackModal,
+        getCardImageUrl
+
       
     };
   }
