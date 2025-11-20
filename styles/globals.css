@@ -50,3 +50,258 @@ body {
 .sort-select:focus {
     border-color: #ffd700; /* Dorado al hacer clic */
 }
+
+
+.modal-overlay {
+    position: fixed;    /* ¡CLAVE! Fija el elemento a la pantalla */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Fondo negro transparente */
+    z-index: 9999;      /* Asegura que esté encima de todo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px); /* Efecto borroso bonito */
+    animation: fadeIn 0.3s ease;
+}
+
+/* 2. La Tarjeta del Modal */
+.player-modal-card {
+    background: #1e1e1e;
+    color: white;
+    width: 90%;
+    max-width: 700px;
+    border-radius: 15px;
+    padding: 30px;
+    position: relative; /* Para posicionar el botón de cerrar */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    max-height: 90vh; /* Evita que sea más alto que la pantalla */
+    overflow-y: auto; /* Scroll si es necesario */
+}
+
+/* 3. Botón Cerrar (X) */
+.modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10;
+}
+.modal-close-btn:hover { color: white; }
+
+/* =========================================
+   DISEÑO INTERNO (Lo que arreglamos antes)
+   ========================================= */
+
+/* Cabecera: Foto izquierda, Texto derecha */
+.modal-header-section {
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    flex-wrap: wrap; /* Para móviles */
+}
+
+/* Contenedor de la Foto */
+.modal-player-image {
+    width: 160px;
+    height: 220px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.modal-player-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+/* Badge de Rating (El círculo dorado) */
+.rating-badge {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    background: #ffd700;
+    color: #000;
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 3px solid #1e1e1e;
+    z-index: 2;
+    font-size: 1.1rem;
+}
+
+/* Textos del Jugador */
+.modal-player-info {
+    flex: 1;
+}
+
+.modal-player-info h2 {
+    margin: 0 0 5px 0;
+    font-size: 2rem;
+    text-transform: capitalize;
+    color: #fff;
+    line-height: 1.1;
+}
+
+.modal-fullname {
+    color: #bbb;
+    font-style: italic;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+/* Etiquetas (Tags) */
+.modal-tags {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.tag {
+    background: #333;
+    color: #ffd700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+    border: 1px solid #444;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Grid de Datos Biográficos */
+.modal-bio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.bio-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.bio-item label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.bio-item span {
+    font-weight: bold;
+    color: #eee;
+}
+
+/* =========================================
+   ESTADÍSTICAS (Barras)
+   ========================================= */
+.modal-stats-section h3 {
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    color: #ddd;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 15px 40px;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stat-label {
+    width: 110px; /* Espacio fijo para el nombre */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-value {
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 1.1rem;
+    width: 25px;
+}
+
+.stat-name {
+    color: #aaa;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.stat-bar-container {
+    flex-grow: 1;
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.mini-grid { 
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px; max-height: 300px;
+    overflow-y: auto;
+}
+.mini-card { 
+  border: 1px solid #444;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+.mini-card img { 
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  }
+.mini-card.selected { 
+  border: 2px solid #ffd700;
+  background: rgba(255, 215, 0, 0.1);
+}
+.mini-search { 
+  width: 100%;
+  padding: 8px; 
+  margin-bottom: 10px;
+  background: #222;
+  border: 1px solid #444;
+  color: white; 
+}
