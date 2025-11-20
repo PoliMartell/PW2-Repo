@@ -34,3 +34,19 @@ body {
   color: var(--text-color);
   line-height: 1.6;
 }
+
+/* En album.css o styles */
+.sort-select {
+    background-color: #1e293b; /* Color oscuro */
+    color: #fff;
+    border: 1px solid #475569;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.sort-select:focus {
+    border-color: #ffd700; /* Dorado al hacer clic */
+}

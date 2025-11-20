@@ -82,19 +82,13 @@
         <!-- Filtros -->
         <div class="horizontal-filters">
           <div class="filter-group">
-            <h4><i class="fas fa-filter"></i> Estado</h4>
-            <div class="filter-options">
-              <label>
-                <input type="checkbox" v-model="filters.status" value="obtained"> Obtenidas
-              </label>
-              <label>
-                <input type="checkbox" v-model="filters.status" value="missing"> Faltantes
-              </label>
-              <label>
-                <input type="checkbox" v-model="filters.status" value="repeated"> Repetidas
-              </label>
-            </div>
-          </div>
+    <h4><i class="fas fa-sort"></i> Ordenar por</h4>
+    <select v-model="sortBy" class="sort-select" style="padding: 8px; border-radius: 8px; border: 1px solid #444; background: #222; color: white;">
+        <option value="number"># Número</option>
+        <option value="rarity_desc">Rareza (Mayor a Menor)</option>
+        <option value="rarity_asc">Rareza (Menor a Mayor)</option>
+    </select>
+</div>
           
           <div class="filter-group scroll-group">
             <h4><i class="fas fa-users"></i> Equipos</h4>
@@ -249,6 +243,11 @@
                 <div class="sticker-zoom-status" :class="selectedSticker.obtained ? 'obtained' : 'missing'">
                     {{ selectedSticker.obtained ? '✅ OBTENIDA' : '❌ FALTANTE' }}
                 </div>
+                <div class="sticker-description" style="margin-top: 15px; color: #ccc; font-size: 0.9rem; line-height: 1.4;">
+                  <p>{{ selectedSticker.description }}</p>
+                  <p style="margin-top:5px;"><strong style="color: #ffd700;">Rareza:</strong> {{ selectedSticker.rarity.toUpperCase() }}</p>
+                </div>
+                
             </div>
         </div>
     </div>
@@ -348,77 +347,103 @@
 
     const app = createApp({
       setup() {
-    const API_URL = 'http://localhost:3001/api'; // Ajusta si tu puerto es diferente
-    
-    // Estado de Auth
-    const userId = window.AuthService.session.userId;
-    const userName = window.AuthService.session.username;
+    const API_URL = 'http://localhost:3001/api';
 
-    // Datos Reactivos
+    // 1. OBTENER ID
+    const getUserId = () => {
+        return localStorage.getItem('currentUserId') || 
+               localStorage.getItem('userId') || 
+               window.AuthService?.session?.userId;
+    };
+
+    // --- CAMBIO 1: HACER EL NOMBRE REACTIVO ---
+    // Usamos ref() para que podamos actualizarlo cuando llegue la info de la API
+    const currentUserName = ref(localStorage.getItem('username') || window.AuthService?.session?.username || '');
+
+    // VARIABLES REACTIVAS
     const searchQuery = ref('');
-    
-    // Modales
     const showPackModal = ref(false);
-    const showStoreModal = ref(false); // Nuevo para tienda
+    const showStoreModal = ref(false);
     const selectedSticker = ref(null);
     
-    // Estado Usuario
     const packsAvailable = ref(0);
-    const userGold = ref(0); // Nuevo para oro
+    const userGold = ref(0);
     const buyQuantity = ref(1);
-    const packPrice = 100; // Precio fijo por ahora
+    const packPrice = 100;
+    
     const isBuying = ref(false);
     const isOpening = ref(false);
-
-    // Resultados
+    
     const packResult = ref([]);
     const toasts = ref([]);
     const filters = ref({ status: ['obtained', 'missing', 'repeated'], teams: [], positions: [] });
+    const sortBy = ref('number');
+    
 
-    // Datos locales (Tu lista de stickers existente, usada como catálogo visual)
-    const stickers = ref([
-        // ... (MANTÉN TU LISTA DE STICKERS QUE YA TIENES AQUÍ, NO LA BORRES) ...
-        // Copia y pega tu array 'stickers' original aquí dentro.
-        {
-            id: 1,
-            number: 1,
-            name: 'Lionel Messi',
-            team: 'Argentina',
-            position: 'Delantero',
-            image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=300&h=400&fit=crop',
-            obtained: false, // Se actualizará con la API
-            duplicates: 0
-        },
-        // ... el resto de tus stickers ...
-        { id: 999, number: 999, name: 'Test Player', team: 'Test', position: 'Test', image: '', obtained: false, duplicates: 0 } // Dummy para que no falle si copias mal
-    ]);
+    // STICKERS (Visualización)
+    const stickers = ref([]);
 
-    // --- 1. CARGAR DATOS REALES ---
-    const loadUserData = async () => {
+
+    //Cargar Album
+    // 3. FUNCIÓN PARA CARGAR EL ÁLBUM COMPLETO
+    const fetchAlbum = async () => {
+        // CORRECCIÓN: Usamos 'currentUserName' que es como se llama la variable arriba
+        if (!currentUserName.value) return; 
+
         try {
-            // Llamada al endpoint que obtiene datos del usuario
-            const response = await fetch(`${API_URL}/usuarios/${userId}`);
-            if(!response.ok) throw new Error("Error cargando usuario");
-            
+            console.log("📚 Cargando álbum completo...");
+            // CORRECCIÓN: Usamos 'currentUserName.value' en la URL
+            const response = await fetch(`${API_URL}/album/grid/${currentUserName.value}?edicion=WC-2026`);
             const data = await response.json();
-            
-            // Actualizamos estado local con datos de BD
-            userGold.value = data.oro || 0;
-            packsAvailable.value = data.sobres || 0; // El campo nuevo que agregamos a Mongo
-            
-            // Aquí deberíamos actualizar 'stickers.value' marcando obtained/duplicates
-            // basándonos en 'data.album' (si tu API de usuarios devuelve el álbum poblado).
-            // Por ahora lo dejamos visualmente estático para enfocarnos en la compra.
-            
+
+            if (data.ok) {
+                console.log("📚 Álbum cargado:", data.total, "stickers");
+                stickers.value = data.stickers; 
+            }
         } catch (e) {
-            console.error(e);
-            // showToast("Error cargando datos", "error");
+            console.error("Error fetching album:", e);
         }
     };
 
-    // --- 2. COMPRAR SOBRES (API) ---
+    // --- 2. CARGAR DATOS ---
+    const loadUserData = async () => {
+        const realId = getUserId();
+        if (!realId) {
+            console.error("⛔ No hay ID de usuario.");
+            return; 
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/usuarios/${realId}`);
+            if(!response.ok) throw new Error("Error API Usuario");
+            
+            const data = await response.json();
+            console.log("💰 Datos Actualizados:", data);
+            
+            // Asignación de datos
+            userGold.value = data.oro ?? 0;
+            packsAvailable.value = data.sobres ?? 0;
+            
+            // --- CAMBIO 2: ACTUALIZAR EL NOMBRE REAL ---
+            if (data.nombre) {
+                currentUserName.value = data.nombre;
+                // Guardamos en storage para la próxima
+                localStorage.setItem('username', data.nombre); 
+            }
+
+        } catch (e) {
+            console.error("Error loadUserData:", e);
+        }
+        fetchAlbum();
+    };
+    
+
+    // --- 3. COMPRAR SOBRES ---
     const buyPacks = async () => {
-        if (userGold.value < (buyQuantity.value * packPrice)) return;
+        if (userGold.value < (buyQuantity.value * packPrice)) {
+            showToast("No tienes suficiente oro", "error");
+            return;
+        }
         isBuying.value = true;
 
         try {
@@ -426,128 +451,115 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    nombreUsuario: userName,
+                    nombreUsuario: currentUserName.value, // <--- USAR .value
                     cantidad: buyQuantity.value,
                     precioUnitario: packPrice
                 })
             });
 
             const data = await response.json();
+            if (!response.ok) throw new Error(data.msg || "Error compra");
 
-            if (!response.ok) throw new Error(data.msg || "Error en compra");
-
-            // Éxito: Actualizar UI
             userGold.value = data.usuario.oro;
             packsAvailable.value = data.usuario.sobres;
+            
             showToast(`¡Compraste ${buyQuantity.value} sobres!`, "success");
             showStoreModal.value = false;
-            buyQuantity.value = 1; // Reset
+            buyQuantity.value = 1;
 
         } catch (error) {
+            console.error(error);
             showToast(error.message, "error");
         } finally {
             isBuying.value = false;
         }
     };
 
-    // --- 3. ABRIR SOBRE (API) ---
+    // --- 4. ABRIR SOBRE ---
     const openPack = async () => {
         if (packsAvailable.value <= 0 || isOpening.value) return;
         isOpening.value = true;
 
+        // Validamos antes de llamar
+        if (!currentUserName.value) {
+            showToast("Error: Nombre de usuario no cargado", "error");
+            return;
+        }
+
         try {
-            // Nota: Ya no enviamos precioOro, el backend descuenta sobres
+            console.log("Enviando petición abrir con usuario:", currentUserName.value);
+
             const response = await fetch(`${API_URL}/packs/open-normal`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    nombreUsuario: userName,
-                    edicion: "WC-2026", // Asegúrate que esto coincida con tus stickers en BD
+                    nombreUsuario: currentUserName.value, // <--- USAR .value
+                    edicion: "WC-2026",
                     packSize: 5
                 })
             });
 
             const data = await response.json();
+            
+            // Si la API dice 404, es porque no encontró el nombre que enviamos
+            if (!response.ok) throw new Error(data.msg || "Error al abrir");
 
-            if (!response.ok) throw new Error(data.msg || "Error abriendo sobre");
-
-            // Éxito: Procesar respuesta para animación
+            // Procesar visualización
             const visualPack = [];
-            
-            // data.stickersObtenidos es un array de IDs.
-            // data.items es el log con detalles (si es nueva o repetida).
-            
             data.items.forEach((item) => {
-                // Buscar la info visual en nuestro catálogo local 'stickers'
-                // (Esto asume que tus IDs de Mongo coinciden con los IDs de tu frontend
-                //  o tienes una forma de mapearlos. Si no, saldrán cartas genéricas).
-                
-                // IMPORTANTE: Como tu ejemplo usa IDs numéricos (1, 2, 3) y Mongo usa Hash
-                // esto fallará visualmente si no tienes un mapeo.
-                // Para que funcione YA, usaremos una carta genérica o buscaremos por 'number' si la API lo devuelve.
-                
-                // Simularemos buscando una carta aleatoria visual para la demo:
+                // Elegimos una carta visual random (para demo)
                 const randomVisual = stickers.value[Math.floor(Math.random() * stickers.value.length)];
                 
                 visualPack.push({
-                    ...randomVisual, // Copia imagen y nombre del catálogo local
+                    ...randomVisual,
                     id: item.stickerId,
-                    isNew: !item.duplicateBefore, // Usamos la info real de la API
+                    isNew: !item.duplicateBefore,
                     revealed: false
                 });
             });
 
             packResult.value = visualPack;
             
-            // Actualizar estado
-            packsAvailable.value = data.usuario.sobres;
-            userGold.value = data.usuario.oro; // Por si acaso
+            if(data.usuario) {
+                packsAvailable.value = data.usuario.sobres;
+            }
             
-            showToast('¡Sobre abierto! Revela tus estampitas', 'success');
+            showToast('¡Sobre abierto!', 'success');
 
         } catch (error) {
-            console.error(error);
+            console.error("Error en openPack:", error);
             showToast(error.message, "error");
         } finally {
             isOpening.value = false;
         }
     };
 
-    // --- Helpers visuales (igual que antes) ---
+    // --- HELPERS ---
     const openPackModal = () => {
         if (packsAvailable.value > 0) {
             showPackModal.value = true;
             packResult.value = [];
         } else {
-            showToast('No tienes sobres. ¡Compra en la tienda!', 'warning');
+            showToast('No tienes sobres', 'warning');
         }
     };
-    
-    const openStoreModal = () => {
-        showStoreModal.value = true;
-    };
-
+    const openStoreModal = () => showStoreModal.value = true;
     const closePackModal = () => {
         showPackModal.value = false;
         packResult.value = [];
+        loadUserData(); 
     };
-    
     const revealSticker = (index) => {
-        if (packResult.value[index] && !packResult.value[index].revealed) {
-            packResult.value[index].revealed = true;
-            // Aquí podrías actualizar visualmente el grid de abajo si quisieras
-        }
+        if (packResult.value[index]) packResult.value[index].revealed = true;
     };
-
     const showToast = (message, type = 'info') => {
         const id = Date.now();
         toasts.value.push({ id, message, type });
         setTimeout(() => toasts.value = toasts.value.filter(t => t.id !== id), 5000);
     };
-    
-    // ... (resto de computed properties para filtros, etc. MANTENLAS) ...
-    // Re-declarar las variables que perdimos al reemplazar setup:
-    const teams = ref(['Argentina', 'Brasil', 'Francia', 'Portugal', 'España']); // etc
+
+    // COMPUTED & CONFIG
+    const teams = ref(['Argentina', 'Brasil', 'Francia', 'Portugal', 'España']);
     const positions = ref(['Portero', 'Defensa', 'Mediocampista', 'Delantero']);
     const totalStickers = computed(() => stickers.value.length);
     const collectedStickers = computed(() => stickers.value.filter(s => s.obtained).length);
@@ -557,41 +569,101 @@
     const newStickersCount = computed(() => packResult.value.filter(s => s.isNew).length);
     const repeatedStickersCount = computed(() => packResult.value.filter(s => !s.isNew).length);
     const allStickersRevealed = computed(() => packResult.value.length > 0 && packResult.value.every(s => s.revealed));
-    const filteredStickers = computed(() => stickers.value); // (Simplificado, usa tu filtro original si quieres)
+    const filteredStickers = computed(() => {
+        // 1. FILTRADO (Crea un nuevo array 'result')
+        let result = stickers.value.filter(sticker => {
+            
+            // A) Filtro por Búsqueda (Search Query)
+            if (searchQuery.value) {
+                const query = searchQuery.value.toLowerCase();
+                // Buscamos en nombre, equipo O posición
+                const matchName = sticker.name?.toLowerCase().includes(query);
+                const matchTeam = sticker.team?.toLowerCase().includes(query);
+                const matchPos = sticker.position?.toLowerCase().includes(query);
+                
+                if (!matchName && !matchTeam && !matchPos) return false;
+            }
+            
+            // B) Filtro por Estado (Obtenidas / Faltantes / Repetidas)
+            const statusFilters = filters.value.status;
+            if (statusFilters.length > 0) {
+                const matchesStatus = 
+                    (statusFilters.includes('obtained') && sticker.obtained) ||
+                    (statusFilters.includes('missing') && !sticker.obtained) ||
+                    (statusFilters.includes('repeated') && sticker.duplicates > 0);
+                
+                if (!matchesStatus) return false;
+            }
+            
+            // C) Filtro por Equipos
+            const teamFilters = filters.value.teams;
+            if (teamFilters.length > 0 && !teamFilters.includes(sticker.team)) {
+                return false;
+            }
+            
+            // D) Filtro por Posiciones
+            const positionFilters = filters.value.positions;
+            if (positionFilters.length > 0 && !positionFilters.includes(sticker.position)) {
+                return false;
+            }
+            
+            return true; // Pasó todos los filtros
+        });
+
+        // 2. ORDENAMIENTO (Modifica el array 'result')
+        const rarityOrder = { 'legendario': 4, 'raro': 3, 'poco_comun': 2, 'comun': 1 };
+        
+        if (sortBy.value === 'number') {
+            result.sort((a, b) => a.number - b.number);
+        } else if (sortBy.value === 'rarity_desc') {
+            // De mayor rareza a menor
+            result.sort((a, b) => (rarityOrder[b.rarity] || 1) - (rarityOrder[a.rarity] || 1));
+        } else if (sortBy.value === 'rarity_asc') {
+            // De menor rareza a mayor
+            result.sort((a, b) => (rarityOrder[a.rarity] || 1) - (rarityOrder[b.rarity] || 1));
+        }
+        
+        return result;
+    });
+
     const sidebarMenu = ref([{ name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home' }, { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: true }]);
-    const userProfile = ref({ avatar: 'img/avatar.jpg', username: userName, level: 15 });
+    
+    // Usamos currentUserName también aquí
+    const userProfile = ref({ 
+        avatar: 'https://via.placeholder.com/150', 
+        username: currentUserName, 
+        level: 15 
+    });
+    
     const profileStats = ref([]);
     const profileActions = ref([]);
     const topbarConfig = ref({ searchPlaceholder: 'Buscar...', actions: [] });
 
-    // Lifecycle
     onMounted(() => {
         if (!window.AuthService.checkSession()) {
             window.location.href = 'login.html';
         } else {
-            loadUserData(); // <--- Carga inicial
+            loadUserData();
         }
     });
 
     return {
-        // Variables
+        // Variables que usamos en el template
+        // Nota: Devolvemos 'userName' asignándole 'currentUserName' para no romper tu HTML
+        userName: currentUserName, 
         userGold, packsAvailable, showStoreModal, buyQuantity, packPrice, isBuying,
         searchQuery, showPackModal, selectedSticker, packResult, toasts,
         stickers, filters, teams, positions,
         
-        // Computed
         totalStickers, collectedStickers, duplicateStickers, progressPercentage,
         canOpenPack, newStickersCount, repeatedStickersCount, allStickersRevealed, filteredStickers,
         
-        // UI Config
         sidebarMenu, userProfile, profileStats, profileActions, topbarConfig,
         
-        // Methods
         loadUserData, buyPacks, openPack,
         openPackModal, openStoreModal, closePackModal, revealSticker,
-        showToast, 
+        showToast,sortBy, fetchAlbum,
         
-        // Placeholders methods
         handleLogout: () => {}, 
         handleProfileAction: () => {}, 
         handleTopbarAction: () => {}, 
