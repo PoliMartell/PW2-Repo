@@ -415,28 +415,46 @@
 
 /* Botón de cerrar mejorado */
 .pack-modal-close, .sticker-zoom-close {
+  /* place inside the modal content's top-right corner with a larger hit area */
   position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  background: rgba(229, 37, 59, 0.2);
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.6);
   border: none;
-  color: var(--rojo);
-  width: 40px;
-  height: 40px;
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  padding: 6px; /* increase clickable area */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 10;
-  font-size: 1.2rem;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+  z-index: 1001; /* ensure it's above modal content elements */
+  font-size: 1.15rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+.pack-modal-close:focus, .sticker-zoom-close:focus {
+  outline: 3px solid rgba(212,175,55,0.25);
+  outline-offset: 2px;
 }
 
 .pack-modal-close:hover, .sticker-zoom-close:hover {
   background: var(--rojo);
-  color: white;
-  transform: rotate(90deg) scale(1.1);
+  color: #fff;
+  transform: rotate(90deg) scale(1.05);
+}
+
+/* Small screens: move the button a bit inward so it doesn't overlap rounded corners */
+@media (max-width: 480px) {
+  .pack-modal-close, .sticker-zoom-close {
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+  }
 }
 
 /* Cuerpo de modal mejorado */
@@ -1226,4 +1244,201 @@
 .sticker.locked:hover .sticker-image {
     transform: none;
     filter: blur(3px) grayscale(1);
+}
+
+/* Tienda */ 
+
+/* Tienda */ 
+
+.store-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+.store-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.store-item i {
+    font-size: 2.8rem !important;
+    color: var(--dorado) !important;
+    filter: drop-shadow(0 4px 8px rgba(108, 92, 231, 0.3));
+}
+
+.store-item p {
+    margin: 0;
+    color: #e0e0ff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Selector de cantidad */
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quantity-selector button {
+    background: linear-gradient(135deg, #6c5ce7, #8b7bec);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.quantity-selector button:hover:not(:disabled) {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
+}
+
+.quantity-selector button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.quantity-selector span {
+    font-size: 1.4rem !important;
+    font-weight: bold;
+    color: white;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* Precio */
+.price-display {
+    background: rgba(255, 215, 0, 0.1);
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.price-display strong {
+    color: #ffd700;
+    font-size: 1.2rem;
+    margin-left: 4px;
+}
+
+
+/* Botón de compra */
+.pack-modal-body .banner-button {
+    background: var(--gradiente-verde) !important;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pack-modal-body .banner-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+}
+
+.pack-modal-body .banner-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.pack-modal-body .banner-button.loading {
+    opacity: 0.8;
+}
+
+/* Mensaje de error */
+.pack-modal-body p[style*="color: red"] {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 8px 12px;
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    border-radius: 8px;
+    font-size: 0.85rem !important;
+    color: #e74c3c !important;
+    width: 100%;
+    justify-content: center;
+}
+
+.pack-modal-body p[style*="color: red"]::before {
+    content: "⚠";
+    font-size: 0.9rem;
+}
+
+/* Efectos de carga */
+.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive para móviles */
+@media (max-width: 480px) {
+    .pack-modal-content {
+        margin: 20px;
+        width: calc(100% - 40px);
+    }
+    
+    .pack-modal-body {
+        padding: 16px !important;
+        gap: 16px;
+    }
+    
+    .store-item i {
+        font-size: 2.5rem !important;
+    }
+    
+    .quantity-selector {
+        gap: 10px;
+        padding: 10px 16px;
+    }
+    
+    .quantity-selector button {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .quantity-selector span {
+        font-size: 1.3rem !important;
+    }
 }
