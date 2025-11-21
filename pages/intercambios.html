@@ -339,6 +339,14 @@
 
         const app = createApp({
             setup() {
+                const collectedStickers = ref(0);
+const duplicateStickersRef = ref(0); // Renombramos para evitar conflicto con el computed
+const packsAvailable = ref(0);
+const exchanges = ref(0);
+const userLevel = ref(1);
+const totalStickers = ref(20); // Valor fijo
+
+
     const API_URL = 'http://localhost:3001/api';
     
     // 1. IDENTIDAD DEL USUARIO (Igual que en Álbum)
@@ -392,6 +400,40 @@
         createOfferId.value = null;
         createWantId.value = null;
         showCreateModal.value = true;
+    };
+
+
+const loadUserData = async () => {
+    const realId = window.AuthService.session.userId;
+    if (!realId) return;
+
+    try {
+        const token = localStorage.getItem('jwt');
+        const response = await fetch(`${API_URL}/usuarios/${realId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+        });
+        
+        const data = await response.json();
+
+        // 🛑 ACTUALIZACIÓN DE VARIABLES REACTIVAS (Sincronización)
+        // Perfil
+        userProfile.value.username = data.nombre; // <-- Nombre completo
+        userProfile.value.level = data.nivel ?? 1;
+        userProfile.value.avatar = data.avatarURL ?? 'https://via.placeholder.com/150';
+
+        // Estadísticas
+        collectedStickers.value = data.cromosObtenidos ?? 0;
+        duplicateStickersRef.value = data.duplicados ?? 0; // Usar el ref renombrado
+        packsAvailable.value = data.sobresDisponibles ?? data.sobres ?? 0;
+        exchanges.value = data.intercambios ?? 0;
+        userLevel.value = data.nivel ?? 1;
+
+    } catch (e) {
+        console.error("Error al cargar datos del perfil:", e);
+    }
     };
 
     const createTrade = async () => {
@@ -574,16 +616,25 @@
     ]);
     
     const userProfile = ref({ 
-        avatar: 'https://via.placeholder.com/150', 
+        avatar: '', 
         username: currentUserName.value, 
-        level: 15 
+        level: 1 
     });
     
-    // Stats reactivos
-    const profileStats = computed(() => [
-        { label: 'Duplicados', value: myDuplicates.value.length },
-        { label: 'En Mercado', value: availableTrades.value.length }
-    ]);
+    // Reemplaza el bloque actual de profileStats
+const progressPercentage = computed(() => {
+    if (totalStickers.value === 0) return 0;
+    return Math.round((collectedStickers.value / totalStickers.value) * 100);
+});
+
+const profileStats = computed(() => [
+    { label: 'Álbum', value: `${progressPercentage.value}% completado`, icon: 'fas fa-chart-pie' },
+    { label: 'Cromos', value: `${collectedStickers.value}/${totalStickers.value}`, icon: 'fas fa-stamp' },
+    { label: 'Duplicados', value: duplicateStickersRef.value, icon: 'fas fa-copy' }, 
+    { label: 'Sobres', value: packsAvailable.value, icon: 'fas fa-gift' },
+    { label: 'Intercambios', value: exchanges.value ?? 0, icon: 'fas fa-exchange-alt' }, 
+    { label: 'Nivel', value: userLevel.value, icon: 'fas fa-star' } 
+]);
     
     const profileActions = ref([]);
     const topbarConfig = ref({ searchPlaceholder: 'Buscar intercambios...', actions: [] });
@@ -599,6 +650,7 @@
             console.log("Cargando datos para:", currentUserName.value);
             fetchDuplicates();
             fetchFeed();
+            loadUserData();
         }
     });
 

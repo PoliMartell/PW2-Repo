@@ -61,6 +61,8 @@
             <i :class="isOpeningPack ? 'fas fa-spinner fa-spin' : 'fas fa-gift'"></i>
             {{ isOpeningPack ? 'Abriendo...' : `Abrir Sobre (${packsAvailable} disponibles)` }}
             </button>
+
+            
           </div>
         </div>
 
@@ -236,6 +238,7 @@ const app = createApp({
    
     // --- FUNCIÓN DE CARGA DE DATOS REALES ---
     const USERS_PATH = 'usuarios';
+    
 
 const loadUserData = async () => {
   loading.value = true;
@@ -275,7 +278,7 @@ const loadUserData = async () => {
     window.AuthService.loadSession({
         userId: currentUserId,
         nombre: data.nombre,
-        username: data.username || `@${data.nombre.split(' ')[0]}Fan`, // Usar el campo que prefieras
+        username: data.username, // Usar el campo que prefieras
         level: data.nivel ?? 1,
         avatarURL: data.avatarURL,
         // Cargar estadísticas
@@ -293,11 +296,12 @@ const loadUserData = async () => {
     // Usamos los datos de la API para actualizar los refs() locales:
     userProfile.value.username = window.AuthService.session.username;
     userProfile.value.level = window.AuthService.session.level;
-    userProfile.value.avatar = window.AuthService.session.avatar;
+    
 
     collectedStickers.value = window.AuthService.session.cromosObtenidos;
-    packsAvailable.value = window.AuthService.session.sobresDisponibles;
+   packsAvailable.value = data.sobresDisponibles ?? data.sobres ?? 0; // 👈 Aquí se guarda el 6
     exchanges.value = window.AuthService.session.intercambios;
+    duplicateStickers.value = window.AuthService.session.duplicados;
     // Las propiedades 'computed' se actualizarán automáticamente.
 
     showToast('Datos de dashboard actualizados.', 'success', 2000);
@@ -325,20 +329,22 @@ onMounted(() => {
 
     // Datos reactivos del dashboard
     const searchQuery = ref('');
-    const packsAvailable = ref(3);
-    const exchanges = ref(12);
+    const packsAvailable = ref(0);
+    const exchanges = ref(0);
     const toasts = ref([]);
 
     // Datos del álbum para el dashboard
     const totalStickers = ref(20);
-    const collectedStickers = ref(13);
+    const collectedStickers = ref(0);
     const duplicateStickers = computed(() => {
       // En un caso real, esto vendría de tu base de datos
       return 12;
     });
     
     // Computed properties del dashboard
-    const progressPercentage = computed(() => Math.round((collectedStickers.value / totalStickers.value) * 100));
+    const progressPercentage = ref(0);
+    const userLevel = ref(1); // <-- Para el Nivel
+        const userAvatar = ref(''); // <-- Para la imagen
     const canOpenPack = computed(() => packsAvailable.value > 0);
 
     // Jugador destacado
@@ -520,43 +526,20 @@ onMounted(() => {
     // Perfil del usuario
     const userProfile = ref({
       avatar: '',
-      username: '@UsuarioFan',
+      username: currentUserName,
       level: 15
     });
 
     // Stats del perfil - COMPUTED como en álbum
-    const profileStats = computed(() => [
-      { 
-        label: 'Álbum', 
-        value: `${progressPercentage.value}% completado`,
-        icon: 'fas fa-chart-pie'
-      },
-      { 
-        label: 'Cromos', 
-        value: `${collectedStickers.value}/${totalStickers.value}`,
-        icon: 'fas fa-stamp'
-      },
-      { 
-        label: 'Duplicados', 
-        value: `${duplicateStickers.value}`,
-        icon: 'fas fa-copy'
-      },
-      { 
-        label: 'Sobres', 
-        value: `${packsAvailable.value}`,
-        icon: 'fas fa-gift'
-      },
-      { 
-        label: 'Intercambios', 
-        value: `${exchanges.value}`,
-        icon: 'fas fa-exchange-alt'
-      },
-      { 
-        label: 'Nivel', 
-        value: `${userProfile.value.level}`,
-        icon: 'fas fa-star'
-      }
-    ]);
+const profileStats = computed(() => [
+  { label: 'Álbum', value: (window.AuthService.session.progresoAlbum || 0) + '% completado' },
+  { label: 'Cromos', value: (window.AuthService.session.cromosObtenidos || 0) + '/20' },
+  { label: 'Duplicados', value: window.AuthService.session.duplicados ?? 0 },
+ { label: 'Sobres', value: packsAvailable.value, icon: 'fas fa-gift' },
+  { label: 'Intercambios', value: window.AuthService.session.intercambios ?? 0 },
+  { label: 'Nivel', value:  `${userLevel.value}`, icon: 'fas fa-star' } // 🛑 Usa el ref
+]); 
+
 
     // Acciones del perfil mejoradas
     const profileActions = ref([

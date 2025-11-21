@@ -222,25 +222,39 @@ const { createApp, ref, computed, onMounted } = Vue;
 
 const app = createApp({
   setup() {
+   // 🛑 Inicialización de variables clave
+    const collectedStickers = ref(window.AuthService?.session?.cromosObtenidos ?? 0);
+    const duplicateStickers = ref(window.AuthService?.session?.duplicados ?? 0);
+    const packsAvailable = ref(0);
+    const exchanges = ref(window.AuthService?.session?.intercambios ?? 0);
+    const userLevel = ref(window.AuthService?.session?.level ?? 1);
+    const totalStickers = ref(20); 
+
+    // 🛑 userProfile
+    const userProfile = ref({
+        avatar: window.AuthService?.session?.avatarURL ?? '', // <- Protección aquí
+        username: window.AuthService?.session?.username || 'Cargando Usuario', // <- Protección aquí
+        level: userLevel.value 
+    });
     const API_URL = 'http://localhost:3001/api';
     const selectedPlayer = ref(null);
-
+         
     
 
     // Datos de jugadores - MOVIDO DENTRO DEL SETUP
 const userId = window.AuthService.session.userId; // <-- Accede al ID global
         const userName = window.AuthService.session.username; // <-- Accede al nombre
         
-        onMounted(() => {
-             if (!window.AuthService.checkSession()) {
-                 // Si no hay sesión, redirigir al login
-                 window.location.href = 'login.html';
-             }else{
-                  fetchPlayers();
-             }
-             // Si hay sesión, cargar los datos específicos del álbum
-             // fetchAlbum(userId); 
-        });
+      onMounted(() => {
+    if (!window.AuthService.checkSession()) {
+        // Si no hay sesión, redirigir al login
+        window.location.href = 'login.html';
+    } else {
+        fetchPlayers(); // Carga de la enciclopedia
+        loadUserData(); // 🛑 ¡Añade esto para cargar el perfil!
+        
+    }
+});
         // --- 2. FUNCIÓN PARA CARGAR DE LA BD (CORREGIDA) ---
     const fetchPlayers = async () => {
         try {
@@ -331,6 +345,46 @@ const userId = window.AuthService.session.userId; // <-- Accede al ID global
         
         return filtered;
     });
+// Pega esta función DENTRO de setup(), cerca de fetchPlayers
+// NO necesita el token ni el AuthService.loadSession si ya lo hiciste en Dashboard
+
+
+const loadUserData = async () => {
+    const realId = window.AuthService.session.userId;
+    if (!realId) return;
+
+    try {
+        const token = localStorage.getItem('jwt');
+        const response = await fetch(`${API_URL}/usuarios/${realId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+        });
+
+        const data = await response.json();
+
+        // 🛑 AHORA ACTUALIZAMOS DIRECTAMENTE LAS VARIABLES REACTIVAS (ref)
+        // Perfil (para el componente visual)
+           userProfile.value.username = data.nombre;
+              userProfile.value.avatar = data.avatarURL ?? '';
+              userProfile.value.level = data.nivel ?? 1;
+
+        // Estadísticas (para el computed profileStats)
+        collectedStickers.value = data.cromosObtenidos ?? 0;
+        duplicateStickers.value = data.duplicados ?? 0;
+        packsAvailable.value = data.sobresDisponibles ?? data.sobres ?? 0;
+        exchanges.value = data.intercambios ?? 0;
+        userLevel.value = data.nivel ?? 1; // Sincronizamos el nivel también aquí
+        
+
+        
+
+    } catch (e) {
+        console.error("Error al cargar datos del perfil:", e);
+    }
+};
+
 
     // Menu del sidebar - Enciclopedia activa
     const sidebarMenu = ref([
@@ -339,30 +393,24 @@ const userId = window.AuthService.session.userId; // <-- Accede al ID global
       { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: true },
     ]);
 
-    // Perfil del usuario
-    const userProfile = ref({
-      avatar: 'https://i.pinimg.com/736x/22/20/56/2220563187a6e72782c5e9ead2287ec5.jpg',
-      username: '@UsuarioFan',
-      level: 15
-    });
 
-    // Datos básicos para mostrar estadísticas tipo álbum (placeholders razonables)
-    const packsAvailable = ref(3);
-    const totalStickers = computed(() => playersData.length); // usar número de jugadores como contador genérico
-    const collectedStickers = computed(() => Math.round(playersData.length * 0.6)); // asumimos ~60% coleccionado como ejemplo
-    const duplicateStickers = computed(() => 0); // sin datos reales aquí, se deja 0 por defecto
-    const progressPercentage = computed(() => {
-      if (totalStickers.value === 0) return 0;
-      return Math.round((collectedStickers.value / totalStickers.value) * 100);
-    });
 
-    // Stats del perfil — ahora iguales a album/dashboard (Álbum, Cromos, Duplicadas, Sobres)
-    const profileStats = computed(() => [
-      { label: 'Álbum', value: `${progressPercentage.value}% completado`, icon: 'fas fa-chart-pie' },
-      { label: 'Cromos', value: `${collectedStickers.value}/${totalStickers.value}`, icon: 'fas fa-stamp' },
-      { label: 'Duplicados', value: `${duplicateStickers.value}`, icon: 'fas fa-copy' },
-      { label: 'Sobres', value: `${packsAvailable.value}`, icon: 'fas fa-gift' }
-    ]);
+  // Perfil del usuario
+  
+const progressPercentage = computed(() => {
+    if (totalStickers.value === 0) return 0;
+    return Math.round((collectedStickers.value / totalStickers.value) * 100);
+});
+
+   // Stats del perfil - ¡Ahora iguales al Dashboard/Álbum!
+const profileStats = computed(() => [
+    { label: 'Álbum', value: `${progressPercentage.value}% completado`, icon: 'fas fa-chart-pie' },
+ { label: 'Cromos', value: collectedStickers.value + '/' + totalStickers.value, icon: 'fas fa-stamp' },
+    { label: 'Duplicados', value: `${duplicateStickers.value}`, icon: 'fas fa-copy' }, // 🛑 Usa el ref
+    { label: 'Sobres', value: `${packsAvailable.value}`, icon: 'fas fa-gift' },
+    { label: 'Intercambios', value: `${exchanges.value ?? 0}`, icon: 'fas fa-exchange-alt' }, // 🛑 Añade Intercambios
+    { label: 'Nivel', value: `${userLevel.value}`, icon: 'fas fa-star' } // 🛑 Usa el ref
+]);
 
     // Acciones del perfil: iguales a album/dashboard
     const profileActions = ref([
