@@ -347,6 +347,7 @@
 
     const app = createApp({
       setup() {
+        
     const API_URL = 'http://localhost:3001/api';
 
     // 1. OBTENER ID
@@ -355,6 +356,9 @@
                localStorage.getItem('userId') || 
                window.AuthService?.session?.userId;
     };
+
+
+    
 
     // --- CAMBIO 1: HACER EL NOMBRE REACTIVO ---
     // Usamos ref() para que podamos actualizarlo cuando llegue la info de la API
@@ -373,6 +377,12 @@
     
     const isBuying = ref(false);
     const isOpening = ref(false);
+
+    const userLevel = ref(1); // Nivel
+const userAvatar = ref(''); // Avatar
+const duplicateStickers = ref(0);
+const exchanges = ref(0);
+
     
     const packResult = ref([]);
     const toasts = ref([]);
@@ -405,37 +415,63 @@
         }
     };
 
+   
     // --- 2. CARGAR DATOS ---
-    const loadUserData = async () => {
-        const realId = getUserId();
-        if (!realId) {
-            console.error("⛔ No hay ID de usuario.");
-            return; 
+const loadUserData = async () => {
+    const realId = getUserId();
+    if (!realId) {
+        console.error("⛔ No hay ID de usuario.");
+        return; 
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/usuarios/${realId}`);
+        if(!response.ok) throw new Error("Error API Usuario");
+        
+        const data = await response.json();
+        console.log("💰 Datos Actualizados:", data);
+        
+        // 🛑 SINCRONIZACIÓN DE VARIABLES REACTIVAS:
+        
+        // Datos del Perfil (para userProfile)
+        userLevel.value = data.nivel ?? 1;
+        userAvatar.value = data.avatarURL ?? ''; // O tu URL de avatar por defecto
+        
+        // Datos de Estadísticas (para profileStats)
+        packsAvailable.value = data.sobres ?? 0;
+        userGold.value = data.oro ?? 0;
+        
+        duplicateStickers.value = data.duplicados ?? 0; // Usado en profileStats
+        exchanges.value = data.intercambios ?? 0; // Usado en profileStats
+        
+        // Nombre de usuario (para la API y la UI)
+        if (data.nombre) {
+            currentUserName.value = data.nombre;
+            localStorage.setItem('username', data.nombre); 
         }
 
-        try {
-            const response = await fetch(`${API_URL}/usuarios/${realId}`);
-            if(!response.ok) throw new Error("Error API Usuario");
-            
-            const data = await response.json();
-            console.log("💰 Datos Actualizados:", data);
-            
-            // Asignación de datos
-            userGold.value = data.oro ?? 0;
-            packsAvailable.value = data.sobres ?? 0;
-            
-            // --- CAMBIO 2: ACTUALIZAR EL NOMBRE REAL ---
-            if (data.nombre) {
-                currentUserName.value = data.nombre;
-                // Guardamos en storage para la próxima
-                localStorage.setItem('username', data.nombre); 
-            }
-
-        } catch (e) {
-            console.error("Error loadUserData:", e);
+        // Si usas AuthService globalmente, actualízalo aquí:
+        if(window.AuthService) {
+            window.AuthService.loadSession({
+                userId: realId,
+                username: data.username || data.nombre,
+                level: userLevel.value,
+                avatarURL: userAvatar.value,
+                cromosObtenidos: collectedStickers.value, // Se obtiene en fetchAlbum
+                progresoAlbum: progressPercentage.value, // Se obtiene en fetchAlbum
+                sobresDisponibles: packsAvailable.value,
+                intercambios: exchanges.value,
+                duplicados: duplicateStickers.value
+            });
         }
-        fetchAlbum();
-    };
+        
+        // Ya tienes esta línea, pero la mantenemos aquí:
+        fetchAlbum(); 
+
+    } catch (e) {
+        console.error("Error loadUserData:", e);
+    }
+};
     
 
     // --- 3. COMPRAR SOBRES ---
@@ -561,9 +597,9 @@
     // COMPUTED & CONFIG
     const teams = ref(['Argentina', 'Brasil', 'Francia', 'Portugal', 'España']);
     const positions = ref(['Portero', 'Defensa', 'Mediocampista', 'Delantero']);
-    const totalStickers = computed(() => stickers.value.length);
+    const totalStickers = ref(20); 
     const collectedStickers = computed(() => stickers.value.filter(s => s.obtained).length);
-    const duplicateStickers = computed(() => stickers.value.reduce((t, s) => t + s.duplicates, 0));
+    
     const progressPercentage = computed(() => Math.round((collectedStickers.value / totalStickers.value) * 100) || 0);
     const canOpenPack = computed(() => packsAvailable.value > 0);
     const newStickersCount = computed(() => packResult.value.filter(s => s.isNew).length);
@@ -626,24 +662,53 @@
         return result;
     });
 
-    const sidebarMenu = ref([{ name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home' }, { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: true }]);
+    const sidebarMenu = ref([{ name: 'Dashboard', link: 'dashboard.html', icon: 'fas fa-home' }, { name: 'Álbum', link: 'album.html', icon: 'fas fa-book', active: true }, { name: 'Enciclopedia', link: 'enciclopedia.html', icon: 'fas fa-globe', active: false },
+    ]); 
     
     // Usamos currentUserName también aquí
-    const userProfile = ref({ 
-        avatar: 'https://via.placeholder.com/150', 
-        username: currentUserName, 
-        level: 15 
-    });
+   const userProfile = ref({ 
+    avatar: userAvatar, // Ahora es reactivo
+    username: currentUserName, 
+    level: userLevel // Ahora es reactivo
+});
     
-    const profileStats = ref([]);
-    const profileActions = ref([]);
+  const profileStats = computed(() => [
+    { label: 'Álbum', value: progressPercentage.value + '% completado', icon: 'fas fa-chart-pie' },
+    { label: 'Cromos', value: collectedStickers.value + '/' + totalStickers.value, icon: 'fas fa-stamp' },
+    // 🛑 USAR EL REF LOCAL
+    { label: 'Duplicados', value: duplicateStickers.value, icon: 'fas fa-copy' }, 
+    { label: 'Sobres', value: packsAvailable.value, icon: 'fas fa-gift' },
+    // 🛑 USAR EL REF LOCAL
+    { label: 'Intercambios', value: exchanges.value, icon: 'fas fa-exchange-alt' },
+    { 
+        label: 'Nivel', 
+        value: `${userProfile.value.level}`, // Esto toma el nivel de userProfile
+        icon: 'fas fa-star'
+    } 
+]);
+
+
+    const profileActions = ref([
+     { 
+        name: 'Mi Perfil', 
+        icon: 'fas fa-user',
+        link: 'perfil.html',
+        description: 'Ver tu perfil completo'
+      },
+      { 
+        name: 'Intercambios', 
+        icon: 'fas fa-exchange-alt',
+        link: 'intercambios.html',
+        description: 'Gestionar intercambios'
+      }]);
     const topbarConfig = ref({ searchPlaceholder: 'Buscar...', actions: [] });
 
     onMounted(() => {
+        // Esto ya lo tienes y es lo correcto:
         if (!window.AuthService.checkSession()) {
             window.location.href = 'login.html';
         } else {
-            loadUserData();
+            loadUserData(); // <--- Aquí se inicia la carga de datos de la barra
         }
     });
 

@@ -1,91 +1,79 @@
-const API_BASE_URL = 'http://localhost:3001/api/auth';
-const { createApp, ref, reactive, onMounted } = Vue; // 🛑 Importamos onMounted
+const API_BASE_URL = 'http://localhost:3001/api'; // 🛑 Ajusta esta URL si es diferente
 
-createApp({
+const { createApp, reactive, ref } = Vue;
+
+const recoveryApp = createApp({
     setup() {
-        const form = reactive({ email: '' });
+        const form = reactive({
+            email: ''
+        });
         const loading = ref(false);
+        const message = ref(null);
+        const isError = ref(false);
 
-        // --- FUNCIONES DE UTILIDAD LOCALES ---
-
-        // Función para volver al login (usada por el enlace en el HTML)
-        const goToLogin = (event) => {
-            if (event) event.preventDefault();
-            // Usar el efecto de fade-out que ya tienes
-            document.body.classList.add('fade-out'); 
+        // --- MANEJO DE TOASTS ---
+        // Usaremos una función simple para mostrar mensajes de éxito/error
+        const showMessage = (msg, isErr = false) => {
+            message.value = msg;
+            isError.value = isErr;
+            // Opcional: limpiar mensaje después de un tiempo
             setTimeout(() => {
-                window.location.href = 'login.html'; 
-            }, 650);
-        };
-        
-        // Función de partículas (asumimos que ya existe en tu auth.js o un archivo de utilidades)
-        const createParticles = () => {
-            const container = document.getElementById('particles');
-            if (!container) return;
-            const particleCount = 25;
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                const size = Math.random() * 12 + 3;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                const posX = Math.random() * 100;
-                const posY = Math.random() * 100;
-                particle.style.left = `${posX}%`;
-                particle.style.top = `${posY}%`;
-                const opacity = Math.random() * 0.2 + 0.05;
-                particle.style.background = `rgba(255, 255, 255, ${opacity})`;
-                const delay = Math.random() * 5;
-                particle.style.animationDelay = `${delay}s`;
-                container.appendChild(particle);
-            }
+                message.value = null;
+                isError.value = false;
+            }, 6000); 
         };
 
-        // --- LÓGICA PRINCIPAL DE RECUPERACIÓN ---
-        
+        // --- FUNCIÓN PRINCIPAL DE RECUPERACIÓN ---
         const handleRecoveryRequest = async () => {
-            if (!form.email || !window.authUtils.isValidEmail(form.email)) {
-                window.authUtils.showToast('Por favor, ingresa un email válido.', 'error');
+            if (!form.email || !form.email.includes('@')) {
+                showMessage('Por favor, ingresa un correo electrónico válido.', true);
                 return;
             }
 
             loading.value = true;
+            message.value = null; // Limpiar mensajes anteriores
 
             try {
-                const response = await fetch(`${API_BASE_URL}/forgot-password`, {
+                // 🛑 ENDPOINT: Solicitar Token 
+                const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: form.email })
                 });
 
                 const data = await response.json();
-                
-                // Si la respuesta es 200 OK (incluso si el usuario no existe)
-                window.authUtils.showToast(data.msg, 'success'); 
-                
-                // Después de 5 segundos, regresar a login
-                setTimeout(() => {
-                    goToLogin(); // 🛑 Usamos la función goToLogin definida 🛑
-                }, 5000);
 
+                if (response.ok) {
+                    // Éxito: Aunque el email no exista, mostramos éxito por seguridad
+                    showMessage('✅ Solicitud enviada. Revisa tu email (y carpeta de spam).', false);
+                    form.email = ''; // Limpiar campo
+                } else {
+                    // Error: Puede ser un error 404 (usuario no encontrado) o 500
+                    const msg = data.msg || 'Error al procesar la solicitud. Inténtalo de nuevo.';
+                    showMessage(`❌ ${msg}`, true);
+                }
             } catch (error) {
-                window.authUtils.showToast('Error de conexión con la API.', 'error');
+                console.error('Error de conexión:', error);
+                showMessage('❌ No se pudo conectar con el servidor. Verifica tu red.', true);
             } finally {
                 loading.value = false;
             }
         };
 
-        // --- HOOKS DE VUE ---
-        onMounted(() => {
-            createParticles(); // Inicializa las partículas al cargar la página
-        });
-        
-        // --- EXPORTACIÓN FINAL ---
+        const goToLogin = () => {
+            window.location.href = 'login.html';
+        };
+
         return {
             form,
             loading,
+            message,
+            isError,
             handleRecoveryRequest,
-            goToLogin, // 🛑 Exportamos goToLogin para el HTML 🛑
+            goToLogin
         };
     }
-}).mount('#recovery-app');
+});
+
+// Monta la aplicación en el contenedor #recovery-app
+recoveryApp.mount('#recovery-app');
