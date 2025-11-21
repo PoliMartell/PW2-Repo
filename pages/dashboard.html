@@ -237,20 +237,7 @@ const app = createApp({
     const currentUserName = ref('');
    
     // --- FUNCIÓN DE CARGA DE DATOS REALES ---
-    const USERS_PATH = 'usuarios';
-    
-
-const loadUserData = async () => {
-  loading.value = true;
-
-  const currentUserId = getUserIdFromStorage();
-  const token = localStorage.getItem('jwt');
-
-  if (!currentUserId) {
-    showToast('Sesión no válida. Inicia sesión de nuevo.', 'error');
-    setTimeout(() => (window.location.href = 'login.html'), 200);
-    return;
-  }
+  
     const USERS_PATH = 'usuarios';
 
 const loadUserData = async () => {
