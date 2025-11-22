@@ -1,5 +1,5 @@
 // Define la URL base de tu API de Backend corriendo en el puerto 3001
-const API_BASE_URL = 'http://localhost:3001/api/auth'; 
+const API_BASE_URL = 'https://api-pw2-9izd.onrender.com/api/auth'; 
 
 // Lógica específica para registro
 const { createApp, ref, reactive, onMounted, computed } = Vue;

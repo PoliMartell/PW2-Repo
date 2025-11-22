@@ -1,6 +1,6 @@
 // js/password_reset.js
 
-const API_BASE_URL = 'http://localhost:3001/api'; 
+const API_BASE_URL = 'https://api-pw2-9izd.onrender.com/api'; 
 const { createApp, ref, onMounted } = Vue;
 
 const resetApp = createApp({
